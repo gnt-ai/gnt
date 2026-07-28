@@ -1,0 +1,33 @@
+{
+  "totalDocuments": 46,
+  "overall": {
+    "name": "overall",
+    "expectedTotal": 47,
+    "expectedFound": 47,
+    "recall": 1,
+    "extractedTotal": 43,
+    "extractedTruePositive": 43,
+    "precision": 1
+  },
+  "byCategory": [
+    {
+      "name": "no_policy",
+      "expectedTotal": 0,
+      "expectedFound": 0,
+      "recall": 1,
+      "extractedTotal": 0,
+      "extractedTruePositive": 0,
+      "precision": 1
+    },
+    {
+      "name": "policy",
+      "expectedTotal": 47,
+      "expectedFound": 47,
+      "recall": 1,
+      "extractedTotal": 43,
+      "extractedTruePositive": 43,
+      "precision": 1
+    }
+  ],
+  "mode": "cloud"
+}

@@ -1,0 +1,32 @@
+meta {
+  name: batch-propose rules (opens one PR for several)
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{api_base_url}}/v1/rules/batch-propose
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cli_api_key}}
+}
+
+body:json {
+  {
+    "rule_ids": ["{{last_rule_id}}"]
+  }
+}
+
+docs {
+  POST /v1/rules/batch-propose — fix-plan-v3 2.4, `gnt prebrain`'s
+  batched sibling to /propose: one PR for several in_review rules at
+  once. require_entitled_admin, same GitHub-connection precondition as
+  propose-rule.bru — same accepted-outcome reasoning applies here.
+}
+
+assert {
+  res.status: in [200, 409]
+}

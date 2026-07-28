@@ -1,0 +1,25 @@
+meta {
+  name: deprecate rule
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{api_base_url}}/v1/rules/{{last_rule_id}}/deprecate
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cli_api_key}}
+}
+
+docs {
+  POST /v1/rules/{rule_id}/deprecate — require_admin. Any non-deprecated
+  status -> deprecated.
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq deprecated
+}

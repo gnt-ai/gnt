@@ -1,0 +1,70 @@
+{
+  "totalCases": 64,
+  "overall": {
+    "name": "overall",
+    "maskTotal": 62,
+    "maskFound": 41,
+    "recall": 0.6612903225806451,
+    "keepTotal": 19,
+    "keepHeld": 19,
+    "falsePositiveRate": 0
+  },
+  "byCategory": [
+    {
+      "name": "contextual",
+      "maskTotal": 18,
+      "maskFound": 0,
+      "recall": 0,
+      "keepTotal": 0,
+      "keepHeld": 0,
+      "falsePositiveRate": 0
+    },
+    {
+      "name": "policy_vs_pii",
+      "maskTotal": 15,
+      "maskFound": 12,
+      "recall": 0.8,
+      "keepTotal": 14,
+      "keepHeld": 14,
+      "falsePositiveRate": 0
+    },
+    {
+      "name": "secrets_in_prose",
+      "maskTotal": 29,
+      "maskFound": 29,
+      "recall": 1,
+      "keepTotal": 5,
+      "keepHeld": 5,
+      "falsePositiveRate": 0
+    }
+  ],
+  "byLayer": [
+    {
+      "name": "amounts",
+      "maskTotal": 15,
+      "maskFound": 12,
+      "recall": 0.8,
+      "keepTotal": 0,
+      "keepHeld": 0,
+      "falsePositiveRate": 0
+    },
+    {
+      "name": "contextual",
+      "maskTotal": 18,
+      "maskFound": 0,
+      "recall": 0,
+      "keepTotal": 0,
+      "keepHeld": 0,
+      "falsePositiveRate": 0
+    },
+    {
+      "name": "deterministic",
+      "maskTotal": 29,
+      "maskFound": 29,
+      "recall": 1,
+      "keepTotal": 0,
+      "keepHeld": 0,
+      "falsePositiveRate": 0
+    }
+  ]
+}

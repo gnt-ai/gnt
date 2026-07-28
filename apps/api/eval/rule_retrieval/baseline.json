@@ -1,0 +1,51 @@
+{
+  "k": 3,
+  "total": 81,
+  "overall": {
+    "family": "overall",
+    "n": 81,
+    "hit_at_1": 0.9382716049382716,
+    "hit_at_3": 1.0,
+    "mrr": 0.9670781893004115,
+    "recall_at_k": 0.9251028806584363,
+    "recall_at_10": 0.9604938271604938
+  },
+  "families": [
+    {
+      "family": "exact_name",
+      "n": 21,
+      "hit_at_1": 1.0,
+      "hit_at_3": 1.0,
+      "mrr": 1.0,
+      "recall_at_k": 1.0,
+      "recall_at_10": 1.0
+    },
+    {
+      "family": "keyword_only",
+      "n": 21,
+      "hit_at_1": 0.9523809523809523,
+      "hit_at_3": 1.0,
+      "mrr": 0.9761904761904762,
+      "recall_at_k": 1.0,
+      "recall_at_10": 1.0
+    },
+    {
+      "family": "multi_rule",
+      "n": 18,
+      "hit_at_1": 0.8888888888888888,
+      "hit_at_3": 1.0,
+      "mrr": 0.9351851851851851,
+      "recall_at_k": 0.662962962962963,
+      "recall_at_10": 0.8222222222222223
+    },
+    {
+      "family": "paraphrase",
+      "n": 21,
+      "hit_at_1": 0.9047619047619048,
+      "hit_at_3": 1.0,
+      "mrr": 0.9523809523809523,
+      "recall_at_k": 1.0,
+      "recall_at_10": 1.0
+    }
+  ]
+}

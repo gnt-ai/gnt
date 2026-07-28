@@ -1,0 +1,75 @@
+meta {
+  name: get_rule
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{mcp_url}}/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+headers {
+  Accept: application/json, text/event-stream
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "get_rule",
+      "arguments": { "rule_id": "00000000-0000-0000-0000-000000000000" }
+    }
+  }
+}
+
+docs {
+  Deliberately a well-formed-but-nonexistent rule id, not a real one —
+  keeps this request self-contained (no dependency on rules/create-rule.bru
+  having run first, and no chance of ever returning a real org's rule
+  content in a shared/CI run). get_rule never leaks whether an id is
+  simply unknown vs. belongs to another org vs. isn't approved yet — all
+  three raise the exact same RuntimeError message (see
+  apps/api/src/gnt/mcp_server/server.py's get_rule), which FastMCP turns
+  into an isError: true tool result. This asserts that MCP-level shape,
+  not a soft {"error": "..."} dict in a successful result -- get_rule used
+  to return the latter before that error-handling change, which is what
+  this test's assertions originally checked.
+}
+
+script:post-response {
+  const raw = res.getBody();
+  const text = typeof raw === "string" ? raw : JSON.stringify(raw);
+  const match = text.match(/data:\s*(\{[\s\S]*\})/);
+  if (match) {
+    bru.setVar("rpc_result", match[1]);
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("JSON-RPC envelope carries a result", function () {
+    const rpc = JSON.parse(bru.getVar("rpc_result"));
+    expect(rpc).to.have.property("result");
+  });
+
+  test("unknown rule id returns the tool's own error shape, not a crash", function () {
+    const rpc = JSON.parse(bru.getVar("rpc_result"));
+    expect(rpc.result.isError).to.equal(true);
+    // FastMCP wraps a raised exception's message as "Error executing tool
+    // <name>: <message>" in isError:true content -- checking substring
+    // instead of exact-equal so this doesn't re-break on a FastMCP version
+    // that changes that prefix's exact wording.
+    expect(rpc.result.content[0].text).to.include("no approved rule with that id");
+  });
+}

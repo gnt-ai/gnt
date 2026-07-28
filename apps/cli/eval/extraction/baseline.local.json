@@ -1,0 +1,33 @@
+{
+  "totalDocuments": 34,
+  "overall": {
+    "name": "overall",
+    "expectedTotal": 24,
+    "expectedFound": 19,
+    "recall": 0.7916666666666666,
+    "extractedTotal": 47,
+    "extractedTruePositive": 22,
+    "precision": 0.46808510638297873
+  },
+  "byCategory": [
+    {
+      "name": "no_policy",
+      "expectedTotal": 0,
+      "expectedFound": 0,
+      "recall": 1,
+      "extractedTotal": 4,
+      "extractedTruePositive": 0,
+      "precision": 0
+    },
+    {
+      "name": "policy",
+      "expectedTotal": 24,
+      "expectedFound": 19,
+      "recall": 0.7916666666666666,
+      "extractedTotal": 43,
+      "extractedTruePositive": 22,
+      "precision": 0.5116279069767442
+    }
+  ],
+  "mode": "local"
+}

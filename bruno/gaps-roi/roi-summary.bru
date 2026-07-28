@@ -1,0 +1,29 @@
+meta {
+  name: roi summary
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{api_base_url}}/v1/roi/summary
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+docs {
+  GET /v1/roi/summary — this org's ROI numbers (rules served, actions
+  checked/blocked/needs_human, gap count, stale-due count), current
+  7-day window vs. the prior 7. Backs `gnt status`.
+}
+
+assert {
+  res.status: eq 200
+  res.body.window_days: isNumber
+  res.body.rules_served: isNumber
+  res.body.actions_checked: isNumber
+  res.body.gap_count: isNumber
+}

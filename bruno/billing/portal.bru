@@ -1,0 +1,31 @@
+meta {
+  name: create billing portal session
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{api_base_url}}/v1/billing/portal
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cli_api_key}}
+}
+
+docs {
+  POST /v1/billing/portal — require_admin. Creates a real Stripe Billing
+  Portal session URL. 400 if the org has no stripe_customer_id yet (the
+  ordinary case for a test org that's never checked out — create_portal_
+  session checks this before it ever touches Stripe, so it doesn't need
+  Stripe configured to return this), 404 if the org row itself doesn't
+  exist (run billing/status.bru first to provision it), 503 if Stripe
+  isn't configured at all and the org DOES have a customer id. Excluded
+  from bruno/README.md's smoke-run file list, same reasoning as
+  billing/checkout.bru — real Stripe side effect.
+}
+
+assert {
+  res.status: in [200, 400, 404, 503]
+}

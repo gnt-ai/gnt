@@ -1,0 +1,38 @@
+meta {
+  name: create checkout session
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{api_base_url}}/v1/billing/checkout
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cli_api_key}}
+}
+
+body:json {
+  {
+    "tier": "base"
+  }
+}
+
+docs {
+  POST /v1/billing/checkout — require_admin. Creates a REAL Stripe
+  Checkout Session against whatever Stripe account this deploy is
+  configured against (test-mode key on a test org — never run this
+  against a production Stripe key without knowing exactly what you're
+  starting). 503 (BillingNotConfigured) if Stripe isn't set up on this
+  deploy at all, which is the expected outcome for most local/dev runs.
+
+  Excluded from bruno/README.md's smoke-run file list on purpose — this
+  has a real external side effect (a live Stripe object, and a trial
+  start on the org's first-ever checkout).
+}
+
+assert {
+  res.status: in [200, 503]
+}

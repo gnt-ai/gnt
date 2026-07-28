@@ -1,0 +1,58 @@
+{
+  "name": "@gnt-ai/cli",
+  "version": "0.6.0",
+  "description": "gnt.ai from your terminal: connect apps, propose rules, query your brain.",
+  "license": "SEE LICENSE IN LICENSE",
+  "homepage": "https://gntai.dev",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gnt-ai/gnt.git",
+    "directory": "apps/cli"
+  },
+  "bugs": "https://github.com/gnt-ai/gnt/issues",
+  "keywords": [
+    "gnt",
+    "mcp",
+    "cli",
+    "ai",
+    "knowledge-base"
+  ],
+  "type": "module",
+  "bin": {
+    "gnt": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "starter-packs"
+  ],
+  "engines": {
+    "node": ">=22.13"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "bun test",
+    "eval:privacy-gate": "bun run eval/privacy-gate/run.ts",
+    "eval:extraction": "bun run eval/extraction/run.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.112.1",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "chalk": "^5.6.2",
+    "commander": "^12.1.0",
+    "compromise": "^14.16.0",
+    "open": "^10.1.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "@types/node": "^22",
+    "eslint": "^9",
+    "typescript": "^5",
+    "typescript-eslint": "^8"
+  }
+}

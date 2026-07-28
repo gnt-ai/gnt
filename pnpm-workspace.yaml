@@ -1,0 +1,52 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  # apps/store is Bun-native at the runtime level (Bun.serve, bun:test —
+  # not a dependency's requirement, its own code) — managed by its own
+  # `bun install`/bun.lock and its own CI job, not pnpm/turbo. Mixing a
+  # bun-managed node_modules with a pnpm-linked one in the same directory
+  # is a real breakage risk (different resolution algorithms, different
+  # lockfile formats), not just a style preference, so it stays out of the
+  # workspace's package graph rather than being force-joined.
+  - "!apps/store"
+allowBuilds:
+  '@clerk/shared': true
+  '@prisma/client': true
+  '@prisma/engines': true
+  better-sqlite3: true
+  bufferutil: true
+  core-js: true
+  esbuild: true
+  prisma: true
+  sharp: true
+  unrs-resolver: true
+  utf-8-validate: true
+minimumReleaseAgeExclude:
+  - lodash@4.17.23 || 4.17.24
+  - drizzle-orm@0.45.2
+  - '@hono/node-server@2.0.5'
+  - postcss@8.5.18
+  - sharp@0.35.3
+  - fast-uri@3.1.4
+  - next@16.2.11
+  - valibot@1.4.2
+  - brace-expansion@5.0.8
+overrides:
+  '@hono/node-server@<2.0.5': ^2.0.5
+  brace-expansion@<5.0.8: ^5.0.8
+  # @eslint/config-array pins minimatch@^3.1.5, whose own brace-expansion
+  # usage (`require("brace-expansion")` expecting a callable default
+  # export) breaks against brace-expansion@5.x's new export shape -- the
+  # override above alone turns eslint into a hard crash. minimatch@10.2.5
+  # is already elsewhere in this tree (typescript-eslint's chain) and
+  # confirmed compatible with brace-expansion@5.x, so force the old 3.x
+  # line onto that same known-good version instead of a fresh one.
+  minimatch@<9: ^10.2.5
+  drizzle-orm@<0.45.2: ^0.45.2
+  lodash@<=4.17.23: ^4.17.24
+  lodash@>=4.0.0 <=4.17.22: ^4.17.23
+  lodash@>=4.0.0 <=4.17.23: ^4.17.24
+  postcss@<8.5.18: ^8.5.18
+  sharp@<0.35.0: ^0.35.3
+  fast-uri@<=3.1.3: ^3.1.4
+  valibot@<=1.4.1: ^1.4.2

@@ -1,0 +1,35 @@
+meta {
+  name: ingest (capture pipeline)
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{store_base_url}}/ingest
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{store_internal_secret}}
+}
+
+body:json {
+  {
+    "org": "{{store_test_org_id}}",
+    "sourceKind": "capture",
+    "text": "bruno smoke test ingest — a raw text blob for the capture pipeline.",
+    "ref": "bruno-smoke-test"
+  }
+}
+
+docs {
+  POST /ingest — sourceKind is one of slack/doc/capture/escalation.
+  Distinct from routers/webhooks.py's ingest endpoint one level up: this
+  is the store's own raw-content intake, not the create-a-draft-rule
+  shape webhooks/ingest.bru exercises.
+}
+
+assert {
+  res.status: eq 200
+}

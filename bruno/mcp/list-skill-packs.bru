@@ -1,0 +1,62 @@
+meta {
+  name: list_skill_packs
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{mcp_url}}/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+headers {
+  Accept: application/json, text/event-stream
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "list_skill_packs",
+      "arguments": {}
+    }
+  }
+}
+
+docs {
+  Every compiled skill pack version for this org, newest first. Empty
+  list for an org that's never had a rule merge trigger a compile — a
+  normal, valid response, not an error.
+}
+
+script:post-response {
+  const raw = res.getBody();
+  const text = typeof raw === "string" ? raw : JSON.stringify(raw);
+  const match = text.match(/data:\s*(\{[\s\S]*\})/);
+  if (match) {
+    bru.setVar("rpc_result", match[1]);
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("JSON-RPC envelope carries a result", function () {
+    const rpc = JSON.parse(bru.getVar("rpc_result"));
+    expect(rpc).to.have.property("result");
+  });
+
+  test("list_skill_packs returns a list", function () {
+    const rpc = JSON.parse(bru.getVar("rpc_result"));
+    expect(rpc.result.structuredContent.result).to.be.an("array");
+  });
+}

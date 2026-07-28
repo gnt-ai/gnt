@@ -1,0 +1,275 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least-privilege default: this workflow only lints/builds/tests, it never
+# pushes, comments, or publishes — read-only is sufficient for every step
+# below, and per-job overrides would only ever need to narrow this further.
+permissions:
+  contents: read
+
+jobs:
+  web:
+    name: web (lint, typecheck, build, test)
+    runs-on: ubuntu-latest
+    env:
+      # lib/api-url.ts throws at build time (NODE_ENV=production, which
+      # `next build` sets regardless of this job's own environment) if this
+      # is unset -- was missing here entirely, so this job would have
+      # failed the same way the first time Actions billing let it actually
+      # run. CI-only value, never fetched against for real during a build.
+      NEXT_PUBLIC_API_URL: https://api-production-e3d3.up.railway.app
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # apps/cli's own test script is `bun test` (its privacy-gate suite,
+      # including the eval/privacy-gate quality gate, needs bun:test). bun
+      # reads the node_modules pnpm already installed above; no separate
+      # `bun install` needed.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: pnpm turbo run lint typecheck build test
+
+  clean-install:
+    name: clean install (no secrets, from scratch)
+    # This is the repo's own proof that a contributor with nothing but a
+    # git clone -- no .env, no repo secrets, none of the CI-only
+    # placeholder values the jobs below set -- can get every JS/TS
+    # workspace and the API to install and typecheck, matching the
+    # README's own quickstart. Full test suites need live Postgres/Redis
+    # (an infra question, covered by the web/store/api jobs' own
+    # throwaway containers below), not private credentials -- out of
+    # scope here on purpose.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm turbo run lint typecheck
+
+      - uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+        with:
+          version: latest
+          enable-cache: true
+
+      - run: uv sync --dev
+        working-directory: apps/api
+
+      - run: uv run ruff check .
+        working-directory: apps/api
+
+  store:
+    name: store (lint, typecheck, test)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/store
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      # NativeStore is Postgres-only, no in-memory mode -- same
+      # docker-run-by-hand pattern the api job below uses.
+      # POSTGRES_HOST_AUTH_METHOD=trust: this
+      # container is throwaway and only ever reachable from this job, so
+      # skipping a password matches native-store.test.ts's own default
+      # connection string (postgres://localhost:5432/gnt_store_native_test,
+      # no credentials) with zero extra env wiring needed in any test file.
+      - name: Start postgres
+        run: |
+          set -euo pipefail
+          docker rm -f ci-store-postgres >/dev/null 2>&1 || true
+          docker run -d --name ci-store-postgres \
+            -e POSTGRES_USER=postgres -e POSTGRES_HOST_AUTH_METHOD=trust \
+            -p 5432:5432 \
+            pgvector/pgvector:pg17
+          for i in $(seq 1 30); do
+            docker exec ci-store-postgres pg_isready -U postgres >/dev/null 2>&1 && break
+            sleep 2
+          done
+          docker exec ci-store-postgres pg_isready -U postgres
+          docker exec ci-store-postgres psql -U postgres -c 'CREATE DATABASE gnt_store_native_test'
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run lint
+
+      - run: bun run typecheck
+
+      - run: bun run test
+
+      - name: Stop postgres
+        if: always()
+        run: docker rm -f ci-store-postgres >/dev/null 2>&1 || true
+
+  api:
+    name: api (ruff, pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/api
+    env:
+      # No apps/api/.env in CI (gitignored) — every required Settings
+      # field gets a throwaway value here instead. Nothing under test
+      # touches Slack/Anthropic for real, these just have to parse.
+      #
+      # DATABASE_URL/CRON_DATABASE_URL name gnt_app/gnt_cron, not the
+      # Postgres service's own superuser (gnt) — so CI genuinely exercises
+      # the same restricted, RLS-enforcing roles production uses (see
+      # migrations 0013/0014), not a connection that bypasses RLS
+      # entirely. Those roles don't exist until the first test session's
+      # migration step creates them, and migrations never set a role's
+      # password (see 0013's docstring) — conftest.py's _sync_role_password
+      # sets it to match these placeholder passwords right after
+      # migrating, every run, since this container is destroyed after CI
+      # finishes anyway.
+      DATABASE_URL: postgresql+asyncpg://gnt_app:ci-placeholder@localhost:15432/gnt
+      MIGRATION_DATABASE_URL: postgresql+asyncpg://gnt:gnt@localhost:15432/gnt
+      CRON_DATABASE_URL: postgresql+asyncpg://gnt_cron:ci-placeholder@localhost:15432/gnt
+      REDIS_URL: redis://localhost:16379/0
+      GROQ_API_KEY: ci-placeholder
+      CONTRIBUTOR_HASH_SECRET: ci-placeholder
+      SLACK_CLIENT_ID: ci-placeholder
+      SLACK_CLIENT_SECRET: ci-placeholder
+      SLACK_SIGNING_SECRET: ci-placeholder
+      SLACK_STATE_SECRET: ci-placeholder
+      # Unlike the plain placeholders above, this has to be a real Fernet
+      # key (not an arbitrary string) — same reasoning as
+      # GITHUB_PAT_ENCRYPTION_KEY below. Was "ci-placeholder" (an invalid
+      # Fernet key) until test_org_offboarding.py became the first test
+      # ever to call encrypt_slack_token for real — nothing had exercised
+      # this env var's actual value before then. CI-only value, not a
+      # secret protecting anything real.
+      SLACK_TOKEN_ENCRYPTION_KEY: u6EciGcx1D4ly_Cvod7ajEkc4lPF57Xu9aOgODJ1Jjc=
+      # Unlike the plain placeholders above, this has to be a real Fernet
+      # key (not an arbitrary string) — test_github_connection.py calls
+      # encrypt_token/decrypt_token for real. CI-only value, not a secret
+      # protecting anything real.
+      GITHUB_PAT_ENCRYPTION_KEY: tJRAPluXs7Vgx7-CxIWUI6J03AP0DWVvaYmcz_c6qt0=
+      # Same reasoning as SLACK_TOKEN_ENCRYPTION_KEY/GITHUB_PAT_ENCRYPTION_KEY
+      # above -- test_zendesk_connection.py/test_intercom_connection.py call
+      # encrypt_token/decrypt_token for real. Settings requires these two
+      # (no default), so their absence here isn't just an untested corner --
+      # Settings() itself fails to construct without them, which means every
+      # test in this job errors at collection time until they're set.
+      # CI-only values, not secrets protecting anything real.
+      ZENDESK_TOKEN_ENCRYPTION_KEY: qPTJl1eogW1bR3gz9_AvTEcqPD14y1bXdq8z5X_UODI=
+      INTERCOM_TOKEN_ENCRYPTION_KEY: _lPYp-UWnt2btBxLMF_rDqPFcfO3zLOS_prT14v1eUw=
+      # OAuth sprint T14 -- test_notion_connector.py/test_linear_connector.py
+      # call encrypt_token/decrypt_token and build_authorize_url for real,
+      # same "Settings() itself fails to construct without them" reasoning
+      # as ZENDESK_TOKEN_ENCRYPTION_KEY above. client id/secret values here
+      # are throwaway strings, not the real ones apps/api's own .env holds --
+      # nothing under test makes a live call to Notion's or Linear's OAuth
+      # endpoints.
+      NOTION_CLIENT_ID: ci-placeholder
+      NOTION_CLIENT_SECRET: ci-placeholder
+      NOTION_STATE_SECRET: ci-placeholder
+      NOTION_TOKEN_ENCRYPTION_KEY: TAJsD8bP40HHRvLeyD7S5lE2KdRDm7Gs-0vxhb4fQmE=
+      LINEAR_CLIENT_ID: ci-placeholder
+      LINEAR_STATE_SECRET: ci-placeholder
+      LINEAR_TOKEN_ENCRYPTION_KEY: dj-_tSp0hjH0yitMF8BzBJsaemM3WULNsFKbokOwHBo=
+      # apps/store's internal API (migration Phase 4) — nothing under test
+      # spawns a real apps/store process against these except the
+      # subprocess-backed integration tests, which set their own values.
+      STORE_INTERNAL_API_SECRET: ci-placeholder
+      APPROVAL_SIGNING_SECRET: ci-placeholder
+      # NativeStore is Postgres-only — a plain postgres:// URL (the
+      # `postgres` npm package), not this job's own postgresql+asyncpg://
+      # one, and a dedicated database (created below) so its tables never
+      # share a schema with apps/api's own. Superuser gnt:gnt, not the
+      # RLS-restricted gnt_app role above: NativeStore's schema bootstrap
+      # runs DDL (CREATE TABLE/EXTENSION), which gnt_app deliberately can't
+      # do. Read by conftest.py's `_store_server` fixture (the whole pytest
+      # suite's spawned store) and by eval-serve.ts, spawned via
+      # store_harness.py's EvalStoreHarness (the retrieval eval).
+      GNT_STORE_TEST_DATABASE_URL: postgres://gnt:gnt@localhost:15432/gnt_store_native_test
+      GNT_STORE_EVAL_NATIVE_DATABASE_URL: postgres://gnt:gnt@localhost:15432/gnt_store_native_test
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      # Started by hand rather than via `services:` so the same steps work
+      # unchanged regardless of runner OS. rm -f first clears a stale
+      # container left behind by a cancelled previous run; the matching
+      # teardown step below always runs, cancelled or not.
+      - name: Start postgres + redis
+        run: |
+          set -euo pipefail
+          docker rm -f ci-postgres ci-redis >/dev/null 2>&1 || true
+          docker run -d --name ci-postgres \
+            -e POSTGRES_USER=gnt -e POSTGRES_PASSWORD=gnt -e POSTGRES_DB=gnt \
+            -p 15432:5432 \
+            pgvector/pgvector:pg17
+          docker run -d --name ci-redis -p 16379:6379 redis:7-alpine
+          for i in $(seq 1 30); do
+            docker exec ci-postgres pg_isready -U gnt >/dev/null 2>&1 && break
+            sleep 2
+          done
+          docker exec ci-postgres pg_isready -U gnt
+          for i in $(seq 1 30); do
+            docker exec ci-redis redis-cli ping >/dev/null 2>&1 && break
+            sleep 2
+          done
+          docker exec ci-redis redis-cli ping
+          # Separate database on the same container for apps/store's
+          # NativeStore subprocesses (conftest.py's _store_server fixture,
+          # the retrieval eval's EvalStoreHarness) — see this job's
+          # GNT_STORE_TEST_DATABASE_URL/GNT_STORE_EVAL_NATIVE_DATABASE_URL.
+          docker exec ci-postgres psql -U gnt -d gnt -c 'CREATE DATABASE gnt_store_native_test'
+
+      - uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+        with:
+          version: latest
+          enable-cache: true
+
+      - run: uv sync --dev
+
+      - run: uv run ruff check .
+
+      # conftest.py's _store_server fixture spawns a REAL apps/store
+      # process (bun run src/http/server.ts) for the whole test session —
+      # migration Phase 4's routers/rules.py talks to it over real HTTP,
+      # not a mocked store_client. Needs Bun installed and apps/store's
+      # own deps present, or every test errors at fixture setup.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - run: bun install --frozen-lockfile
+        working-directory: apps/store
+
+      - run: uv run pytest
+
+      - name: Stop postgres + redis
+        if: always()
+        run: docker rm -f ci-postgres ci-redis >/dev/null 2>&1 || true

@@ -1,0 +1,30 @@
+meta {
+  name: list rules
+  type: http
+  seq: 9
+}
+
+get {
+  url: {{api_base_url}}/v1/rules
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+params:query {
+  ~status: draft
+}
+
+docs {
+  GET /v1/rules — optional ?status= filter (draft/in_review/pending_merge/
+  approved/deprecated), disabled by default here since this is a
+  read-only smoke check, not tied to the create-rule.bru chain state.
+}
+
+assert {
+  res.status: eq 200
+  res.body: isArray
+}

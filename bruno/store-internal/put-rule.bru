@@ -1,0 +1,55 @@
+meta {
+  name: put rule (write)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{store_base_url}}/rules
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{store_internal_secret}}
+}
+
+body:json {
+  {
+    "rule": {
+      "slug": "rules/bruno-store-smoke-test",
+      "org": "{{store_test_org_id}}",
+      "title": "bruno store-internal smoke rule",
+      "body": "Written directly through apps/store's internal API, bypassing apps/api, to exercise the seam's own contract.",
+      "status": "draft",
+      "confidence": 0.5,
+      "ownerId": "bruno-smoke",
+      "sourceCitations": [],
+      "source": null,
+      "tags": ["bruno-smoke-test"],
+      "lastValidatedAt": null,
+      "version": 1,
+      "supersededBy": null,
+      "previousVersionId": null,
+      "approvedBy": null,
+      "approvedAt": null,
+      "createdAt": "2026-01-01T00:00:00.000Z",
+      "prNumber": null,
+      "prUrl": null
+    },
+    "approvalSignature": null
+  }
+}
+
+docs {
+  POST /rules — apps/store/src/http/server.ts's handlePutRule. The
+  private, all-operations seam apps/api's own routers/rules.py calls
+  internally (store_client.py) — never customer/agent-facing. Bearer
+  auth against GNT_STORE_INTERNAL_API_SECRET, a different secret from
+  the MCP-serving org keys used everywhere else in this collection. A
+  fixed slug so this is safe to rerun (putPage upserts).
+}
+
+assert {
+  res.status: eq 200
+}

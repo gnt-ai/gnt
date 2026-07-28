@@ -1,0 +1,21 @@
+gnt.ai — trademark notice
+==========================
+
+"gnt", "gnt.ai", and the gnt.ai logo are trademarks of gnt.ai. The LICENSE
+in this repository (FSL-1.1-Apache-2.0) grants broad rights to use, modify,
+self-host, and redistribute this software — it does not grant any right to
+use the gnt.ai name, logo, or branding.
+
+Concretely: if you fork this repo and run your own hosted version of it as
+a public-facing service, that service needs its own name. You can say
+"built on gnt" or "compatible with gnt" in your docs, but you cannot call
+your service "gnt" or "gnt.ai", and you cannot use our logo to market it.
+This is a trademark restriction, separate from and in addition to the
+license's Competing Use terms above.
+
+Everything else about the code is exactly as permissive as the license
+says: read it, audit it, run it on your own infrastructure with your own
+keys, modify it, and send patches back. This notice only covers the name.
+
+Formal trademark registration for "gnt.ai" is in progress and not yet
+final as of this writing.

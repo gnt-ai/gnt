@@ -1,0 +1,38 @@
+meta {
+  name: DESTRUCTIVE — delete org source (wipes the entire rules mirror)
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{store_base_url}}/sources/delete
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{store_internal_secret}}
+}
+
+body:json {
+  {
+    "org": "{{store_test_org_id}}"
+  }
+}
+
+docs {
+  DESTRUCTIVE — TEST ORG ONLY. POST /sources/delete permanently deletes
+  {{store_test_org_id}}'s ENTIRE git-native rules mirror in apps/store —
+  every rule, every version, gone. This is the store-side half of what
+  apps/api's POST /v1/org/offboarding/confirm calls (org-admin/
+  offboarding-confirm.bru); there's no confirmation gate at this layer
+  at all (the gate lives one layer up, in apps/api's two-step flow — see
+  this endpoint's own comment in server.ts). Never run this directly
+  against any org whose rules you want to keep, and never include it in
+  an automated "run everything" invocation — same posture as
+  org-admin/offboarding-confirm.bru.
+}
+
+assert {
+  res.status: eq 200
+}

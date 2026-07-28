@@ -1,0 +1,25 @@
+meta {
+  name: get rule
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{api_base_url}}/v1/rules/{{last_rule_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+docs {
+  GET /v1/rules/{rule_id} — targets the rule create-rule.bru just made.
+}
+
+assert {
+  res.status: eq 200
+  res.body.id: eq {{last_rule_id}}
+  res.body.status: eq draft
+}

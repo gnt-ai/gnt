@@ -1,0 +1,43 @@
+meta {
+  name: DESTRUCTIVE — offboarding confirm (step 2 of 2 — permanently deletes the org)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{api_base_url}}/v1/org/offboarding/confirm
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{session_jwt}}
+}
+
+body:json {
+  {
+    "confirmation_token": "{{offboarding_confirmation_token}}"
+  }
+}
+
+docs {
+  DESTRUCTIVE — TEST ORG ONLY. IRREVERSIBLE. Never run this against any
+  org whose data you want to keep, and never include it in an automated
+  "run everything" invocation of this collection — it is deliberately
+  excluded from every example command in bruno/README.md and from the
+  CI post-deploy smoke job.
+
+  Permanently deletes every rule, gap, finding, ROI counter, key, and log
+  the org has, plus its entire git-native rules mirror in apps/store.
+  Requires the exact confirmation_token offboarding-request.bru just
+  issued for THIS org (single-use, 15-minute TTL, require_admin_session)
+  — run that request first, in the same `bru run`, for
+  {{offboarding_confirmation_token}} to be set. With the default blank
+  {{session_jwt}} this 401s before it ever reaches the token check (same
+  reasoning as offboarding-request.bru), which is the safe default for
+  this collection.
+}
+
+assert {
+  res.status: in [200, 400, 401]
+}

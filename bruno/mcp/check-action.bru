@@ -1,0 +1,74 @@
+meta {
+  name: check_action
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{mcp_url}}/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+headers {
+  Accept: application/json, text/event-stream
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "check_action",
+      "arguments": { "description": "send a refund to a customer" }
+    }
+  }
+}
+
+docs {
+  The enforcement tool — grounded in this org's approved rules, verdict
+  is always one of allowed | blocked | needs_human, never fabricated (see
+  action_check.py's module docstring: a retrieval failure, zero coverage,
+  or a malformed model response all degrade to needs_human, on purpose).
+
+  Deliberately excluded from bruno/README.md's smoke-run file list: unlike
+  the other four MCP tools this one makes a real, billed LLM call
+  (Haiku-tier — action_check_model in config.py) on every invocation, and
+  it counts against the org's monthly check_action cap (plan_limits.py —
+  1500/mo on base). Run it deliberately, not on every automated collection
+  pass — see the repo's cost-guardrail convention (minimize live API spend
+  during validation).
+}
+
+script:post-response {
+  const raw = res.getBody();
+  const text = typeof raw === "string" ? raw : JSON.stringify(raw);
+  const match = text.match(/data:\s*(\{[\s\S]*\})/);
+  if (match) {
+    bru.setVar("rpc_result", match[1]);
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("JSON-RPC envelope carries a result", function () {
+    const rpc = JSON.parse(bru.getVar("rpc_result"));
+    expect(rpc).to.have.property("result");
+  });
+
+  test("verdict is one of the three allowed values", function () {
+    const rpc = JSON.parse(bru.getVar("rpc_result"));
+    const payload = JSON.parse(rpc.result.content[0].text);
+    expect(["allowed", "blocked", "needs_human"]).to.include(payload.verdict);
+    expect(payload).to.have.property("cited_rules");
+    expect(payload).to.have.property("rules_retrieved");
+  });
+}

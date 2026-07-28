@@ -1,0 +1,25 @@
+meta {
+  name: submit rule for review
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{api_base_url}}/v1/rules/{{last_rule_id}}/submit
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+docs {
+  POST /v1/rules/{rule_id}/submit — draft -> in_review. Backs `gnt
+  review`'s submit step.
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq in_review
+}

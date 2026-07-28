@@ -1,0 +1,29 @@
+meta {
+  name: get rule
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{store_base_url}}/rules/rules%2Fbruno-store-smoke-test?org={{store_test_org_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{store_internal_secret}}
+}
+
+docs {
+  GET /rules/{slug} — slug is URL-encoded in the path (the "/" inside
+  "rules/bruno-store-smoke-test" has to be, or it'd be read as an extra
+  path segment). Targets the rule put-rule.bru just wrote; run that
+  first in the same `bru run` (a fixed slug, so order only matters for
+  the row to exist yet, not for any shared runtime var).
+}
+
+assert {
+  res.status: eq 200
+  res.body.slug: eq rules/bruno-store-smoke-test
+  res.body.status: eq draft
+}

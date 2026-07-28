@@ -1,0 +1,26 @@
+meta {
+  name: rules due for revalidation
+  type: http
+  seq: 10
+}
+
+get {
+  url: {{api_base_url}}/v1/rules/staleness/due
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+docs {
+  GET /v1/rules/staleness/due — approved rules the nightly staleness
+  sweep flagged as past threshold. Backs `gnt stale`.
+}
+
+assert {
+  res.status: eq 200
+  res.body.rules: isArray
+  res.body.count: isNumber
+}

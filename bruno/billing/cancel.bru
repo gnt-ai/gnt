@@ -1,0 +1,32 @@
+meta {
+  name: cancel subscription (in-app)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{api_base_url}}/v1/billing/cancel
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cli_api_key}}
+}
+
+docs {
+  DESTRUCTIVE — TEST ORG ONLY. POST /v1/billing/cancel schedules a REAL
+  Stripe subscription for cancellation at period end and sends a real
+  cancellation-confirmation email to the org's digest recipients. 400 if
+  the org has no stripe_subscription_id yet (cancel_subscription checks
+  this before touching Stripe), 404 if the org row itself doesn't exist,
+  503 if Stripe isn't configured at all and the org DOES have a
+  subscription id — those are the harmless outcomes; a 200 against a
+  real paying org is not something to run casually. Never included in
+  the CI smoke run or any "run everything" invocation of this
+  collection.
+}
+
+assert {
+  res.status: in [200, 400, 404, 503]
+}

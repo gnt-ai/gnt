@@ -1,0 +1,36 @@
+{
+  "name": "@gnt-ai/store",
+  "version": "0.1.0",
+  "description": "GntStore: gnt's own rules storage, hybrid search, and git-native sync — no third-party knowledge-store dependency.",
+  "license": "SEE LICENSE IN LICENSE",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "bun": ">=1.2.0"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "bun test --timeout 20000",
+    "serve": "bun run src/http/server.ts"
+  },
+  "dependencies": {
+    "js-yaml": "^3",
+    "postgres": "^3.4.9",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9",
+    "@types/bun": "^1.2.0",
+    "@types/js-yaml": "^3",
+    "eslint": "^9",
+    "typescript": "^5",
+    "typescript-eslint": "^8"
+  },
+  "overrides": {
+    "@hono/node-server": "^2.0.5",
+    "fast-uri": "^3.1.4",
+    "brace-expansion": "^5.0.8",
+    "minimatch": "^10.2.5"
+  }
+}

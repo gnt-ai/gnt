@@ -1,0 +1,25 @@
+meta {
+  name: top coverage gaps
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{api_base_url}}/v1/gaps
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+docs {
+  GET /v1/gaps — this org's top uncovered queries (empty search_rules
+  hits, and no_coverage check_action escalations). Backs `gnt gaps`.
+}
+
+assert {
+  res.status: eq 200
+  res.body: isArray
+}

@@ -1,0 +1,24 @@
+meta {
+  name: mcp-key list
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{api_base_url}}/v1/settings/mcp-keys
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+docs {
+  GET /v1/settings/mcp-keys — key_type == "mcp" only, newest first.
+}
+
+assert {
+  res.status: eq 200
+  res.body: isArray
+}

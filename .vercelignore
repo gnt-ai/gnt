@@ -1,0 +1,12 @@
+apps/api
+apps/cli
+apps/macos
+deploy
+.git
+.turbo
+**/node_modules
+**/.venv
+**/.next
+**/__pycache__
+.env*
+!apps/web/.env.local.example

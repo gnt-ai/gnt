@@ -1,0 +1,77 @@
+name: Extraction eval
+
+# fix-plan-v3 4.1: quality eval for gnt prebrain's extraction step
+# (apps/cli/src/prebrain/extraction/) -- measures precision/recall against
+# a seeded corpus by making real, paid Anthropic API calls (cloud mode,
+# claude-haiku-4-5), so unlike ci.yml this deliberately does NOT run on
+# every push/PR. GitHub Actions path filtering is workflow-level, not
+# job-level, which is why this is its own workflow file instead of a job
+# bolted onto ci.yml's single shared `on:` block -- it only triggers when
+# the extraction module or this eval's own directory actually changes.
+on:
+  pull_request:
+    paths:
+      - "apps/cli/src/prebrain/extraction/**"
+      - "apps/cli/eval/extraction/**"
+      - ".github/workflows/extraction-eval.yml"
+  push:
+    branches: [main]
+    paths:
+      - "apps/cli/src/prebrain/extraction/**"
+      - "apps/cli/eval/extraction/**"
+      - ".github/workflows/extraction-eval.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: extraction-eval-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  extraction-eval:
+    name: extraction eval (cloud mode, claude-haiku-4-5)
+    # GitHub already returns an empty string for secrets.ANTHROPIC_API_KEY
+    # on pull_request runs from forks (repo secrets are never forwarded to
+    # fork PRs under plain pull_request, only pull_request_target, which
+    # this workflow doesn't use), so the `env.ANTHROPIC_API_KEY != ''`
+    # check below already sends every fork PR to the free skip step.
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/cli
+    env:
+      # Empty string, not unset, when the secret doesn't exist -- that's
+      # what makes the `env.ANTHROPIC_API_KEY != ''` checks below work as
+      # a presence check. As of this eval shipping, no such secret exists
+      # in this repo's GitHub Actions secrets yet -- see README.md's "No
+      # recorded cloud baseline yet" section for the manual follow-up.
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      # bun reads the node_modules pnpm already installed above, same as
+      # ci.yml's web job -- no separate `bun install` needed.
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: run extraction eval against real cloud extraction
+        if: ${{ env.ANTHROPIC_API_KEY != '' }}
+        run: bun test test/prebrain/extraction/eval-gate.test.ts
+
+      - name: skip (ANTHROPIC_API_KEY secret not configured)
+        if: ${{ env.ANTHROPIC_API_KEY == '' }}
+        run: |
+          echo "::warning::ANTHROPIC_API_KEY is not set in this repo's GitHub Actions secrets -- skipping the extraction quality eval (fix-plan-v3 4.1). This is expected until a human adds the secret under Settings > Secrets and variables > Actions; it does not fail the build."

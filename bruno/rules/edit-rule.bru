@@ -1,0 +1,38 @@
+meta {
+  name: edit rule (new draft version)
+  type: http
+  seq: 8
+}
+
+post {
+  url: {{api_base_url}}/v1/rules/{{last_rule_id}}/edit
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+body:json {
+  {
+    "title": "bruno smoke test rule (edited)",
+    "body": "Edited body text — this call only ever succeeds against an approved rule.",
+    "confidence": 0.65,
+    "tags": ["bruno-smoke-test"]
+  }
+}
+
+docs {
+  POST /v1/rules/{rule_id}/edit — only valid on status == "approved" (a
+  new draft version of an already-approved rule). By this point in the
+  chain the rule is "deprecated" (deprecate-rule.bru ran just before
+  this), and this collection never drives a rule all the way to approved
+  (that needs a real GitHub PR merge webhook) — so 400 is the correct,
+  asserted outcome here, exercising edit_rule's precondition check rather
+  than the happy path.
+}
+
+assert {
+  res.status: eq 400
+}

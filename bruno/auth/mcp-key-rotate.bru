@@ -1,0 +1,32 @@
+meta {
+  name: mcp-key rotate
+  type: http
+  seq: 9
+}
+
+post {
+  url: {{api_base_url}}/v1/settings/mcp-keys/{{minted_mcp_key_id}}/rotate
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+docs {
+  POST /v1/settings/mcp-keys/{key_id}/rotate — rotates the throwaway key
+  mcp-key-mint.bru just minted (run mint before this in the same
+  `bru run`; the runner keeps {{minted_mcp_key_id}} across requests in a
+  collection run). Mints a replacement, revokes the old row — the
+  replacement's id feeds mcp-key-revoke.bru next.
+}
+
+script:post-response {
+  bru.setVar("rotated_mcp_key_id", res.getBody().id);
+}
+
+assert {
+  res.status: eq 201
+  res.body.key: isString
+}

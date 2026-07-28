@@ -1,0 +1,38 @@
+meta {
+  name: append audit entry
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{store_base_url}}/audit
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{store_internal_secret}}
+}
+
+body:json {
+  {
+    "org": "{{store_test_org_id}}",
+    "ruleSlug": "rules/bruno-store-smoke-test",
+    "actorId": "bruno-smoke",
+    "action": "created",
+    "before": null,
+    "after": { "status": "draft" }
+  }
+}
+
+docs {
+  POST /audit — action must be one of the AUDIT_ACTION_VALUES enum
+  (created/submitted/proposed/approved/rejected/deprecated/
+  decision_logged/privacy_gate_masked). Targets the rule put-rule.bru
+  wrote; audit-trail.bru right after reads it back.
+}
+
+assert {
+  res.status: eq 200
+  res.body.ok: eq true
+}

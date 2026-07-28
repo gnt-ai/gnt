@@ -1,0 +1,14 @@
+.venv
+__pycache__
+**/__pycache__
+.env
+.env.example
+.ruff_cache
+.git
+eval
+# NOT README.md -- pyproject.toml declares readme = "README.md", and
+# `uv sync --frozen` (building the gnt-api package itself, not just
+# syncing deps) fails with "failed to open file /app/README.md" if it's
+# missing from the build context. Found via a real Railway build, not a
+# guess -- excluding docs from the image seemed harmless until uv's own
+# package-metadata step needed the file to exist at all.

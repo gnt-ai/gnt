@@ -1,0 +1,30 @@
+meta {
+  name: list rules
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{store_base_url}}/rules?org={{store_test_org_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{store_internal_secret}}
+}
+
+params:query {
+  ~status: draft
+}
+
+docs {
+  GET /rules?org=...&status=... — status is optional (omitted here);
+  apps/api's own list_rules calls this with the caller's ?status= filter
+  passed straight through.
+}
+
+assert {
+  res.status: eq 200
+  res.body: isArray
+}

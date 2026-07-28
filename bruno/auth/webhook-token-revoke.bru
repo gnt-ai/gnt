@@ -1,0 +1,27 @@
+meta {
+  name: webhook-token revoke
+  type: http
+  seq: 13
+}
+
+post {
+  url: {{api_base_url}}/v1/settings/webhook-tokens/{{minted_webhook_token_id}}/revoke
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cli_api_key}}
+}
+
+docs {
+  POST /v1/settings/webhook-tokens/{token_id}/revoke — require_admin.
+  Cleans up the throwaway token webhook-token-mint.bru minted. Run after
+  that request in the same `bru run` for {{minted_webhook_token_id}} to
+  be set.
+}
+
+assert {
+  res.status: eq 200
+  res.body.revoked_at: isString
+}

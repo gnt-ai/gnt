@@ -1,0 +1,46 @@
+meta {
+  name: cli-key mint (session only)
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{api_base_url}}/v1/settings/cli-key
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{session_jwt}}
+}
+
+body:json {
+  {
+    "name": "bruno smoke test cli key"
+  }
+}
+
+docs {
+  POST /v1/settings/cli-key — routers/settings.py's create_cli_key. Gated
+  on enforce_cli_key_rate_limit -> require_session: this is the ONE path
+  that ever sets is_admin=true on a key, so it deliberately refuses an
+  existing API key and only accepts a live Better Auth session JWT (see
+  auth/better_auth.py's require_session docstring on the self-escalation
+  path this closes).
+
+  {{session_jwt}} is intentionally blank by default — this collection has
+  no way to drive a real browser-based Better Auth login. Paste a real
+  session JWT (apps/web's /api/auth/token) into the local/production
+  environment to exercise this for real; otherwise it 401s, which is
+  itself the correct, tested behavior for "no session."
+}
+
+script:post-response {
+  if (res.getStatus() === 201) {
+    bru.setVar("minted_cli_key_id", res.getBody().id);
+  }
+}
+
+assert {
+  res.status: in [201, 401]
+}

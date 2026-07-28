@@ -1,0 +1,6 @@
+{
+  "$schema": "https://railway.com/railway.schema.json",
+  "deploy": {
+    "preDeployCommand": "sh -c 'if [ \"$PROCESS_TYPE\" != \"worker\" ]; then uv run alembic upgrade head; fi'"
+  }
+}

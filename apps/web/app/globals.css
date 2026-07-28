@@ -1,0 +1,446 @@
+@import "tailwindcss";
+
+:root {
+  /* OpenCode-reference dark mode (see apps/web/design/DESIGN-opencode-
+     reference.md) — opencode.ai's own site is cream/light-only, it has no
+     dark chrome. Its design system does define a dark surface, though
+     (`surface-dark` #201d1d / `on-dark` #fdfcfc), scoped in their own spec
+     to a single hero TUI mockup. Our dark mode takes that exact pair and
+     applies it site-wide instead of scoping it to one element — "their
+     standard website, in dark" is the brief, and this is the color
+     grammar they'd use if their own chrome went dark. accent/accent-brand
+     stay on-dark's own tone (light button on dark bg), same inverted-ink
+     relationship as before — the doc explicitly reserves the Apple-blue
+     accent ramp for in-product TUI syntax highlighting, never marketing
+     chrome (see its Do's and Don'ts). */
+  --shell: #201d1d;
+  --background: #201d1d;
+  --foreground: #fdfcfc;
+  --muted: #9a9898;
+  --border: rgba(253, 252, 252, 0.12);
+  --surface-low: #302c2c;
+  --surface: #302c2c;
+  --surface-high: #3a3535;
+  --surface-highest: #454040;
+  --accent: #fdfcfc;
+  --accent-foreground: #201d1d;
+  --accent-brand: #fdfcfc;
+  --accent-brand-foreground: #201d1d;
+  /* Apple HIG green, exact value from the reference doc — its own accent
+     ramp is reserved for TUI/terminal syntax-highlight content, which is
+     exactly what this token is used for (the "✓ Learned..." lines in
+     TerminalBlock). */
+  --success: #30d158;
+  /* CodeCard's string highlight -- NOT the same token as --success. That
+     TUI-mockup green is calibrated for TerminalBlock, which is always
+     forced onto a dark surface (.theme-dark-surface) regardless of site
+     theme. CodeCard follows the ambient site theme, so it needs its own
+     pair: this dark-mode value is --success's exact value (already
+     6.8:1 on the dark surface), the light-mode override below is a
+     measured, WCAG AA-passing darker green -- #30d158 direct on the
+     light surface measures 1.6:1, nowhere close to the 4.5:1 floor. */
+  --code-string: #30d158;
+  /* Form error text (AuthScreen, the org-name onboarding form) -- same
+     theme-aware-pair reasoning as --code-string above. The old flat
+     #ff3b30 measured ~3.9:1 against bg-surface here in dark mode and
+     ~3.1:1 in light mode, both under the 4.5:1 AA floor for body text.
+     This dark-mode value (Tailwind's red-400) measures ~5.0:1 against
+     --surface here; the light-mode override below (red-700) measures
+     ~5.6:1 against light mode's --surface. */
+  --error: #f87171;
+  /* The input focus glow (see the input:focus rule below) -- translucent
+     foreground, same value/alpha family as --border's own rgba pair
+     above, just stronger since this one has to actually read as a focus
+     indicator, not a hairline. */
+  --focus-ring: rgba(253, 252, 252, 0.35);
+}
+
+@theme inline {
+  --color-shell: var(--shell);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-border: var(--border);
+  --color-surface-low: var(--surface-low);
+  --color-surface: var(--surface);
+  --color-surface-high: var(--surface-high);
+  --color-surface-highest: var(--surface-highest);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-brand: var(--accent-brand);
+  --color-accent-brand-foreground: var(--accent-brand-foreground);
+  --color-success: var(--success);
+  --color-code-string: var(--code-string);
+  --color-error: var(--error);
+  /* IBM Plex Mono -- the OpenCode reference doc's own documented fallback
+     for their (paid, unlicensed here) Berkeley Mono, close enough in
+     metrics that swapping it in is the doc's own suggested substitution,
+     not a deviation from the spec. Self-hosted via next/font/google
+     (layout.tsx), not a runtime Google Fonts request. */
+  --font-mono: var(--font-ibm-plex-mono), "IBM Plex Mono", ui-monospace, SFMono-Regular,
+    Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --radius: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+  /* rounded.sm from the reference doc -- the one radius every interactive
+     element (buttons, inputs, badges, the install snippet) uses; every
+     container stays --radius: 0. */
+  --radius-interactive: 4px;
+  /* radius-full intentionally left at Tailwind's default (true circle) — the
+     mockup's generated config set it to 0.75rem, which would break circular
+     elements like avatars and status dots. */
+
+  /* Apple-style motion: strong ease-out for anything entering/responding,
+     ease-in-out for on-screen movement. Stock CSS easings are too weak to
+     read as intentional. */
+  --ease-out-strong: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in-out-strong: cubic-bezier(0.77, 0, 0.175, 1);
+}
+
+/* Light theme -- toggled by ThemeToggle (see components/theme-toggle.tsx),
+   applied as a data-theme attribute on <html> rather than a wrapper class,
+   so every page re-themes automatically, not just the homepage. Overrides
+   the same token names the dark :root block above defines, so every
+   existing component (MarketingHeader, TerminalBlock) re-themes with zero
+   changes to those components. Values are the OpenCode reference doc's
+   literal chrome palette (apps/web/design/DESIGN-opencode-reference.md) --
+   canvas/ink/mute/hairline, taken directly, not approximated. */
+:root[data-theme="light"] {
+  --shell: #fdfcfc;
+  --background: #fdfcfc;
+  --foreground: #201d1d;
+  --muted: #646262;
+  --border: rgba(15, 0, 0, 0.12);
+  --surface-low: #f8f7f7;
+  --surface: #f1eeee;
+  --surface-high: #ece8e8;
+  --surface-highest: #e0dcdc;
+  --accent: #201d1d;
+  --accent-foreground: #fdfcfc;
+  --accent-brand: #201d1d;
+  --accent-brand-foreground: #fdfcfc;
+  /* Same exact Apple-green as dark mode -- this only ever renders inside
+     the always-dark TerminalBlock (.theme-dark-surface below re-asserts
+     the dark palette there regardless of site theme), never against the
+     light canvas directly, so no separate light-contrast value is
+     needed for THIS token. --code-string below is the one that does
+     need a light-mode override -- CodeCard follows the ambient site
+     theme, not a forced-dark surface. */
+  --success: #30d158;
+  /* #30d158 direct on the light surface measures 1.6:1 (WCAG AA needs
+     4.5:1 for body text) -- confirmed by computing actual sRGB relative
+     luminance, not eyeballed. This darker green measures 6.2:1. */
+  --code-string: #166534;
+  /* See --error's dark-mode comment above -- this is the light-mode half
+     of that same pair (Tailwind's red-700), computed the same way. */
+  --error: #b91c1c;
+  --focus-ring: rgba(15, 0, 0, 0.25);
+}
+
+/* Re-asserts the dark palette for the one deliberate dark element on the
+   homepage (the product/terminal TUI mockup) regardless of the active
+   theme -- opencode's own spec scopes surface-dark to exactly this one
+   element, so it can't just inherit whichever site-wide theme is active. */
+:root[data-theme="light"] .theme-dark-surface {
+  --background: #201d1d;
+  --foreground: #fdfcfc;
+  --muted: #9a9898;
+  --border: rgba(253, 252, 252, 0.12);
+  --surface-low: #302c2c;
+  --surface: #302c2c;
+  --surface-high: #3a3535;
+  --surface-highest: #454040;
+  --success: #30d158;
+  --code-string: #30d158;
+}
+
+html {
+  /* Always reserves the vertical scrollbar's width, whether or not the
+     page is tall enough to need one. Without this, a page just over the
+     viewport height (the homepage) sits ~15px narrower than a page just
+     under it (changelog, sign-in, sign-up) once a real OS scrollbar takes
+     that space -- the centered frame visibly jumps sideways on navigation
+     between them. Reserving it always makes every page the same width
+     regardless of its own content height. */
+  scrollbar-gutter: stable;
+}
+
+body {
+  /* Flat fill, both themes -- --shell tracks --background in light mode
+     (see the light theme block above) and is its own darker navy in dark
+     mode, so this stays a one-line reference either way. */
+  background: var(--shell);
+  color: var(--foreground);
+  /* Monospace is the site's font, not a code-block accent -- matches the
+     real conductor.build, where body copy, nav, and headings are all
+     ui-monospace too. */
+  font-family: var(--font-mono);
+}
+
+/* Avoids a lone orphan word stranded on the last line of a wrapped
+   paragraph -- browsers without support (Firefox) just fall back to
+   normal wrapping, no fallback needed. */
+p {
+  text-wrap: pretty;
+}
+
+/* A global `html { scroll-behavior: smooth }` used to live here for the
+   homepage's #how-it-works anchor link -- it also smooth-scrolled Next.js's
+   own scroll-to-top on every full page navigation (Link clicks, including
+   from partway down a long page like the homepage's footer), which reads
+   as the new page scrolling itself around after landing rather than an
+   instant, correct jump to the top. Removed; the one remaining in-page
+   anchor (the hero's "Learn how it works" link) just jumps instantly now,
+   same as everywhere else on a terminal-styled site that leans snappy over
+   animated by default. */
+
+/* ThemeToggle's two icons (components/theme-toggle.tsx) -- shows the
+   theme a click switches TO, not the active one. CSS-driven rather than
+   React state so there's no client-only read of data-theme to hydrate
+   around (see the component's own comment). */
+.icon-to-dark {
+  display: none;
+}
+
+:root[data-theme="light"] .icon-to-light {
+  display: none;
+}
+
+:root[data-theme="light"] .icon-to-dark {
+  display: block;
+}
+
+/* Keyboard focus gets a deliberate, on-brand ring instead of the browser
+   default (which clashes with this dark palette) or nothing at all.
+   :focus-visible only matches keyboard/non-pointer focus for most elements —
+   but Safari/Firefox treat a plain mouse click into a text field as
+   "visible" too (typing is expected next), so text inputs/textareas are
+   excluded here: they get the plain :focus border+glow below instead, which
+   is fine to show on a mouse click too (a highlighted field right before
+   typing isn't the startling flash a ring is), and this being an unlayered
+   rule would otherwise beat their `outline-none` (unlayered CSS always wins
+   over Tailwind's @layer utilities, regardless of source order or
+   specificity). */
+:focus-visible:not(input):not(textarea) {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* The border+glow text inputs/textareas get instead of the ring above.
+   Every input site (AuthScreen, the org-name onboarding form) already
+   ships `focus:border-foreground/40 outline-none` in its own className,
+   but 40%-opacity foreground measures ~2.4:1 against --surface-low in
+   light mode (WCAG 1.4.11 needs 3:1 for a focus indicator) and a weak,
+   barely-passing ~3.5:1 in dark mode -- not a real focus indicator either
+   way. This unlayered rule wins over that Tailwind utility (see comment
+   above) and replaces it with a solid border plus a measured-visible
+   ring: full-opacity foreground against --surface-low clears 10:1 in
+   both themes. */
+input:focus,
+textarea:focus {
+  border-color: var(--foreground);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+/* Glass surfaces (voice waveform, popovers) should materialize — blur and
+   scale settling together — rather than just fade in from nothing. */
+@keyframes materialize-in {
+  from {
+    opacity: 0;
+    transform: scale(0.97) translateY(-2px);
+    filter: blur(4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+  }
+}
+
+.animate-materialize {
+  animation: materialize-in 220ms var(--ease-out-strong) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-materialize {
+    animation: fade-in 150ms ease both;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Card lists get a light cascading entrance on page load — not on every
+   re-render, just the first paint of a route. Keep delays short so it
+   never reads as slow. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-in > * {
+  animation: fade-up 320ms var(--ease-out-strong) both;
+}
+.stagger-in > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.stagger-in > *:nth-child(2) {
+  animation-delay: 40ms;
+}
+.stagger-in > *:nth-child(3) {
+  animation-delay: 80ms;
+}
+.stagger-in > *:nth-child(4) {
+  animation-delay: 120ms;
+}
+.stagger-in > *:nth-child(5) {
+  animation-delay: 160ms;
+}
+.stagger-in > *:nth-child(n + 6) {
+  animation-delay: 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stagger-in > * {
+    animation: fade-in 150ms ease both;
+    animation-delay: 0ms !important;
+  }
+}
+
+/* Docs tab panel swap (components/docs-tabs.tsx) -- same rise-and-fade
+   as .stagger-in's fade-up, just shorter (one panel appearing, not a
+   list cascading in) and matched to the 150ms/ease-out-strong duration
+   the rest of the site's hover/focus transitions already use. */
+@keyframes tab-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-tab-in {
+  animation: tab-panel-in 150ms var(--ease-out-strong) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-tab-in {
+    animation: fade-in 150ms ease both;
+  }
+}
+
+/* Floating translucent chrome (header, mobile nav) gets a soft fade where
+   scrolled content meets it, instead of a hard divider line. Both current
+   consumers (TopHeader, MobileNav) are already `sticky`/`fixed`, which is
+   itself a positioning context for the ::before/::after below — no need to
+   (and don't) force `position: relative` here too: as unlayered CSS it would
+   beat their `sticky`/`fixed` utility classes regardless of source order,
+   same footgun as the :focus-visible rule above. */
+.edge-fade-b::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 14px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.16), transparent);
+  pointer-events: none;
+}
+
+.edge-fade-t::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 100%;
+  height: 14px;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.16), transparent);
+  pointer-events: none;
+}
+
+/* Voice waveform — plain CSS bars instead of WebGL, so it can never fail
+   with a GPU/driver "context unavailable" glyph. */
+@keyframes waveform-pulse {
+  0%,
+  100% {
+    transform: scaleY(0.25);
+    opacity: 0.55;
+  }
+  50% {
+    transform: scaleY(1);
+    opacity: 1;
+  }
+}
+
+.waveform-bar {
+  transform-origin: center;
+  animation-name: waveform-pulse;
+  animation-timing-function: var(--ease-in-out-strong);
+  animation-iteration-count: infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waveform-bar {
+    animation: none;
+    transform: scaleY(0.55);
+    opacity: 0.8;
+  }
+}
+
+/* A terminal block's idle cursor — reads as "this is live", not just a
+   screenshot, without an actual typing animation to time. */
+@keyframes cursor-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
+.cursor-blink {
+  animation: cursor-blink 1s step-end infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor-blink {
+    animation: none;
+  }
+}
+
+/* Clerk's own outline+primary-color button variant (the GitHub/Google
+   sign-in buttons) borders itself with colorPrimary by default --
+   data-color="primary" just means "the button that matters most", not
+   "border it in the brand accent", but that's exactly what it does
+   here since colorPrimary IS the accent color. Only formButtonPrimary
+   (data-variant="solid"/other non-outline variants, the actual submit
+   button) should pick up the accent color -- scoping to
+   [data-variant="outline"] leaves that one alone.
+   Root cause of why this took three tries: Clerk locally redefines a
+   custom property literally named --border on this exact subtree,
+   scoped more specifically than our :root definition -- getComputedStyle
+   on the button confirmed var(--border) resolves to colorPrimary here,
+   not our navy token. var(--border) was therefore never going to work
+   regardless of this rule's own priority, !important or not -- using
+   the literal --border value (not the variable) sidesteps the name
+   collision entirely. */
+[data-variant="outline"][data-color="primary"] {
+  border-color: #1c2233;
+}

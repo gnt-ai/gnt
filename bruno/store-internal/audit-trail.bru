@@ -1,0 +1,25 @@
+meta {
+  name: get audit trail
+  type: http
+  seq: 8
+}
+
+get {
+  url: {{store_base_url}}/audit/rules%2Fbruno-store-smoke-test?org={{store_test_org_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{store_internal_secret}}
+}
+
+docs {
+  GET /audit/{slug} — the full audit trail for the rule this folder
+  writes to. Run after append-audit.bru for at least one entry to exist.
+}
+
+assert {
+  res.status: eq 200
+  res.body: isArray
+}

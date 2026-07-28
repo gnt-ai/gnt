@@ -1,0 +1,142 @@
+name: Self-host compose
+
+# Proves docker-compose.yml (the self-host quickstart in README.md and
+# docs/self-hosting/README.md) actually boots, instead of only being
+# trustworthy the day someone last tried it by hand. Builds the real
+# images, runs the real one-time migration step, brings the real stack up
+# with throwaway secrets generated fresh in the job, and polls /healthz.
+# Path-filtered like extraction-eval.yml -- only runs when something that
+# could actually break the self-host path changes.
+on:
+  pull_request:
+    paths:
+      - "docker-compose.yml"
+      - "apps/api/Dockerfile"
+      - "apps/api/docker-entrypoint.sh"
+      - "apps/store/Dockerfile"
+      - "docs/self-hosting/**"
+      - ".github/workflows/self-host-compose.yml"
+  push:
+    branches: [main]
+    paths:
+      - "docker-compose.yml"
+      - "apps/api/Dockerfile"
+      - "apps/api/docker-entrypoint.sh"
+      - "apps/store/Dockerfile"
+      - "docs/self-hosting/**"
+      - ".github/workflows/self-host-compose.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: self-host-compose-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  compose-boot:
+    name: compose boot (build, migrate, up, healthz)
+    # Deliberately unconditional ubuntu-latest, NOT the fork-guarded
+    # self-hosted/github-hosted conditional ci.yml/security.yml use for
+    # their self-hosted-macOS jobs. Those jobs need that guard because a
+    # fork PR reaching a bare `self-hosted` runner is arbitrary code
+    # execution on the physical machine. This job never touches the
+    # self-hosted runner at all and needs zero repo secrets -- every
+    # credential below is generated fresh inside the job with openssl, so
+    # a fork PR gets nothing more sensitive than what it could generate
+    # itself. Safe to run unconditionally on any PR, including forks; do
+    # not add the self-hosted fork-guard pattern here, there is nothing
+    # for it to guard.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+
+      # Fernet requires a 32-byte urlsafe-base64 key -- exactly what
+      # `openssl rand -base64 32 | tr '+/' '-_'` produces (Fernet.generate_key()
+      # is the same os.urandom(32) + urlsafe-b64encode under the hood), so
+      # this needs no python/cryptography install just to mint one.
+      - name: generate throwaway secrets and write .env files
+        run: |
+          set -euo pipefail
+          gen_hex() { openssl rand -hex 32; }
+          gen_fernet() { openssl rand -base64 32 | tr '+/' '-_'; }
+
+          store_secret=$(gen_hex)
+          approval_secret=$(gen_hex)
+
+          cat > apps/api/.env <<EOF
+          DATABASE_URL=postgresql+asyncpg://gnt:gnt@postgres:5432/gnt
+          MIGRATION_DATABASE_URL=postgresql+asyncpg://gnt:gnt@postgres:5432/gnt
+          CRON_DATABASE_URL=postgresql+asyncpg://gnt:gnt@postgres:5432/gnt
+          ADMIN_DATABASE_URL=postgresql+asyncpg://gnt:gnt@postgres:5432/gnt
+          REDIS_URL=redis://redis:6379/0
+          ANTHROPIC_API_KEY=sk-ant-ci-throwaway
+          GROQ_API_KEY=gsk-ci-throwaway
+          CONTRIBUTOR_HASH_SECRET=$(gen_hex)
+          WEB_ORIGIN=http://localhost:3000
+          API_ORIGIN=http://localhost:8000
+          SLACK_CLIENT_ID=ci-throwaway
+          SLACK_CLIENT_SECRET=ci-throwaway
+          SLACK_SIGNING_SECRET=ci-throwaway
+          SLACK_STATE_SECRET=$(gen_hex)
+          SLACK_TOKEN_ENCRYPTION_KEY=$(gen_fernet)
+          GITHUB_PAT_ENCRYPTION_KEY=$(gen_fernet)
+          ZENDESK_TOKEN_ENCRYPTION_KEY=$(gen_fernet)
+          INTERCOM_TOKEN_ENCRYPTION_KEY=$(gen_fernet)
+          NOTION_CLIENT_ID=ci-throwaway
+          NOTION_CLIENT_SECRET=ci-throwaway
+          NOTION_STATE_SECRET=$(gen_hex)
+          NOTION_TOKEN_ENCRYPTION_KEY=$(gen_fernet)
+          LINEAR_CLIENT_ID=ci-throwaway
+          LINEAR_STATE_SECRET=$(gen_hex)
+          LINEAR_TOKEN_ENCRYPTION_KEY=$(gen_fernet)
+          STORE_API_URL=http://store:8787
+          STORE_INTERNAL_API_SECRET=$store_secret
+          APPROVAL_SIGNING_SECRET=$approval_secret
+          EOF
+
+          cat > apps/store/.env <<EOF
+          GNT_STORE_PORT=8787
+          GNT_STORE_BIND=127.0.0.1
+          GNT_STORE_INTERNAL_API_SECRET=$store_secret
+          GNT_APPROVAL_SIGNING_SECRET=$approval_secret
+          ZEROENTROPY_API_KEY=ze-ci-throwaway
+          EOF
+
+      - name: docker compose build
+        run: docker compose build
+
+      # The exact one-time step the self-host docs tell a real user to
+      # run. This is also what caught apps/api/docker-entrypoint.sh's
+      # ignored-"$@" bug during this workflow's own development -- before
+      # that fix this step silently no-op'd (started the API server
+      # instead of migrating) and still exited 0, which is why the healthz
+      # poll below matters as a second, independent check and not just
+      # this step's own exit code.
+      - name: run the one-time migration
+        run: docker compose run --rm api uv run alembic upgrade head
+
+      - name: docker compose up
+        run: docker compose up -d
+
+      - name: poll /healthz
+        run: |
+          set -euo pipefail
+          for i in $(seq 1 30); do
+            if code=$(curl -sS -o /tmp/healthz.json -w '%{http_code}' http://localhost:8000/healthz 2>/dev/null) && [ "$code" = "200" ]; then
+              echo "api healthy after ${i} attempt(s): $(cat /tmp/healthz.json)"
+              exit 0
+            fi
+            sleep 2
+          done
+          echo "::error::api never reported healthy at /healthz within the poll window"
+          docker compose logs
+          exit 1
+
+      - name: verify store's own health endpoint
+        run: docker compose exec -T api curl -sSf http://store:8787/health
+
+      - name: teardown
+        if: always()
+        run: docker compose down -v

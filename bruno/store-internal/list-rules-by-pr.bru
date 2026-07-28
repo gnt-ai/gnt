@@ -1,0 +1,28 @@
+meta {
+  name: list rules by PR number
+  type: http
+  seq: 5
+}
+
+get {
+  url: {{store_base_url}}/rules/by-pr/999999?org={{store_test_org_id}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{store_internal_secret}}
+}
+
+docs {
+  GET /rules/by-pr/{prNumber} — the github_webhook.py merge handler's
+  lookup (every pending_merge rule sharing that PR, batch-propose can put
+  several on one PR). A PR number nothing in this test org used returns
+  an empty array (200), not a 404 — "no rule" is an ordinary result here,
+  matching listPages' own empty-list convention.
+}
+
+assert {
+  res.status: eq 200
+  res.body: isArray
+}

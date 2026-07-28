@@ -1,0 +1,33 @@
+meta {
+  name: reject rule
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{api_base_url}}/v1/rules/{{last_rule_id}}/reject
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cli_api_key}}
+}
+
+body:json {
+  {
+    "reason": "bruno smoke test — rejecting on purpose to exercise the endpoint"
+  }
+}
+
+docs {
+  POST /v1/rules/{rule_id}/reject — require_admin. in_review or
+  pending_merge -> draft. Sends the chain rule back to draft so
+  deprecate-rule.bru (which accepts any non-deprecated status) has a
+  clean, known starting point.
+}
+
+assert {
+  res.status: eq 200
+  res.body.status: eq draft
+}

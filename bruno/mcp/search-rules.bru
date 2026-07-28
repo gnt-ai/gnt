@@ -1,0 +1,78 @@
+meta {
+  name: search_rules
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{mcp_url}}/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+headers {
+  Accept: application/json, text/event-stream
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "search_rules",
+      "arguments": { "query": "bruno smoke test query", "limit": 5 }
+    }
+  }
+}
+
+docs {
+  The published, customer-facing MCP endpoint (settings.mcp_url) — plain
+  JSON-RPC 2.0 over HTTP, streamable-http transport (stateless_http=True,
+  so no prior "initialize" handshake or mcp-session-id header is needed
+  before calling tools/call — confirmed live). {{mcp_url}} has no
+  trailing slash (matches the exact string every customer-facing surface
+  echoes); the request URL appends one (`{{mcp_url}}/`) since the
+  FastMCP app is actually mounted there — hitting {{mcp_url}} without it
+  307-redirects, which not every MCP/HTTP client follows for a POST.
+
+  Response content-type is text/event-stream, one `data: {...}` frame —
+  script:post-response below pulls the JSON-RPC envelope out of that
+  frame into a var so the tests block can assert on it like ordinary
+  JSON.
+
+  search_rules only ever returns approved rules; an empty result is the
+  correct "no coverage" signal, not a failure — so this asserts shape
+  (an array), not a non-empty hit.
+}
+
+script:post-response {
+  const raw = res.getBody();
+  const text = typeof raw === "string" ? raw : JSON.stringify(raw);
+  const match = text.match(/data:\s*(\{[\s\S]*\})/);
+  if (match) {
+    bru.setVar("rpc_result", match[1]);
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("JSON-RPC envelope carries a result, not an error", function () {
+    const rpc = JSON.parse(bru.getVar("rpc_result"));
+    expect(rpc).to.have.property("result");
+    expect(rpc).to.not.have.property("error");
+  });
+
+  test("search_rules returns a list", function () {
+    const rpc = JSON.parse(bru.getVar("rpc_result"));
+    expect(rpc.result.structuredContent.result).to.be.an("array");
+    expect(rpc.result.isError).to.equal(false);
+  });
+}

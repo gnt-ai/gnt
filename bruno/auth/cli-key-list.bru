@@ -1,0 +1,26 @@
+meta {
+  name: cli-key list
+  type: http
+  seq: 4
+}
+
+get {
+  url: {{api_base_url}}/v1/settings/cli-keys
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cli_api_key}}
+}
+
+docs {
+  GET /v1/settings/cli-keys — get_current_org, so any org-scoped key
+  (cli or mcp) can list. Every personal CLI login credential minted for
+  this org, key_type == "cli" only.
+}
+
+assert {
+  res.status: eq 200
+  res.body: isArray
+}

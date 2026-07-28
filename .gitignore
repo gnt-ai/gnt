@@ -1,0 +1,53 @@
+# Node
+node_modules/
+.pnpm-store/
+.next/
+out/
+.turbo/
+dist/
+*.tgz
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Swift
+.build/
+*.app
+
+# Env
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# OS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Alembic
+apps/api/*.db
+.gstack/
+.vercel
+
+# Local agent/dev-tool config — not part of the product, shouldn't ship
+.hallmark/
+.mcp.json
+.env*
+# apps/store's bun:test-only override — blanks ZEROENTROPY_API_KEY so
+# `bun test` never inherits the real key from apps/store/.env (Global
+# Rule 6, no real paid provider calls from a test loop). No secret in it.
+!apps/store/.env.test

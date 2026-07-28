@@ -1,0 +1,122 @@
+# Self-host quickstart. Brings up everything gnt needs: Postgres (pgvector),
+# Redis, the store (rules storage + approval gate), the API (git-native
+# rules pipeline, MCP server), and the background worker (skill-pack
+# compiler, cron jobs). apps/web (the marketing/docs site) isn't part of
+# this — self-hosting gnt means running the API + MCP server, not the
+# public website.
+#
+# From the repo root: ./setup.sh -- copies both .env files, generates every
+# secret it safely can, asks for the three keys it can't (Anthropic, Groq,
+# ZeroEntropy), then runs the build/migrate/up sequence below itself.
+#
+# To do it by hand instead:
+#   cp apps/api/.env.example apps/api/.env
+#   cp apps/store/.env.example apps/store/.env
+# then fill in every value in both files, including replacing every
+# "change-me-..." placeholder with a real generated secret
+# (`openssl rand -hex 32`, or the Fernet/base64 command noted next to each
+# var) — the API refuses to start if any setting still holds its example
+# placeholder value. Connector credentials you don't plan to use (Slack,
+# Zendesk, Intercom, Notion, Linear) still need *some* non-empty string —
+# they're only exercised when you actually connect that integration.
+#
+# See README.md's "Self-host" section for the full walkthrough, and
+# apps/api/DEPLOY.md for the Postgres role split (gnt_app/gnt_cron/gnt_admin)
+# this compose file intentionally keeps simple: everything below connects
+# as the superuser for a quick local start. Follow DEPLOY.md's role/RLS
+# setup before putting this anywhere near real data.
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: gnt
+      POSTGRES_PASSWORD: gnt
+      POSTGRES_DB: gnt
+    ports:
+      - "5432:5432"
+    volumes:
+      - gnt-postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gnt"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  store:
+    build:
+      context: apps/store
+      dockerfile: Dockerfile
+    env_file:
+      - apps/store/.env
+    environment:
+      # Overrides for the compose network — everything else comes from
+      # apps/store/.env (copied from apps/store/.env.example).
+      GNT_STORE_BIND: 0.0.0.0
+      DATABASE_URL: postgres://gnt:gnt@postgres:5432/gnt
+      # gnt's own storage/retrieval — no third-party knowledge-store
+      # dependency. See README.md.
+      STORE_BACKEND: native
+    depends_on:
+      postgres:
+        condition: service_healthy
+    expose:
+      - "8787"
+
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    env_file:
+      - apps/api/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://gnt:gnt@postgres:5432/gnt
+      MIGRATION_DATABASE_URL: postgresql+asyncpg://gnt:gnt@postgres:5432/gnt
+      CRON_DATABASE_URL: postgresql+asyncpg://gnt:gnt@postgres:5432/gnt
+      ADMIN_DATABASE_URL: postgresql+asyncpg://gnt:gnt@postgres:5432/gnt
+      REDIS_URL: redis://redis:6379/0
+      STORE_API_URL: http://store:8787
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      store:
+        condition: service_started
+    ports:
+      - "8000:8000"
+
+  worker:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    env_file:
+      - apps/api/.env
+    environment:
+      PROCESS_TYPE: worker
+      DATABASE_URL: postgresql+asyncpg://gnt:gnt@postgres:5432/gnt
+      MIGRATION_DATABASE_URL: postgresql+asyncpg://gnt:gnt@postgres:5432/gnt
+      CRON_DATABASE_URL: postgresql+asyncpg://gnt:gnt@postgres:5432/gnt
+      ADMIN_DATABASE_URL: postgresql+asyncpg://gnt:gnt@postgres:5432/gnt
+      REDIS_URL: redis://redis:6379/0
+      STORE_API_URL: http://store:8787
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      store:
+        condition: service_started
+
+volumes:
+  gnt-postgres-data:

@@ -1,0 +1,28 @@
+meta {
+  name: health
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{store_base_url}}/health
+  body: none
+  auth: none
+}
+
+docs {
+  GET /health — apps/store's own internal HTTP API (src/http/server.ts).
+  Unauthenticated on purpose (a bare liveness check). This whole folder
+  is local-only: apps/store has no public domain in production (private-
+  network only, see apps/store/README.md's "Production bind shape" and
+  deploy.yml), so {{store_base_url}} only resolves from inside Railway's
+  private network or a local dev box running `bun run serve` — never
+  from wherever `bru run` itself executes against the production
+  environment. See bruno/README.md for how the CI smoke job scopes
+  around this.
+}
+
+assert {
+  res.status: eq 200
+  res.body.ok: eq true
+}

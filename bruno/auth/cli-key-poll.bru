@@ -1,0 +1,23 @@
+meta {
+  name: cli-key poll
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{api_base_url}}/v1/settings/cli-key/poll?login_id=00000000-0000-4000-8000-000000000000
+  body: none
+  auth: none
+}
+
+docs {
+  GET /v1/settings/cli-key/poll — deliberately unauthenticated (gnt login
+  has no session/key yet at this point). Polling a login_id nobody ever
+  minted a key for is the one deterministic, side-effect-free case this
+  collection can exercise without driving a real `gnt login` flow — the
+  contract under test is "not ready yet" (404), not "here is a key."
+}
+
+assert {
+  res.status: eq 404
+}

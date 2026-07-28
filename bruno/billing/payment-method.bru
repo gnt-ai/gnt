@@ -1,0 +1,27 @@
+meta {
+  name: payment method
+  type: http
+  seq: 2
+}
+
+get {
+  url: {{api_base_url}}/v1/billing/payment-method
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cli_api_key}}
+}
+
+docs {
+  GET /v1/billing/payment-method — require_admin. Returns null (200) for
+  an org with no default payment method yet, or 503 if Stripe isn't
+  configured on this deploy at all (BillingNotConfigured) — both are
+  legitimate, asserted outcomes; only a 4xx auth failure would be a real
+  problem here.
+}
+
+assert {
+  res.status: in [200, 503]
+}

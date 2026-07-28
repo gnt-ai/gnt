@@ -1,0 +1,34 @@
+# All entries below are false positives from gitleaks' generic entropy-based
+# rule, re-reviewed for public exposure at cutover time (not carried over
+# blindly from the private repo's own baseline, which was keyed to different
+# commit hashes anyway).
+#
+# .github/workflows/ci.yml SLACK_TOKEN_ENCRYPTION_KEY/GITHUB_PAT_ENCRYPTION_KEY/
+# ZENDESK_TOKEN_ENCRYPTION_KEY/INTERCOM_TOKEN_ENCRYPTION_KEY/
+# NOTION_TOKEN_ENCRYPTION_KEY/LINEAR_TOKEN_ENCRYPTION_KEY: throwaway Fernet
+# keys used only inside the ephemeral CI container. They have to be
+# syntactically valid Fernet keys (not arbitrary strings) because specific
+# tests call encrypt_token/decrypt_token for real against them -- but they
+# never protect anything real, are never used outside CI, and don't
+# correspond to any live service or account. See the comment directly above
+# each one in ci.yml.
+deec5d38232f2eccbf2d8ca171656a88aaecbfd6:.github/workflows/ci.yml:generic-api-key:183
+deec5d38232f2eccbf2d8ca171656a88aaecbfd6:.github/workflows/ci.yml:generic-api-key:188
+deec5d38232f2eccbf2d8ca171656a88aaecbfd6:.github/workflows/ci.yml:generic-api-key:196
+deec5d38232f2eccbf2d8ca171656a88aaecbfd6:.github/workflows/ci.yml:generic-api-key:197
+deec5d38232f2eccbf2d8ca171656a88aaecbfd6:.github/workflows/ci.yml:generic-api-key:208
+deec5d38232f2eccbf2d8ca171656a88aaecbfd6:.github/workflows/ci.yml:generic-api-key:211
+
+# apps/api/eval/rule_retrieval_at_scale/corpus/{tier_1k,tier_10k}/{queries.jsonl,rule_ids.json}:
+# synthetic benchmark fixtures for the rule-retrieval-at-scale eval --
+# machine-generated fake rule slugs like "hr-compensation_band-0009858" and
+# "operations-incident_ops-0009879", flagged purely on string entropy. No
+# real business data, no customer data, no credentials of any kind.
+deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_10k/queries.jsonl:generic-api-key:452
+deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_10k/queries.jsonl:generic-api-key:478
+deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_10k/queries.jsonl:generic-api-key:504
+deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_10k/queries.jsonl:generic-api-key:506
+deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_10k/rule_ids.json:generic-api-key:1
+deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_1k/queries.jsonl:generic-api-key:461
+deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_1k/queries.jsonl:generic-api-key:469
+deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_1k/rule_ids.json:generic-api-key:1

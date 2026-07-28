@@ -1,0 +1,62 @@
+meta {
+  name: get_skill_pack
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{mcp_url}}/
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+headers {
+  Accept: application/json, text/event-stream
+}
+
+body:json {
+  {
+    "jsonrpc": "2.0",
+    "id": 1,
+    "method": "tools/call",
+    "params": {
+      "name": "get_skill_pack",
+      "arguments": { "pack_id": "00000000-0000-0000-0000-000000000000" }
+    }
+  }
+}
+
+docs {
+  Same "well-formed but nonexistent id" pattern as mcp/get-rule.bru, same
+  reasoning (self-contained, no dependency on a real compile having run).
+}
+
+script:post-response {
+  const raw = res.getBody();
+  const text = typeof raw === "string" ? raw : JSON.stringify(raw);
+  const match = text.match(/data:\s*(\{[\s\S]*\})/);
+  if (match) {
+    bru.setVar("rpc_result", match[1]);
+  }
+}
+
+assert {
+  res.status: eq 200
+}
+
+tests {
+  test("JSON-RPC envelope carries a result", function () {
+    const rpc = JSON.parse(bru.getVar("rpc_result"));
+    expect(rpc).to.have.property("result");
+  });
+
+  test("unknown pack id returns the tool's own error shape", function () {
+    const rpc = JSON.parse(bru.getVar("rpc_result"));
+    const payload = JSON.parse(rpc.result.content[0].text);
+    expect(payload).to.have.property("error");
+  });
+}

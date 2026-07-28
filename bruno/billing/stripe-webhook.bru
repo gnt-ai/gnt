@@ -1,0 +1,43 @@
+meta {
+  name: stripe webhook (reference only, needs a real signature)
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{api_base_url}}/v1/billing/webhook
+  body: json
+  auth: none
+}
+
+headers {
+  stripe-signature: t=0,v1=placeholder-not-a-real-signature
+}
+
+body:json {
+  {
+    "id": "evt_bruno_reference",
+    "type": "customer.subscription.updated",
+    "data": { "object": {} }
+  }
+}
+
+docs {
+  REFERENCE ONLY — not a runnable contract test as written. Stripe
+  HMAC-signs every webhook body against STRIPE_WEBHOOK_SECRET
+  (verify_webhook_signature in gnt/billing.py); there's no way to
+  hand-craft a real, valid signature for an arbitrary body in a static
+  .bru file. The placeholder header above always fails verification, so
+  this documents the endpoint's shape (path, that it's unauthenticated
+  except for the signature, that it 400s on a missing/invalid signature)
+  without pretending to exercise the real event-handling logic.
+
+  To actually exercise this: use the Stripe CLI against the local/staging
+  webhook secret — `stripe trigger customer.subscription.updated`
+  forwarded with `stripe listen --forward-to
+  {{api_base_url}}/v1/billing/webhook` — not this request.
+}
+
+assert {
+  res.status: in [400, 503]
+}

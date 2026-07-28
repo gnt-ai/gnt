@@ -1,0 +1,81 @@
+{"family": "exact_name", "query": "refund 30 day window", "relevant": ["refund-30-day-window"]}
+{"family": "exact_name", "query": "enterprise annual contracts non-refundable", "relevant": ["refund-enterprise-annual-no-refund"]}
+{"family": "exact_name", "query": "commit messages conventional commit format", "relevant": ["eng-commit-message-format"]}
+{"family": "exact_name", "query": "pull requests need two approvals before merging", "relevant": ["eng-pr-review-required-approvals"]}
+{"family": "exact_name", "query": "never force push to a shared branch", "relevant": ["eng-no-force-push-shared-branches"]}
+{"family": "exact_name", "query": "SEV1 incidents page the on-call engineer immediately", "relevant": ["escalation-sev1-page-oncall-immediately"]}
+{"family": "exact_name", "query": "security incidents notify the CISO within one hour", "relevant": ["escalation-security-incident-notify-ciso"]}
+{"family": "exact_name", "query": "multi-factor authentication required for all admin accounts", "relevant": ["security-mfa-required-admin-accounts"]}
+{"family": "exact_name", "query": "offboarded employees have access revoked within 24 hours", "relevant": ["security-offboarding-revoke-access-24h"]}
+{"family": "exact_name", "query": "API keys rotate every 90 days", "relevant": ["security-api-key-rotation-90-days"]}
+{"family": "exact_name", "query": "first response to a support ticket within 4 business hours", "relevant": ["support-first-response-sla-4h"]}
+{"family": "exact_name", "query": "receipts are required for expenses over $25", "relevant": ["expense-receipt-required-over-25"]}
+{"family": "exact_name", "query": "personal vehicle mileage reimbursed at the IRS standard rate", "relevant": ["expense-mileage-reimbursement-rate"]}
+{"family": "paraphrase", "query": "can a customer still get their money back for a yearly enterprise plan they already paid for?", "relevant": ["refund-enterprise-annual-no-refund"]}
+{"family": "paraphrase", "query": "what happens if a customer says they're going to sue us?", "relevant": ["escalation-customer-threatens-legal"]}
+{"family": "paraphrase", "query": "do we need two thumbs up on a pull request before it lands on main?", "relevant": ["eng-pr-review-required-approvals"]}
+{"family": "paraphrase", "query": "how fast do we have to tell security leadership after a breach is confirmed?", "relevant": ["escalation-security-incident-notify-ciso"]}
+{"family": "paraphrase", "query": "is two-factor login mandatory for people with admin powers?", "relevant": ["security-mfa-required-admin-accounts"]}
+{"family": "paraphrase", "query": "how quickly should we cut off a departing employee's system access?", "relevant": ["security-offboarding-revoke-access-24h"]}
+{"family": "paraphrase", "query": "what's the turnaround time for the first reply on a brand new ticket?", "relevant": ["support-first-response-sla-4h"]}
+{"family": "paraphrase", "query": "do our biggest customers get faster support turnaround than everyone else?", "relevant": ["support-priority-tier-enterprise-1h"]}
+{"family": "paraphrase", "query": "small purchases under twenty five bucks, do I need to keep a receipt?", "relevant": ["expense-receipt-required-over-25"]}
+{"family": "paraphrase", "query": "flying overseas for work, do I need sign-off before I book it?", "relevant": ["expense-travel-preapproval-international"]}
+{"family": "paraphrase", "query": "someone keeps asking for their money back over and over, what do we do about it?", "relevant": ["escalation-repeated-refund-abuse-flag-fraud"]}
+{"family": "paraphrase", "query": "bringing on a new outside software vendor who'll touch our customer data, what's the process?", "relevant": ["security-third-party-vendor-review"]}
+{"family": "paraphrase", "query": "is it okay to push code straight over a branch other people are already working on?", "relevant": ["eng-no-force-push-shared-branches"]}
+{"family": "keyword_only", "query": "refund window", "relevant": ["refund-30-day-window"]}
+{"family": "keyword_only", "query": "force push", "relevant": ["eng-no-force-push-shared-branches"]}
+{"family": "keyword_only", "query": "MFA admin accounts", "relevant": ["security-mfa-required-admin-accounts"]}
+{"family": "keyword_only", "query": "commit message format", "relevant": ["eng-commit-message-format"]}
+{"family": "keyword_only", "query": "SEV1 oncall page", "relevant": ["escalation-sev1-page-oncall-immediately"]}
+{"family": "keyword_only", "query": "chargeback", "relevant": ["refund-chargeback-escalation"]}
+{"family": "keyword_only", "query": "receipt threshold", "relevant": ["expense-receipt-required-over-25"]}
+{"family": "keyword_only", "query": "vendor security review", "relevant": ["security-third-party-vendor-review"]}
+{"family": "keyword_only", "query": "meal per diem cap", "relevant": ["expense-meal-per-diem-cap"]}
+{"family": "keyword_only", "query": "reopen ticket window", "relevant": ["support-reopen-ticket-window-7-days"]}
+{"family": "keyword_only", "query": "feature flag rollout percentage", "relevant": ["eng-feature-flag-rollout-percentage"]}
+{"family": "keyword_only", "query": "API key rotation", "relevant": ["security-api-key-rotation-90-days"]}
+{"family": "keyword_only", "query": "churn risk CSM", "relevant": ["escalation-enterprise-churn-risk-notify-csm"]}
+{"family": "multi_rule", "query": "what are our refund policies?", "relevant": ["refund-30-day-window", "refund-enterprise-annual-no-refund", "refund-partial-prorated-downgrade", "refund-goodwill-credit-cap", "refund-trial-14-day-window"]}
+{"family": "multi_rule", "query": "what security requirements apply to employee and account access?", "relevant": ["security-mfa-required-admin-accounts", "security-offboarding-revoke-access-24h", "security-api-key-rotation-90-days"]}
+{"family": "multi_rule", "query": "what are our escalation policies for urgent situations?", "relevant": ["escalation-sev1-page-oncall-immediately", "escalation-security-incident-notify-ciso", "escalation-customer-threatens-legal"]}
+{"family": "multi_rule", "query": "what SLAs do we commit to for support response times?", "relevant": ["support-first-response-sla-4h", "support-priority-tier-enterprise-1h", "support-weekend-coverage-critical-only"]}
+{"family": "multi_rule", "query": "what are the rules around expense approval?", "relevant": ["expense-travel-preapproval-international", "expense-client-entertainment-approval", "expense-receipt-required-over-25"]}
+{"family": "multi_rule", "query": "what engineering practices do we enforce before merging code?", "relevant": ["eng-pr-review-required-approvals", "eng-no-force-push-shared-branches", "eng-secrets-never-in-env-committed"]}
+{"family": "multi_rule", "query": "how do refunds get escalated or flagged for review?", "relevant": ["refund-chargeback-escalation", "escalation-repeated-refund-abuse-flag-fraud"]}
+{"family": "multi_rule", "query": "what happens when an enterprise customer might be at risk of churning?", "relevant": ["escalation-enterprise-churn-risk-notify-csm", "support-priority-tier-enterprise-1h"]}
+{"family": "multi_rule", "query": "what travel expense rules apply to business trips?", "relevant": ["expense-travel-preapproval-international", "expense-meal-per-diem-cap", "expense-mileage-reimbursement-rate"]}
+{"family": "multi_rule", "query": "what security review steps apply before working with a new vendor or exporting data?", "relevant": ["security-third-party-vendor-review", "security-customer-data-export-approval"]}
+{"family": "multi_rule", "query": "what git conventions do engineers follow?", "relevant": ["eng-commit-message-format", "eng-no-force-push-shared-branches", "eng-pr-review-required-approvals"]}
+{"family": "multi_rule", "query": "how are support tickets routed and prioritized?", "relevant": ["support-priority-tier-enterprise-1h", "support-language-non-english-route-specialist", "support-weekend-coverage-critical-only"]}
+{"family": "exact_name", "query": "SOC 2 Type II certification required for vendors", "relevant": ["compliance-soc2-vendor-requirement"]}
+{"family": "exact_name", "query": "GDPR data subject access requests within 30 days", "relevant": ["compliance-gdpr-data-subject-request-30-days"]}
+{"family": "exact_name", "query": "CCPA data subject requests within 45 days", "relevant": ["compliance-ccpa-data-subject-request-45-days"]}
+{"family": "exact_name", "query": "data breach notification to regulators within 72 hours", "relevant": ["compliance-breach-notification-72-hours"]}
+{"family": "exact_name", "query": "PHI requires a signed Business Associate Agreement", "relevant": ["compliance-phi-baa-required"]}
+{"family": "exact_name", "query": "SEV2 incidents notify on-call within 30 minutes", "relevant": ["escalation-sev2-notify-oncall-30min"]}
+{"family": "exact_name", "query": "VIP accounts get a 15-minute first-response SLA", "relevant": ["support-sla-priority-vip-15min"]}
+{"family": "exact_name", "query": "free trial cancellations within 14 days get a full refund", "relevant": ["refund-trial-14-day-window"]}
+{"family": "paraphrase", "query": "if a European vendor doesn't have SOC 2, can they still pass our security review with a different certification?", "relevant": ["compliance-iso27001-eu-vendor-requirement"]}
+{"family": "paraphrase", "query": "how long do Californians have to wait for us to hand over their personal data after they ask for it?", "relevant": ["compliance-ccpa-data-subject-request-45-days"]}
+{"family": "paraphrase", "query": "someone in the EU wants a copy of everything we have on them, what's our deadline?", "relevant": ["compliance-gdpr-data-subject-request-30-days"]}
+{"family": "paraphrase", "query": "do we have to tell some government agency if we get hacked, and how fast?", "relevant": ["compliance-breach-notification-72-hours"]}
+{"family": "paraphrase", "query": "what's required before a vendor can touch medical or health records?", "relevant": ["compliance-phi-baa-required"]}
+{"family": "paraphrase", "query": "is there a faster response commitment for our biggest VIP clients beyond the usual enterprise tier?", "relevant": ["support-sla-priority-vip-15min"]}
+{"family": "paraphrase", "query": "if I upgrade straight from a trial without ever hitting the normal billing cycle, can I still get my money back within two weeks?", "relevant": ["refund-trial-14-day-window"]}
+{"family": "paraphrase", "query": "what's the deal for a degraded-but-not-fully-down incident, who do we notify and how fast?", "relevant": ["escalation-sev2-notify-oncall-30min"]}
+{"family": "keyword_only", "query": "SOC 2", "relevant": ["compliance-soc2-vendor-requirement"]}
+{"family": "keyword_only", "query": "ISO 27001", "relevant": ["compliance-iso27001-eu-vendor-requirement"]}
+{"family": "keyword_only", "query": "GDPR", "relevant": ["compliance-gdpr-data-subject-request-30-days"]}
+{"family": "keyword_only", "query": "CCPA", "relevant": ["compliance-ccpa-data-subject-request-45-days"]}
+{"family": "keyword_only", "query": "BAA", "relevant": ["compliance-phi-baa-required"]}
+{"family": "keyword_only", "query": "data retention", "relevant": ["compliance-data-retention-90-days"]}
+{"family": "keyword_only", "query": "SEV2", "relevant": ["escalation-sev2-notify-oncall-30min"]}
+{"family": "keyword_only", "query": "trial refund", "relevant": ["refund-trial-14-day-window"]}
+{"family": "multi_rule", "query": "what compliance rules apply to handling personal or sensitive customer data?", "relevant": ["compliance-gdpr-data-subject-request-30-days", "compliance-ccpa-data-subject-request-45-days", "compliance-pii-encryption-at-rest", "compliance-phi-baa-required", "compliance-data-retention-90-days", "security-data-residency-eu-storage"]}
+{"family": "multi_rule", "query": "what security certifications or reviews do vendors need before we sign a contract?", "relevant": ["compliance-soc2-vendor-requirement", "compliance-iso27001-eu-vendor-requirement", "security-third-party-vendor-review", "compliance-phi-baa-required"]}
+{"family": "multi_rule", "query": "what are all our incident and breach notification timelines?", "relevant": ["escalation-sev1-page-oncall-immediately", "escalation-sev2-notify-oncall-30min", "escalation-security-incident-notify-ciso", "compliance-breach-notification-72-hours"]}
+{"family": "multi_rule", "query": "what SLA commitments do different customer tiers get?", "relevant": ["support-first-response-sla-4h", "support-priority-tier-enterprise-1h", "support-sla-priority-vip-15min"]}
+{"family": "multi_rule", "query": "what are all our refund windows and how long do customers have?", "relevant": ["refund-30-day-window", "refund-trial-14-day-window", "refund-partial-prorated-downgrade"]}
+{"family": "multi_rule", "query": "what do engineers need to do before code goes live?", "relevant": ["eng-pr-review-required-approvals", "eng-ci-required-status-checks", "eng-staging-deploy-before-prod", "eng-feature-flag-rollout-percentage"]}

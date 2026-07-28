@@ -1,0 +1,28 @@
+meta {
+  name: mcp-key revoke
+  type: http
+  seq: 10
+}
+
+post {
+  url: {{api_base_url}}/v1/settings/mcp-keys/{{rotated_mcp_key_id}}/revoke
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+docs {
+  POST /v1/settings/mcp-keys/{key_id}/revoke — cleans up the throwaway
+  key mcp-key-rotate.bru produced, so this folder leaves no live extra
+  key behind in whatever org it runs against. Run after mcp-key-mint.bru
+  and mcp-key-rotate.bru in the same `bru run` for {{rotated_mcp_key_id}}
+  to be set.
+}
+
+assert {
+  res.status: eq 200
+  res.body.revoked_at: isString
+}

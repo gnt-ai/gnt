@@ -1,0 +1,41 @@
+meta {
+  name: generic webhook ingest
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{api_base_url}}/v1/webhooks/ingest/{{webhook_token}}
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "title": "bruno smoke test webhook rule",
+    "body": "Ingested exactly as if a Zapier/monday/HubSpot webhook posted this JSON body — same CreateRuleRequest shape POST /v1/rules takes.",
+    "confidence": 0.7,
+    "tags": ["bruno-smoke-test", "webhook-ingested"]
+  }
+}
+
+docs {
+  POST /v1/webhooks/ingest/{token} — routers/webhooks.py. The token is
+  the credential (URL path segment, not a bearer header — this is the
+  one endpoint gnt's public docs describe generically, "any tool or
+  system that can send an HTTP POST," never naming a specific
+  third-party automation platform, see security.yml's public-copy-scrub
+  job). No session/API-key auth at all; {{webhook_token}} alone
+  authenticates and resolves the org.
+
+  Turns the POST into a draft rule through the exact same
+  create_draft_rule path POST /v1/rules uses, with one difference:
+  apply_privacy_gate=True — this is the one call site that runs the
+  privacy gate, since a webhook-forwarded value was never something a
+  human on this device chose to expose directly.
+}
+
+assert {
+  res.status: eq 201
+  res.body.status: eq draft
+}

@@ -1,0 +1,13 @@
+# Large tiers are fully regenerable (deterministic, seeded) from the scripts
+# in minutes — corpus.jsonl (tens/hundreds of MB) and rule_emb.npy (150MB at
+# 100K, ~1.5GB at 1M) are too big to commit. The committed source of truth is
+# generate_corpus.py + the seed; results/ holds the measured metrics.
+corpus/tier_100k/
+corpus/tier_1m/
+
+# committed for the small tiers, ignored above that
+corpus/**/rule_emb.npy
+!corpus/tier_1k/rule_emb.npy
+!corpus/tier_10k/rule_emb.npy
+
+__pycache__/

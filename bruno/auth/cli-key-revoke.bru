@@ -1,0 +1,29 @@
+meta {
+  name: cli-key revoke
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{api_base_url}}/v1/settings/cli-keys/00000000-0000-4000-8000-000000000000/revoke
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cli_api_key}}
+}
+
+docs {
+  POST /v1/settings/cli-keys/{key_id}/revoke — get_current_org, any
+  org-scoped key can revoke. Targets a deliberately nonexistent key id so
+  this collection never revokes a real, in-use credential on its own —
+  the contract under test is "unknown key id 404s cleanly," which is a
+  real, meaningful assertion about this endpoint's tenant-scoping
+  (key.org_id != org.org_id also 404s the same way, never a 403 that
+  would confirm the id exists in another org).
+}
+
+assert {
+  res.status: eq 404
+}

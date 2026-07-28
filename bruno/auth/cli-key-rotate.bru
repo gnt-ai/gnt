@@ -1,0 +1,31 @@
+meta {
+  name: cli-key rotate (session only)
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{api_base_url}}/v1/settings/cli-keys/00000000-0000-4000-8000-000000000000/rotate
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{session_jwt}}
+}
+
+docs {
+  POST /v1/settings/cli-keys/{key_id}/rotate — enforce_cli_key_rate_limit
+  wraps require_session (rotation mints a new admin-capable key, same
+  self-escalation concern as minting outright), so this needs a real
+  session JWT, same as cli-key-mint.bru. Targets a deliberately
+  nonexistent key id, same reasoning as cli-key-revoke.bru — with a real
+  {{session_jwt}} this 404s cleanly; the default blank one never reaches
+  require_session's own check at all (get_current_org's JWT decode fails
+  first, on the empty string), so it 401s instead — same behavior as
+  cli-key-mint.bru's default outcome.
+}
+
+assert {
+  res.status: in [401, 404]
+}

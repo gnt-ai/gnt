@@ -1,0 +1,25 @@
+meta {
+  name: invoice history
+  type: http
+  seq: 3
+}
+
+get {
+  url: {{api_base_url}}/v1/billing/invoices
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cli_api_key}}
+}
+
+docs {
+  GET /v1/billing/invoices — require_admin. [] for an org with no
+  stripe_customer_id yet, or 503 if Stripe isn't configured at all — same
+  accepted-outcomes reasoning as billing/payment-method.bru.
+}
+
+assert {
+  res.status: in [200, 503]
+}

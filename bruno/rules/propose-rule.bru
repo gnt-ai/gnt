@@ -1,0 +1,32 @@
+meta {
+  name: propose rule (opens a PR)
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{api_base_url}}/v1/rules/{{last_rule_id}}/propose
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cli_api_key}}
+}
+
+docs {
+  POST /v1/rules/{rule_id}/propose — require_entitled_admin. Renders the
+  rule to markdown and opens a real PR against the org's connected
+  GitHub repo (in_review -> pending_merge). A test org with no GitHub
+  connection (the ordinary case for this collection's seeded test org)
+  gets a 409 "no GitHub repo connected" instead — asserted as an accepted
+  outcome below, since exercising the real PR-opening path needs a live
+  GitHub App/PAT connection this collection doesn't provision. Either way
+  the rule's status is untouched on failure (the connection check runs
+  before any mutation), so submit-rule.bru's in_review state survives
+  into reject-rule.bru next.
+}
+
+assert {
+  res.status: in [200, 409]
+}

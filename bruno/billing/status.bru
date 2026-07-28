@@ -1,0 +1,28 @@
+meta {
+  name: billing status
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{api_base_url}}/v1/billing/status
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cli_api_key}}
+}
+
+docs {
+  GET /v1/billing/status — require_admin. Provisions the org row
+  (ensure_org) if it doesn't exist yet, so this is safe to run first
+  against a brand new test org.
+}
+
+assert {
+  res.status: eq 200
+  res.body.entitled: isBoolean
+  res.body.plan_tier: isString
+  res.body.monthly_actions_cap: isNumber
+}

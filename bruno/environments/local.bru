@@ -1,0 +1,11 @@
+vars {
+  api_base_url: http://localhost:8000
+  mcp_url: {{api_base_url}}/mcp
+  store_base_url: http://127.0.0.1:8787
+  store_test_org_id: bruno-smoke-org
+  cli_api_key: {{process.env.GNT_BRUNO_CLI_KEY}}
+  mcp_api_key: {{process.env.GNT_BRUNO_MCP_KEY}}
+  webhook_token: {{process.env.GNT_BRUNO_WEBHOOK_TOKEN}}
+  store_internal_secret: {{process.env.GNT_BRUNO_STORE_SECRET}}
+  session_jwt: {{process.env.GNT_BRUNO_SESSION_JWT}}
+}

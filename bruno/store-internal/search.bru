@@ -1,0 +1,36 @@
+meta {
+  name: search
+  type: http
+  seq: 6
+}
+
+post {
+  url: {{store_base_url}}/search
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{store_internal_secret}}
+}
+
+body:json {
+  {
+    "query": "bruno smoke test",
+    "orgId": "{{store_test_org_id}}",
+    "status": "approved"
+  }
+}
+
+docs {
+  POST /search — status is locked to "approved" by the schema itself
+  (z.literal("approved")); apps/api's search_rules MCP tool is the one
+  real caller. The rule put-rule.bru wrote is still "draft", so this is
+  expected to come back empty — a real, meaningful assertion (approved-
+  only filtering actually holds), not just "did it 200."
+}
+
+assert {
+  res.status: eq 200
+  res.body: isArray
+}

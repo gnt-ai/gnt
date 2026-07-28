@@ -1,0 +1,39 @@
+meta {
+  name: mcp-key mint
+  type: http
+  seq: 7
+}
+
+post {
+  url: {{api_base_url}}/v1/settings/mcp-keys
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{mcp_api_key}}
+}
+
+body:json {
+  {
+    "name": "bruno smoke test mcp key (throwaway)"
+  }
+}
+
+docs {
+  POST /v1/settings/mcp-keys — routers/settings.py's create_mcp_key.
+  get_current_org, not require_session: unlike a cli-key, an existing API
+  key IS allowed to mint another mcp-key (never admin-capable regardless
+  of caller). Mints a throwaway key this folder rotates then revokes
+  below — never touches {{mcp_api_key}} itself.
+}
+
+script:post-response {
+  bru.setVar("minted_mcp_key_id", res.getBody().id);
+}
+
+assert {
+  res.status: eq 201
+  res.body.key: isString
+  res.body.key_type: eq mcp
+}

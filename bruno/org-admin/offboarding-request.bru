@@ -1,0 +1,46 @@
+meta {
+  name: offboarding request (step 1 of 2 — export + confirmation token)
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{api_base_url}}/v1/org/offboarding/request
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{session_jwt}}
+}
+
+docs {
+  SENSITIVE — TEST ORG ONLY, and step 1 of a two-step irreversible
+  deletion flow (see offboarding-confirm.bru). require_admin_session, not
+  just require_admin: an admin-snapshotting API key is deliberately not
+  enough here — only a live Better Auth session can start this (see
+  auth/better_auth.py's require_admin_session docstring). {{session_jwt}}
+  is blank by default in this collection, same reasoning as
+  auth/cli-key-mint.bru, so this 403s harmlessly without one.
+
+  On success this returns a FULL export of the org's rules, audit
+  history, gaps, findings, ROI counters, and connection metadata, plus a
+  one-time confirmation_token good for 15 minutes. Calling it again
+  before confirming just re-exports and invalidates the previous token —
+  there's no limit on re-requesting, only on confirming.
+
+  With the default blank {{session_jwt}} this 401s (get_current_org's JWT
+  decode fails on the empty string before require_admin_session's own
+  auth_kind check is ever reached) — the same safe default every
+  session-only request in this collection falls back to.
+}
+
+script:post-response {
+  if (res.getStatus() === 200) {
+    bru.setVar("offboarding_confirmation_token", res.getBody().confirmation_token);
+  }
+}
+
+assert {
+  res.status: in [200, 401]
+}

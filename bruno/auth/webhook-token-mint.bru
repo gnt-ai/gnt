@@ -1,0 +1,40 @@
+meta {
+  name: webhook-token mint
+  type: http
+  seq: 11
+}
+
+post {
+  url: {{api_base_url}}/v1/settings/webhook-tokens
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cli_api_key}}
+}
+
+body:json {
+  {
+    "name": "bruno smoke test webhook token (throwaway)"
+  }
+}
+
+docs {
+  POST /v1/settings/webhook-tokens — routers/settings.py's
+  create_webhook_token. require_admin (an admin-flagged key), not
+  require_session — this token can only ever create draft rules, so
+  there's no self-escalation path to close. Response includes a
+  ready-to-paste ingest_url (the whole plaintext token embedded in the
+  URL, since that's what a webhook config field wants).
+}
+
+script:post-response {
+  bru.setVar("minted_webhook_token_id", res.getBody().id);
+}
+
+assert {
+  res.status: eq 201
+  res.body.token: isString
+  res.body.ingest_url: contains /v1/webhooks/ingest/
+}

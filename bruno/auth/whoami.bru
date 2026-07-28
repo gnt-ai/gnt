@@ -1,0 +1,27 @@
+meta {
+  name: whoami
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{api_base_url}}/v1/whoami
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{cli_api_key}}
+}
+
+docs {
+  GET /v1/whoami — routers/settings.py. require_admin, so this needs a
+  key with is_admin=true (a cli-type key, or any key minted via
+  create_cli_key). Lets a CLI/tool confirm which org a key resolves to.
+}
+
+assert {
+  res.status: eq 200
+  res.body.org_id: isString
+  res.body.role: eq admin
+}
