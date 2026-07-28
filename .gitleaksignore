@@ -12,23 +12,23 @@
 # never protect anything real, are never used outside CI, and don't
 # correspond to any live service or account. See the comment directly above
 # each one in ci.yml.
-deec5d38232f2eccbf2d8ca171656a88aaecbfd6:.github/workflows/ci.yml:generic-api-key:183
-deec5d38232f2eccbf2d8ca171656a88aaecbfd6:.github/workflows/ci.yml:generic-api-key:188
-deec5d38232f2eccbf2d8ca171656a88aaecbfd6:.github/workflows/ci.yml:generic-api-key:196
-deec5d38232f2eccbf2d8ca171656a88aaecbfd6:.github/workflows/ci.yml:generic-api-key:197
-deec5d38232f2eccbf2d8ca171656a88aaecbfd6:.github/workflows/ci.yml:generic-api-key:208
-deec5d38232f2eccbf2d8ca171656a88aaecbfd6:.github/workflows/ci.yml:generic-api-key:211
+743fdd76a32bc97ddb0203874c9d98fe12b2fe65:.github/workflows/ci.yml:generic-api-key:173
+743fdd76a32bc97ddb0203874c9d98fe12b2fe65:.github/workflows/ci.yml:generic-api-key:178
+743fdd76a32bc97ddb0203874c9d98fe12b2fe65:.github/workflows/ci.yml:generic-api-key:186
+743fdd76a32bc97ddb0203874c9d98fe12b2fe65:.github/workflows/ci.yml:generic-api-key:187
+743fdd76a32bc97ddb0203874c9d98fe12b2fe65:.github/workflows/ci.yml:generic-api-key:198
+743fdd76a32bc97ddb0203874c9d98fe12b2fe65:.github/workflows/ci.yml:generic-api-key:201
 
 # apps/api/eval/rule_retrieval_at_scale/corpus/{tier_1k,tier_10k}/{queries.jsonl,rule_ids.json}:
 # synthetic benchmark fixtures for the rule-retrieval-at-scale eval --
 # machine-generated fake rule slugs like "hr-compensation_band-0009858" and
 # "operations-incident_ops-0009879", flagged purely on string entropy. No
 # real business data, no customer data, no credentials of any kind.
-deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_10k/queries.jsonl:generic-api-key:452
-deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_10k/queries.jsonl:generic-api-key:478
-deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_10k/queries.jsonl:generic-api-key:504
-deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_10k/queries.jsonl:generic-api-key:506
-deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_10k/rule_ids.json:generic-api-key:1
-deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_1k/queries.jsonl:generic-api-key:461
-deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_1k/queries.jsonl:generic-api-key:469
-deec5d38232f2eccbf2d8ca171656a88aaecbfd6:apps/api/eval/rule_retrieval_at_scale/corpus/tier_1k/rule_ids.json:generic-api-key:1
+743fdd76a32bc97ddb0203874c9d98fe12b2fe65:apps/api/eval/rule_retrieval_at_scale/corpus/tier_10k/queries.jsonl:generic-api-key:452
+743fdd76a32bc97ddb0203874c9d98fe12b2fe65:apps/api/eval/rule_retrieval_at_scale/corpus/tier_10k/queries.jsonl:generic-api-key:478
+743fdd76a32bc97ddb0203874c9d98fe12b2fe65:apps/api/eval/rule_retrieval_at_scale/corpus/tier_10k/queries.jsonl:generic-api-key:504
+743fdd76a32bc97ddb0203874c9d98fe12b2fe65:apps/api/eval/rule_retrieval_at_scale/corpus/tier_10k/queries.jsonl:generic-api-key:506
+743fdd76a32bc97ddb0203874c9d98fe12b2fe65:apps/api/eval/rule_retrieval_at_scale/corpus/tier_10k/rule_ids.json:generic-api-key:1
+743fdd76a32bc97ddb0203874c9d98fe12b2fe65:apps/api/eval/rule_retrieval_at_scale/corpus/tier_1k/queries.jsonl:generic-api-key:461
+743fdd76a32bc97ddb0203874c9d98fe12b2fe65:apps/api/eval/rule_retrieval_at_scale/corpus/tier_1k/queries.jsonl:generic-api-key:469
+743fdd76a32bc97ddb0203874c9d98fe12b2fe65:apps/api/eval/rule_retrieval_at_scale/corpus/tier_1k/rule_ids.json:generic-api-key:1
