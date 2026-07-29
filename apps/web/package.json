@@ -11,14 +11,14 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "better-auth": "^1.6.23",
-    "lucide-react": "^1.23.0",
-    "next": "16.2.11",
+    "better-auth": "^1.6.25",
+    "lucide-react": "^1.27.0",
+    "next": "16.2.12",
     "pg": "^8.22.0",
     "qrcode": "^1.5.4",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "resend": "^6.17.2"
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "resend": "^6.18.1"
   },
   "devDependencies": {
     "@better-auth/cli": "1.5.0-beta.13",
@@ -29,7 +29,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "16.2.11",
+    "eslint-config-next": "16.2.12",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.10"

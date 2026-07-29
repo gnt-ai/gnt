@@ -8,7 +8,7 @@
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "turbo": "^2.3.0"
+    "turbo": "^2.10.7"
   },
   "packageManager": "pnpm@11.10.0",
   "engines": {
