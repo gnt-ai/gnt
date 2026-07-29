@@ -1,4 +1,4 @@
-"""Intercom REST API adapter (connector sprint T4.3). Reads three kinds of
+"""Intercom REST API adapter. Reads three kinds of
 prose: saved-reply (macro) text, help-center article bodies, and internal
 notes on conversations. Deliberately never reads a contact RECORD itself
 (email, phone, name, external_id, custom_attributes, location, companies,

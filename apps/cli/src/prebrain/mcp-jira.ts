@@ -1,8 +1,8 @@
-// Live-Jira adapter (connector sprint T2.4): reads issue summaries,
+// Live-Jira adapter: reads issue summaries,
 // descriptions, and comments from customer-chosen projects through
-// Atlassian's own official MCP server. Built after mcp-linear.ts per the
-// plan ("same shape as Linear; allowlist: projects. Build after Linear and
-// reuse its comment-thread chunker") -- see the "Chunking" section below
+// Atlassian's own official MCP server. Built after mcp-linear.ts, on the
+// assumption it would need the same shape (allowlist: projects) and could
+// reuse its comment-thread chunker -- see the "Chunking" section below
 // for whether that reuse actually held once Jira's real tool shape was
 // checked, and the "Content format" section for the one place it didn't.
 //
@@ -116,7 +116,7 @@
 // list" bias as every other adapter's board/team/project ids. What the
 // plan's text didn't anticipate is that Atlassian's MCP server is
 // multi-site: unlike Linear (one API key, one implicit workspace) or
-// Sentry (an org slug plus project slugs, already accounted for in T2.5),
+// Sentry (an org slug plus project slugs, which its own adapter already handles),
 // every Jira-specific tool call on this server needs to know *which*
 // Atlassian site (cloudId) to route to, and there is no tool this adapter
 // can safely call to auto-discover that -- getAccessibleAtlassianResources

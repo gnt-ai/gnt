@@ -24,9 +24,8 @@ function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
   return fetch(url, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
-// fix-plan-v2 item 9's stopgap for the re-validation prompt the plan text
-// puts in a weekly digest — that digest doesn't exist yet (item 10, held
-// until after this and item 13 land), so this is the CLI-visibility
+// A stopgap for the re-validation prompt that ideally belongs in a weekly
+// digest — that digest doesn't exist yet, so this is the CLI-visibility
 // substitute for now. There's no dedicated "mark revalidated" endpoint —
 // confirming a rule is still true or refreshing it goes through the
 // existing edit/deprecate flow, same as any other rule change.

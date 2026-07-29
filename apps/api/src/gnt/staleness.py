@@ -1,4 +1,4 @@
-"""Rule staleness/decay estimate (fix-plan-v2 item 9).
+"""Rule staleness/decay estimate.
 
 Resurrects the decay math from the retired confidence-decay pipeline —
 apps/api/src/gnt/decay.py and workers/tasks_cron.py, deleted in commit
@@ -16,7 +16,7 @@ There's nothing left to bucket a per-type rate by, so this collapses to
 one flat rate: the old table's own FALLBACK_LAMBDA, the rate it already
 used for anything outside its six hardcoded types. Not a new number.
 
-Everything this module produces is an estimate (fix-plan-v2 item 18) —
+Everything this module produces is an estimate —
 decay_lambda was "admitted first-pass guesses" even before this rewrite,
 and one flat rate is no more calibrated than six were. Every caller that
 surfaces these numbers (MCP tool responses, the REST rule serializer,
@@ -37,9 +37,9 @@ from gnt.db.rls import scope_to_org
 # number. See module docstring for why there's no per-type table anymore.
 DECAY_LAMBDA = 0.01
 
-# "Six weeks" is the plan text's own example of what a stale rule looks
-# like ("a page six weeks old gets flagged stale"). A rule whose age
-# crosses this is flagged as due for re-validation.
+# Six weeks: a page that hasn't been re-validated in that long is treated
+# as stale. A rule whose age crosses this is flagged as due for
+# re-validation.
 STALE_THRESHOLD_DAYS = 42.0
 
 
@@ -93,8 +93,8 @@ async def list_due_for_revalidation(
 ) -> dict[str, Any]:
     """Rules the last nightly compute_rule_staleness run flagged as
     crossing the staleness threshold for this org, oldest first. Backs
-    `gnt stale` — the stopgap this ships instead of item 10's weekly
-    digest (which doesn't exist yet; see workers/tasks_staleness.py)."""
+    `gnt stale` — the stopgap this ships instead of a weekly digest
+    (which doesn't exist yet; see workers/tasks_staleness.py)."""
     await scope_to_org(session, org_id)
     stale_filter = (RuleStaleness.org_id == org_id, RuleStaleness.is_stale.is_(True))
     count = (

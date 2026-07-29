@@ -84,8 +84,8 @@ async def enforce_cli_key_rate_limit(org: OrgContext = Depends(require_session))
 
 
 async def enforce_mcp_key_rate_limit(org: OrgContext = Depends(get_current_org)) -> OrgContext:
-    """create_mcp_key had no rate limit at all (v3 fix-plan Tier 0 audit
-    finding) — get_current_org, not require_session, matching create_mcp_key's
+    """create_mcp_key had no rate limit at all until a security audit
+    flagged it as a high-priority gap — get_current_org, not require_session, matching create_mcp_key's
     own original dependency exactly: unlike cli-key minting, an existing API
     key IS allowed to mint another MCP key (create_mcp_key never sets
     is_admin=True regardless of caller, so there's no self-escalation path

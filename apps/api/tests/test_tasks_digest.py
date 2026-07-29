@@ -1,5 +1,5 @@
-"""send_weekly_digest_for_org / send_all_weekly_digests (fix-plan-v2 item
-10's weekly digest cron). Mirrors test_tasks_staleness.py/
+"""send_weekly_digest_for_org / send_all_weekly_digests (the weekly
+digest cron entrypoints). Mirrors test_tasks_staleness.py/
 test_tasks_contradictions.py's split: the real per-org entrypoints are
 exercised against a test Postgres, with the two genuinely external
 dependencies mocked at their call boundary — gnt.org_contacts.

@@ -1,4 +1,4 @@
-// CI gate for fix-plan-v3 1.4 -- privacy-gate quality regression.
+// CI gate for privacy-gate quality regression.
 //
 // Runs every case in eval/privacy-gate/corpus.jsonl through the real
 // applyPrivacyGate (no fixtures, no replay -- the gate is 100% local, so
@@ -90,14 +90,14 @@ test("privacy gate quality meets the recorded baseline", async () => {
   expect(failures, "privacy-gate quality regressed below the recorded baseline:\n" + failures.join("\n")).toHaveLength(0);
 });
 
-// The task's own honesty line: layer 3 is a documented no-op today, and
-// this corpus's contextual-identifier cases have no name, no pattern --
+// Layer 3 is a documented no-op today, and this corpus's
+// contextual-identifier cases have no name, no pattern --
 // nothing layers 1/2/2b could catch even by accident. This assertion
-// exists so the moment fix-plan-v3 2.3 lands a real contextual layer,
+// exists so the moment a real contextual layer lands,
 // this test breaks loudly (rather than the corpus silently going stale)
 // and someone has to come update this test and the recorded baseline
 // together, which is exactly the point where "no-op" stops being true.
-test("layer 3 (contextual) currently catches none of the contextual-identifier corpus -- known, measured gap, see fix-plan-v3 2.3", async () => {
+test("layer 3 (contextual) currently catches none of the contextual-identifier corpus -- known, measured gap until a real contextual layer lands", async () => {
   const cases = loadCorpusFile().filter((c) => c.category === "contextual");
   expect(cases.length).toBeGreaterThan(0);
 

@@ -1,4 +1,4 @@
-// `gnt connect datadog` (connector sprint T2.6): stores a Datadog API key +
+// `gnt connect datadog`: stores a Datadog API key +
 // application key pair, and an optional site, locally for `gnt prebrain
 // --datadog-notebooks` to use. Not an MCP-in connector -- see
 // ../prebrain/datadog-notebooks.ts's own doc comment for why -- so this

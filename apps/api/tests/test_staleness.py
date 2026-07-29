@@ -1,5 +1,5 @@
-"""gnt.staleness (fix-plan-v2 item 9 — staleness surfaced at serving
-time). Covers: the decay math itself (age_days/freshness_score/is_stale),
+"""gnt.staleness (staleness surfaced at serving time). Covers: the decay
+math itself (age_days/freshness_score/is_stale),
 rule_freshness's None-for-never-approved and lastValidatedAt-over-
 approvedAt basis rules, and list_due_for_revalidation's RLS-scoped read
 of the rule_staleness table `gnt stale` / GET /v1/rules/staleness/due

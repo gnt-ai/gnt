@@ -1,9 +1,9 @@
-# Privacy-gate quality eval (fix-plan-v3 1.4)
+# Privacy-gate quality eval
 
 A corpus of tricky cases against `applyPrivacyGate` (`apps/cli/src/privacy-gate/`)
 with measured recall per category and per layer. This covers the
-test-corpus/measured-recall half of 1.4 only -- whether to open-source the
-privacy-gate module is a separate, deferred decision and isn't touched
+test-corpus/measured-recall half only -- whether to open-source the
+privacy-gate module is a separate decision and isn't touched
 here.
 
 Modeled on this repo's other quality eval
@@ -18,8 +18,7 @@ one just runs for real, every time, in CI -- see "CI wiring" below.
 
 ## Layout
 
-- `corpus.jsonl` -- 64 cases across three categories fix-plan-v3 1.4 names
-  explicitly:
+- `corpus.jsonl` -- 64 cases across three categories:
   - `secrets_in_prose` (22 cases) -- layer 1's detectors (keys, cards,
     SSNs, emails, phones, IPs) tested against secrets sitting inside
     realistic prose (a Slack message, a support ticket, a code comment, a
@@ -131,7 +130,7 @@ promising.
 Every single case in the `contextual` category is missed, on purpose,
 because `runContextualLayer` is a documented no-op stub today (see
 `layer3-contextual.ts`) -- it returns its input unchanged and reports zero
-hits until fix-plan-v3 2.3 wires up a real local-model judgment pass.
+hits until a real local-model judgment pass gets wired up.
 These 18 cases ("the person who filed the original ticket", "the
 customer's usual delivery address", "whoever handled the case last time")
 have no name and no pattern for layers 1/2/2b to catch even by accident --
@@ -139,8 +138,8 @@ that's deliberate, so this category measures exactly the gap layer 3 is
 supposed to close, with nothing else muddying the number.
 
 `test/privacy-gate/eval-gate.test.ts` asserts this recall is exactly 0
-today. That's not a typo: the assertion exists so the day fix-plan-v3 2.3
-lands a real layer 3, this specific test fails loudly and forces whoever
+today. That's not a typo: the assertion exists so the day a real layer 3
+lands, this specific test fails loudly and forces whoever
 ships it to come update this README and `baseline.json` together, instead
 of the corpus quietly going stale while the module gets better underneath
 it.

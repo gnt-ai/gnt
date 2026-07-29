@@ -1,4 +1,4 @@
-"""Zendesk connector (connector sprint T4.2) — a continuous server-side
+"""Zendesk connector — a continuous server-side
 sync, not a CLI-local one-shot (founder decision 2026-07-18; see
 workers/tasks_zendesk.py's module docstring). Three tables:
 
@@ -11,7 +11,7 @@ inbound webhook — this is a pull-based sync, always read by org_id inside
 an already-scoped session — so the standard tenant_isolation policy
 applies here same as contradiction_findings/roi_counters/llm_usage.
 
-zendesk_sync_states — one row per org, upserted every sync run (fix-plan
+zendesk_sync_states — one row per org, upserted every sync run (a
 sync-status health surface). Also RLS-eligible for the same reason.
 
 zendesk_processed_items — dedup log for the nightly sync, same shape and

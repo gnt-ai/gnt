@@ -15,7 +15,7 @@ type OnboardingStatus = {
   reached_five_rules_milestone: boolean;
 };
 
-// fix-plan-v3 2.6's success metric -- founder-set N (5), matching
+// Founder-set success-metric threshold (5), matching
 // gnt/onboarding_metrics.RULES_APPROVED_MILESTONE server-side. Kept as its
 // own constant here rather than only reading reached_five_rules_milestone
 // off the response, since the live count (below) needs the number too, not

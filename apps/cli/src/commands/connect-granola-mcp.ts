@@ -1,4 +1,4 @@
-// `gnt connect granola-mcp` (connector sprint T2.1): stores a Granola MCP
+// `gnt connect granola-mcp`: stores a Granola MCP
 // connection locally for `gnt prebrain --mcp-granola` to use. Shaped like
 // connect-notion-mcp.ts/connect-monday-mcp.ts (a local-only write, no gnt
 // API involvement -- see connect-notion-mcp.ts's own doc comment for why),

@@ -1,4 +1,4 @@
-// Live-GitLab threads client (connector sprint T4.1): reads merge request
+// Live-GitLab threads client: reads merge request
 // discussion threads and issue discussion threads on a customer-chosen
 // project as decision-prose candidates. Direct against GitLab's own REST
 // API, not an MCP adapter -- see "Why this isn't an MCP-in connector" below

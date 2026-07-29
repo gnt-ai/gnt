@@ -1,6 +1,7 @@
-"""llm_usage / llm_usage_global — fix-plan-v3 Tier 0 prerequisite 0.1
-("C9a"): per-org monthly LLM spend quota plus a global aggregate circuit
-breaker. See gnt.llm_quota for the read/enforce/record helpers and the
+"""llm_usage / llm_usage_global — a per-org monthly LLM spend quota plus a
+global aggregate circuit breaker, needed before any feature could make
+uncapped, unbudgeted LLM calls on the org's behalf. See gnt.llm_quota for
+the read/enforce/record helpers and the
 three call sites it gates: action_check.py's judge_action,
 pipeline/rule_conflict.py's judge_conflict (propose_rule and the nightly
 contradiction sweep both call it).

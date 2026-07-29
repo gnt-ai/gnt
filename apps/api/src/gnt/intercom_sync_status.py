@@ -1,5 +1,5 @@
-"""Read/write helpers for the two Intercom-sync-owned tables (connector
-sprint T4.3, workers/tasks_intercom.py):
+"""Read/write helpers for the two Intercom-sync-owned tables
+(workers/tasks_intercom.py):
 
 intercom_processed_items — dedup log gating which saved-reply/internal-
 note/article content gets sent to the content_extraction_model at all.

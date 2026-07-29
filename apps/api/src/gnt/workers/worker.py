@@ -53,7 +53,7 @@ class WorkerSettings:
         cron(send_all_weekly_digests, weekday="mon", hour=8, minute=0),
     ]
     redis_settings = RedisSettings.from_dsn(get_settings().redis_url)
-    # v3 fix-plan Tier 0 (C9b) — worker concurrency cap. Previously unset
-    # (arq's own library default of 10 was the only thing bounding this).
-    # See worker_max_concurrent_jobs's own comment in config.py for why 8.
+    # Worker concurrency cap. Previously unset (arq's own library default
+    # of 10 was the only thing bounding this). See worker_max_concurrent_jobs's
+    # own comment in config.py for why 8.
     max_jobs = get_settings().worker_max_concurrent_jobs

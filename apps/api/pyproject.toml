@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "AI GNT backend — git-native rules pipeline, skill compiler, MCP endpoint"
 readme = "README.md"
 authors = [
-    { name = "lukaadzic", email = "lukaadz@wharton.upenn.edu" }
+    { name = "lukaadzic", email = "maintainers@gntai.dev" }
 ]
 requires-python = ">=3.12"
 dependencies = [

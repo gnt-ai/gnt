@@ -12,7 +12,7 @@ from gnt.db.session import get_session
 from gnt.rate_limit import check_rate_limit, enforce_webhook_ingest_ip_rate_limit
 from gnt.routers.rules import CreateRuleRequest, _bare_id, create_draft_rule
 
-# fix-plan-v2 item 14 — generic webhook ingestion. Separate router from
+# Generic webhook ingestion. Separate router from
 # routers/rules.py on purpose, same reasoning as routers/github_webhook.py's
 # own separate-router comment: no session/API-key auth (get_current_org) at
 # all. The credential here is a per-org token embedded in the URL PATH,
@@ -65,9 +65,9 @@ async def ingest_webhook(
     row.last_used_at = datetime.now(timezone.utc)
     await session.commit()
 
-    # fix-plan-v3 3.0 — the ONE call site that sets apply_privacy_gate=True.
-    # This is the ambient-third-party-ingestion path this task exists for
-    # (see gnt.pipeline.privacy_gate's module docstring): whatever a
+    # The ONE call site that sets apply_privacy_gate=True.
+    # This is the ambient-third-party-ingestion path the privacy gate
+    # exists for (see gnt.pipeline.privacy_gate's module docstring): whatever a
     # Zapier/monday/HubSpot recipe forwards here was never something a
     # human on this device chose to expose to gnt, unlike a direct
     # POST /v1/rules call. create_draft_rule's own docstring covers the

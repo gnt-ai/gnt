@@ -19,7 +19,19 @@ permissions:
 jobs:
   web:
     name: web (lint, typecheck, build, test)
-    runs-on: ubuntu-latest
+    # A hung job on the self-hosted runner blocks every other job queued
+    # behind it (only one physical machine). 20 min is generous for what
+    # normally finishes in 1-2 min -- catches a wedged step instead of
+    # sitting until GitHub's 360-min default.
+    timeout-minutes: 20
+    # Fork PRs never touch the self-hosted macOS box -- pull_request from a
+    # fork gets the exact same steps on a throwaway github-hosted runner
+    # instead (lint/typecheck/build/test still run and still report as
+    # "web", just isolated from the physical machine). Same-repo PRs,
+    # pushes, and workflow_dispatch are unaffected. See
+    # .github/scripts/check_workflow_security.py, which fails CI if this
+    # guard ever gets dropped from a job a fork PR can reach.
+    runs-on: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || fromJSON('["self-hosted","macOS"]') }}
     env:
       # lib/api-url.ts throws at build time (NODE_ENV=production, which
       # `next build` sets regardless of this job's own environment) if this
@@ -28,11 +40,11 @@ jobs:
       # run. CI-only value, never fetched against for real during a build.
       NEXT_PUBLIC_API_URL: https://api-production-e3d3.up.railway.app
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: pnpm
@@ -51,21 +63,38 @@ jobs:
 
   clean-install:
     name: clean install (no secrets, from scratch)
-    # This is the repo's own proof that a contributor with nothing but a
-    # git clone -- no .env, no repo secrets, none of the CI-only
+    # This is the public repo's own proof that a contributor with nothing
+    # but a git clone -- no .env, no repo secrets, none of the CI-only
     # placeholder values the jobs below set -- can get every JS/TS
     # workspace and the API to install and typecheck, matching the
-    # README's own quickstart. Full test suites need live Postgres/Redis
-    # (an infra question, covered by the web/store/api jobs' own
-    # throwaway containers below), not private credentials -- out of
-    # scope here on purpose.
+    # README's own quickstart. Deliberately github-hosted, not the
+    # self-hosted macOS box: proves this works on a vanilla runner too,
+    # not just this project's own machine. Full test suites need live
+    # Postgres/Redis (an infra question, covered by the web/store/api
+    # jobs' own throwaway containers below), not private credentials --
+    # out of scope here on purpose.
+    #
+    # continue-on-error: this job has been failing on every run for a
+    # while now, not from a code problem -- GitHub Actions itself refuses
+    # to even start it ("recent account payments have failed or your
+    # spending limit needs to be increased"), a billing issue with zero
+    # relationship to what's in the PR. It isn't a required status check
+    # for branch protection, but a failing job still poisons the whole
+    # workflow run's overall conclusion -- and deploy.yml's Deploy workflow
+    # gates on exactly that conclusion (workflow_run, if conclusion ==
+    # 'success'), so every merge to main was silently skipping deploy
+    # until this was caught. Marking it non-blocking here so a real
+    # deploy-worthy conclusion isn't held hostage by an unrelated billing
+    # problem. Remove this once the billing issue is actually resolved.
     runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 15
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: pnpm
@@ -74,7 +103,7 @@ jobs:
 
       - run: pnpm turbo run lint typecheck
 
-      - uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
           version: latest
           enable-cache: true
@@ -87,34 +116,51 @@ jobs:
 
   store:
     name: store (lint, typecheck, test)
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || fromJSON('["self-hosted","macOS"]') }}
+    timeout-minutes: 20
     defaults:
       run:
         working-directory: apps/store
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
       # NativeStore is Postgres-only, no in-memory mode -- same
-      # docker-run-by-hand pattern the api job below uses.
-      # POSTGRES_HOST_AUTH_METHOD=trust: this
+      # docker-run-by-hand pattern the api job below uses (GH Actions'
+      # `services:` container orchestration doesn't work on the
+      # self-hosted macOS runner). POSTGRES_HOST_AUTH_METHOD=trust: this
       # container is throwaway and only ever reachable from this job, so
       # skipping a password matches native-store.test.ts's own default
-      # connection string (postgres://localhost:5432/gnt_store_native_test,
-      # no credentials) with zero extra env wiring needed in any test file.
+      # connection string, no credentials needed.
+      #
+      # Container name and host port are both run-scoped (run_id +
+      # run_attempt), not fixed -- caught this live: two of these jobs
+      # running on the shared self-hosted runner at the same time used to
+      # both fight over a container literally named ci-store-postgres on
+      # port 5432, so whichever job's `docker rm -f` ran second would kill
+      # the other job's still-in-use database mid-test, or (worse) the two
+      # jobs would silently share one Postgres and each see the other's
+      # rows -- exactly the shape of the duplicated-audit-trail-entries
+      # failure that kept showing up. A random host port (-p 127.0.0.1::5432,
+      # left blank so Docker picks one) makes two of these containers unable
+      # to collide even under real concurrency.
       - name: Start postgres
         run: |
           set -euo pipefail
-          docker rm -f ci-store-postgres >/dev/null 2>&1 || true
-          docker run -d --name ci-store-postgres \
+          NAME="ci-store-postgres-${{ github.run_id }}-${{ github.run_attempt }}"
+          echo "STORE_PG_CONTAINER=$NAME" >> "$GITHUB_ENV"
+          docker rm -f "$NAME" >/dev/null 2>&1 || true
+          docker run -d --name "$NAME" \
             -e POSTGRES_USER=postgres -e POSTGRES_HOST_AUTH_METHOD=trust \
-            -p 5432:5432 \
+            -p 127.0.0.1::5432 \
             pgvector/pgvector:pg17
           for i in $(seq 1 30); do
-            docker exec ci-store-postgres pg_isready -U postgres >/dev/null 2>&1 && break
+            docker exec "$NAME" pg_isready -U postgres >/dev/null 2>&1 && break
             sleep 2
           done
-          docker exec ci-store-postgres pg_isready -U postgres
-          docker exec ci-store-postgres psql -U postgres -c 'CREATE DATABASE gnt_store_native_test'
+          docker exec "$NAME" pg_isready -U postgres
+          docker exec "$NAME" psql -U postgres -c 'CREATE DATABASE gnt_store_native_test'
+          PORT=$(docker port "$NAME" 5432/tcp | head -1 | cut -d: -f2)
+          echo "STORE_NATIVE_TEST_DATABASE_URL=postgres://postgres@localhost:$PORT/gnt_store_native_test" >> "$GITHUB_ENV"
 
       - uses: oven-sh/setup-bun@v2
         with:
@@ -130,11 +176,12 @@ jobs:
 
       - name: Stop postgres
         if: always()
-        run: docker rm -f ci-store-postgres >/dev/null 2>&1 || true
+        run: docker rm -f "$STORE_PG_CONTAINER" >/dev/null 2>&1 || true
 
   api:
     name: api (ruff, pytest)
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || fromJSON('["self-hosted","macOS"]') }}
+    timeout-minutes: 25
     defaults:
       run:
         working-directory: apps/api
@@ -185,11 +232,11 @@ jobs:
       # CI-only values, not secrets protecting anything real.
       ZENDESK_TOKEN_ENCRYPTION_KEY: qPTJl1eogW1bR3gz9_AvTEcqPD14y1bXdq8z5X_UODI=
       INTERCOM_TOKEN_ENCRYPTION_KEY: _lPYp-UWnt2btBxLMF_rDqPFcfO3zLOS_prT14v1eUw=
-      # OAuth sprint T14 -- test_notion_connector.py/test_linear_connector.py
-      # call encrypt_token/decrypt_token and build_authorize_url for real,
-      # same "Settings() itself fails to construct without them" reasoning
-      # as ZENDESK_TOKEN_ENCRYPTION_KEY above. client id/secret values here
-      # are throwaway strings, not the real ones apps/api's own .env holds --
+      # test_notion_connector.py/test_linear_connector.py call
+      # encrypt_token/decrypt_token and build_authorize_url for real, same
+      # "Settings() itself fails to construct without them" reasoning as
+      # ZENDESK_TOKEN_ENCRYPTION_KEY above. client id/secret values here are
+      # throwaway strings, not the real ones apps/api's own .env holds --
       # nothing under test makes a live call to Notion's or Linear's OAuth
       # endpoints.
       NOTION_CLIENT_ID: ci-placeholder
@@ -199,7 +246,7 @@ jobs:
       LINEAR_CLIENT_ID: ci-placeholder
       LINEAR_STATE_SECRET: ci-placeholder
       LINEAR_TOKEN_ENCRYPTION_KEY: dj-_tSp0hjH0yitMF8BzBJsaemM3WULNsFKbokOwHBo=
-      # apps/store's internal API (migration Phase 4) — nothing under test
+      # apps/store's internal API — nothing under test
       # spawns a real apps/store process against these except the
       # subprocess-backed integration tests, which set their own values.
       STORE_INTERNAL_API_SECRET: ci-placeholder
@@ -216,12 +263,17 @@ jobs:
       GNT_STORE_TEST_DATABASE_URL: postgres://gnt:gnt@localhost:15432/gnt_store_native_test
       GNT_STORE_EVAL_NATIVE_DATABASE_URL: postgres://gnt:gnt@localhost:15432/gnt_store_native_test
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
-      # Started by hand rather than via `services:` so the same steps work
-      # unchanged regardless of runner OS. rm -f first clears a stale
-      # container left behind by a cancelled previous run; the matching
-      # teardown step below always runs, cancelled or not.
+      # GitHub Actions' own `services:` container orchestration only works
+      # on Linux runners ("Container operations are only supported on
+      # Linux runners") -- doesn't matter that this self-hosted macOS
+      # runner has Docker (Colima) installed, the runner software itself
+      # refuses the job before a single step runs. Starting the same two
+      # containers by hand instead works on any OS the runner has Docker
+      # on. rm -f first clears a stale container left behind by a
+      # cancelled previous run; the matching teardown step below always
+      # runs, cancelled or not.
       - name: Start postgres + redis
         run: |
           set -euo pipefail
@@ -247,7 +299,7 @@ jobs:
           # GNT_STORE_TEST_DATABASE_URL/GNT_STORE_EVAL_NATIVE_DATABASE_URL.
           docker exec ci-postgres psql -U gnt -d gnt -c 'CREATE DATABASE gnt_store_native_test'
 
-      - uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
           version: latest
           enable-cache: true
@@ -258,7 +310,7 @@ jobs:
 
       # conftest.py's _store_server fixture spawns a REAL apps/store
       # process (bun run src/http/server.ts) for the whole test session —
-      # migration Phase 4's routers/rules.py talks to it over real HTTP,
+      # routers/rules.py talks to it over real HTTP,
       # not a mocked store_client. Needs Bun installed and apps/store's
       # own deps present, or every test errors at fixture setup.
       - uses: oven-sh/setup-bun@v2

@@ -1,6 +1,6 @@
 """Turns one piece of already gate-masked, already-sanitized prose into
-zero or more candidate rules — the extraction half of the connector-sprint
-support connectors (T4.2 Zendesk, T4.3 Intercom, workers/tasks_zendesk.py
+zero or more candidate rules — the extraction half of the Zendesk and
+Intercom support connectors (see workers/tasks_zendesk.py
 and workers/tasks_intercom.py). Deliberately generic, not connector-
 specific: `source_label` is the only thing a caller supplies that names
 where the text came from, so any server-side connector reading ambient
@@ -10,9 +10,9 @@ reuse this without a new pipeline module.
 Same shape as pipeline/rule_conflict.py's judge_conflict: a sync function
 using the Anthropic SDK's structured-output `messages.parse`, called
 through `asyncio.to_thread` by its one async caller, returning
-(candidates, input_tokens, output_tokens) so C9a's cost tracking
-(gnt.llm_quota) can record the real usage a call made, not a flat
-estimate.
+(candidates, input_tokens, output_tokens) so the LLM spend quota gate's
+cost tracking (gnt.llm_quota) can record the real usage a call made, not a
+flat estimate.
 
 Ordering the caller must follow (see workers/tasks_zendesk.py and
 workers/tasks_intercom.py): the server-side privacy gate
@@ -72,8 +72,9 @@ class ExtractedRuleCandidates(BaseModel):
 def extract_candidate_rules(source_label: str, text: str) -> tuple[list[RuleCandidate], int, int]:
     """`text` must already be privacy-gate-masked (and, like every other
     call site that hands captured text to a model, gets sanitize()'d here
-    regardless of what the caller already did — Global Rule 2b, cheap and
-    idempotent). Returns (candidates, input_tokens, output_tokens)."""
+    regardless of what the caller already did — untrusted content must
+    never be interpreted as instructions to the model, and sanitize() is
+    cheap and idempotent). Returns (candidates, input_tokens, output_tokens)."""
     response = get_client().messages.parse(
         model=get_settings().content_extraction_model,
         max_tokens=1024,

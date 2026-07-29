@@ -7,7 +7,7 @@ import { wrapChunkAsDataBlock } from "./wrap.js";
 // options.ollamaHost for anyone running the daemon elsewhere.
 export const DEFAULT_OLLAMA_HOST = "http://localhost:11434";
 
-// Founder decision (fix-plan-v3 2.3): Llama 3.1 8B Instruct via Ollama is
+// Founder decision: Llama 3.1 8B Instruct via Ollama is
 // the first local-only target. That model family ships a single 8B tag
 // in Ollama's library, "llama3.1:8b" (which "llama3.1:latest" also
 // currently resolves to) -- there's no separate "-instruct"-suffixed tag
@@ -35,7 +35,7 @@ const REQUEST_TIMEOUT_MS = 120_000;
 // actually applied.
 export const DEFAULT_LOCAL_CONCURRENCY = 2;
 
-// Measured, reproducible finding from fix-plan-v3 4.1's extraction eval
+// Measured, reproducible finding from this CLI's own extraction eval
 // (apps/cli/eval/extraction/README.md, "The gap: not (only) model
 // quality"): once EXTRACTION_JSON_SCHEMA's minLength/maxLength/minimum/
 // maximum keywords (from ExtractedRuleCandidateSchema's .min()/.max()
@@ -113,8 +113,8 @@ interface OllamaChatResponse {
  * with no equivalent request-level separation between instructions and
  * data.
  *
- * Documented quality tradeoff (fix-plan-v3 2.3 asks for this to be
- * honest, not oversold): Llama 3.1 8B is a much smaller model than
+ * Documented quality tradeoff, called out here honestly rather than
+ * oversold: Llama 3.1 8B is a much smaller model than
  * Claude, with materially weaker instruction-following and structured-
  * output reliability. Expect more chunks where it either misses a real
  * rule, fabricates a marginal one despite the "return nothing"

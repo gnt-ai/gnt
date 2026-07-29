@@ -211,9 +211,9 @@ async def test_real_admin_snapshotted_key_can_propose_a_rule_end_to_end(
         assert proposed.json()["status"] == "pending_merge"
 
 
-# -- rate limiting: security fix-plan gap, create_cli_key had no budget at
-# all -- anyone with a live session (compromised or scripted) could mint
-# unlimited admin-snapshotting CLI credentials. -------------------------
+# -- rate limiting: create_cli_key used to have no budget at all -- anyone
+# with a live session (compromised or scripted) could mint unlimited
+# admin-snapshotting CLI credentials. ------------------------------------
 #
 # These use their own uuid-suffixed org ids rather than the shared
 # org_a/org_b fixtures: check_rate_limit's fixed-window key
@@ -260,9 +260,9 @@ async def test_create_cli_key_rate_limit_is_scoped_per_org(test_app_factory, set
         assert still_works.status_code == 201
 
 
-# -- v3 fix-plan Tier 0 audit finding: create_mcp_key had no rate limit at
-# all. Same isolated-org-id pattern as the cli-key tests above, same reason
-# (check_rate_limit's Redis key persists for an hour). -------------------
+# -- create_mcp_key used to have no rate limit at all. Same isolated-
+# org-id pattern as the cli-key tests above, same reason (check_rate_limit's
+# Redis key persists for an hour). ----------------------------------------
 
 
 async def test_create_mcp_key_rejects_once_the_per_hour_limit_is_exceeded(

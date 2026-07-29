@@ -170,9 +170,9 @@ async def slash_command(
     request: Request,
     session: AsyncSession = Depends(get_session),
 ):
-    """`/brain <what you want to capture>` — fix-plan-v3 3.1 retargets this
-    at proposing rules, replacing the retired knowledge-unit capture
-    pipeline (triage/extract/embed) it used to feed. `text` is freeform;
+    """`/brain <what you want to capture>` — retargeted at proposing rules,
+    replacing the retired knowledge-unit capture pipeline (triage/extract/
+    embed) it used to feed. `text` is freeform;
     see _split_command_text above for how it becomes a title/body pair.
     The rest goes through create_draft_rule, the exact same function
     POST /v1/rules and routers/webhooks.py's ingest_webhook already share
@@ -190,7 +190,7 @@ async def slash_command(
     check "is this workspace actually linked to an org" without
     polluting real data by ingesting a throwaway policy just to find out.
 
-    apply_privacy_gate=True below is not optional (fix-plan-v3 3.0): a
+    apply_privacy_gate=True below is not optional: a
     Slack message is exactly the ambient third-party content the gate
     exists for — someone's words in a channel, not a human deliberately
     typing straight into gnt — see gnt.pipeline.privacy_gate's module

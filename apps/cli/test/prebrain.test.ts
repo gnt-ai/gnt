@@ -117,7 +117,7 @@ test("prints a clear message and skips the notion walker when --notion points no
   expect(output).not.toContain("Notion export");
 });
 
-// --gmail (connector sprint T3.4): same "one flag, one local path" shape
+// --gmail: same "one flag, one local path" shape
 // as --notion above, plus the scope-control flags a Takeout export needs.
 // gmail-export.test.ts covers thread reconstruction/quote-stripping/
 // filtering against a realistic multi-message fixture; these only cover
@@ -203,7 +203,7 @@ test("applies --gmail-from filtering through to the walker", async () => {
   expect(output).not.toContain("Gmail export:");
 });
 
-// --outlook (connector sprint T3.5): same "one flag, one local path"
+// --outlook: same "one flag, one local path"
 // shape as --gmail above, plus the identical scope-control flags and
 // "malformed date is a hard error" behavior. outlook-export.test.ts
 // covers thread reconstruction/quote-stripping/filtering/the .eml-vs-mbox
@@ -300,7 +300,7 @@ test("also runs the outlook walker when --outlook points at a single mbox-shaped
   expect(output).not.toContain("Only scanning this repo");
 });
 
-// --meeting-notes (connector sprint T3.3): same "one flag, one local path"
+// --meeting-notes: same "one flag, one local path"
 // shape as --outlook (accepts a directory or a single file), but no
 // scope-control flags -- a meeting-notes export is one file per meeting,
 // not a mailbox's whole history. meeting-notes-export.test.ts covers cue
@@ -380,7 +380,7 @@ test("runs all three walkers together and reports each one's contribution", asyn
   }
 });
 
-// --mcp-notion/--mcp-monday (fix-plan-v3 3.4): opt-in only, unlike every
+// --mcp-notion/--mcp-monday: opt-in only, unlike every
 // walker above -- these never run just because a token is configured, and
 // a live-connection failure never crashes the rest of the run. The real
 // walker implementations (mcp-notion.ts/mcp-monday.ts) have their own
@@ -491,7 +491,7 @@ test("reports a clear, non-fatal message when the monday.com MCP walker fails, a
   expect(output).toContain("repo scan");
 });
 
-// --mcp-linear (connector sprint T2.3): same opt-in-boolean shape as
+// --mcp-linear: same opt-in-boolean shape as
 // --mcp-notion/--mcp-monday above -- see that block's own comment. The
 // real walker (mcp-linear.ts) has its own dedicated tests against a fake
 // MCP client; this file only cares about commands/prebrain.ts's own
@@ -601,7 +601,7 @@ test("reports a clear, non-fatal message when the Linear MCP walker fails, and s
   expect(output).toContain("repo scan");
 });
 
-// --mcp-sentry (connector sprint T2.5): same opt-in-boolean shape as
+// --mcp-sentry: same opt-in-boolean shape as
 // --mcp-notion/--mcp-monday/--mcp-linear above -- see that block's own
 // comment. The real walker (mcp-sentry.ts) has its own dedicated tests
 // against a fake MCP client; this file only cares about
@@ -657,7 +657,7 @@ test("reports a clear, non-fatal message when the Sentry MCP walker fails, and s
   expect(output).toContain("repo scan");
 });
 
-// --mcp-granola (connector sprint T2.1): same opt-in-boolean shape as
+// --mcp-granola: same opt-in-boolean shape as
 // --mcp-notion/--mcp-monday/--mcp-linear/--mcp-sentry above -- see that
 // block's own comment. The real walker (mcp-granola.ts) has its own
 // dedicated tests against a fake MCP client; this file only cares about
@@ -738,7 +738,7 @@ test("reports a clear, non-fatal message when the Granola MCP walker fails, and 
   expect(output).toContain("repo scan");
 });
 
-// --figma-comments (connector sprint T2.7 v2): opt-in only, same reasoning
+// --figma-comments: opt-in only, same reasoning
 // as --mcp-notion/--mcp-monday above -- never runs just because a token is
 // configured, and a live request failure never crashes the rest of the
 // run. This walker reads direct from Figma's REST API rather than through
@@ -833,7 +833,7 @@ test("reports a clear, non-fatal message when the Figma comments walker fails, a
   expect(output).toContain("repo scan");
 });
 
-// --datadog-notebooks (connector sprint T2.6): opt-in only, same reasoning
+// --datadog-notebooks: opt-in only, same reasoning
 // as --mcp-notion/--figma-comments above -- never runs just because
 // credentials are configured, and a live request failure never crashes the
 // rest of the run. This walker reads direct from Datadog's REST API rather
@@ -930,7 +930,7 @@ test("reports a clear, non-fatal message when the Datadog notebooks walker fails
   expect(output).toContain("repo scan");
 });
 
-// --gitlab-threads (connector sprint T4.1): opt-in only, same reasoning as
+// --gitlab-threads: opt-in only, same reasoning as
 // --figma-comments/--datadog-notebooks above -- never runs just because a
 // token is configured, and a live request failure never crashes the rest
 // of the run. This walker reads direct from GitLab's REST API rather than
@@ -1027,7 +1027,7 @@ test("reports a clear, non-fatal message when the GitLab threads walker fails, a
   expect(output).toContain("repo scan");
 });
 
-// --airtable (connector sprint T4.4): opt-in only, same reasoning as
+// --airtable: opt-in only, same reasoning as
 // --figma-comments/--datadog-notebooks above -- never runs just because a
 // connection is configured, and a live request failure never crashes the
 // rest of the run. Unlike those two, this walker takes no scope flag at
@@ -1115,7 +1115,7 @@ test("reports no candidate chunks found when nothing matches anywhere", async ()
   await run({});
 
   const output = logs.join("\n");
-  // Points at --starter-packs (fix-plan-v3 2.5) since this is exactly the
+  // Points at --starter-packs since this is exactly the
   // "local sources are thin" case that flag exists for.
   expect(output).toContain("No candidate chunks found -- pass --starter-packs to add curated rules instead.");
 });

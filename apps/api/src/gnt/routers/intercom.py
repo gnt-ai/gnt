@@ -104,7 +104,7 @@ async def intercom_sync_status(
     org: OrgContext = Depends(get_current_org),
     session: AsyncSession = Depends(get_session),
 ):
-    """Sync-status health surface (connector sprint T4.3) -- last
+    """Sync-status health surface -- last
     successful sync, last error, and this run's item/candidate counts.
     Same role as routers/zendesk.py's own /sync-status endpoint -- a
     plain GET a future `gnt status` addition or the web dashboard can

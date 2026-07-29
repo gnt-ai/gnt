@@ -1,4 +1,4 @@
-// Starter rule packs (fix-plan-v3 2.5): curated, editable starting-point
+// Starter rule packs: curated, editable starting-point
 // rules for orgs whose local sources (repo-scan/docs-dir/notion-export)
 // are too thin for real extraction (2.1-2.4) to find much from. Content
 // lives in ../../../starter-packs/packs.jsonl, not inline in this file --

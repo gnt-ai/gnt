@@ -1,4 +1,4 @@
-"""Zendesk REST API adapter (connector sprint T4.2). Reads three kinds of
+"""Zendesk REST API adapter. Reads three kinds of
 prose: macro action text, help-center article bodies, and internal (non-
 public) notes on tickets. Deliberately never reads a ticket RECORD itself
 (requester, submitter, assignee, organization, group, custom fields, tags,

@@ -2,7 +2,7 @@ import type { PlaceholderRegistry } from "./registry.js";
 import { applyMatches, existingPlaceholderSpans, resolveOverlaps } from "./spans.js";
 import type { LayerResult, RawMatch } from "./types.js";
 
-// fix-plan-v3 1.2: layer 1 deliberately never touches bare dollar amounts
+// Layer 1 deliberately never touches bare dollar amounts
 // or percentages -- see the "does not mask a plain dollar amount" and
 // "does not mask a plain percentage" cases in deterministic.test.ts --
 // because a huge fraction of them are policy thresholds ("orders over $50
@@ -26,7 +26,7 @@ import type { LayerResult, RawMatch } from "./types.js";
 // Still fully local and deterministic/heuristic -- no network calls, no
 // model inference -- same "local-first processing" constraint documented
 // in index.ts. A real judgment-based contextual read of ambiguous cases is
-// layer 3's job (fix-plan-v3 2.3), not this one's.
+// layer 3's job, not this one's.
 //
 // -- The classification heuristic --
 //
@@ -41,10 +41,10 @@ import type { LayerResult, RawMatch } from "./types.js";
 //      pronoun ("their", "his", "her").
 // A figure with neither signal nearby is left alone -- that's the default,
 // matching layer 1's existing bias toward not touching bare thresholds,
-// and it's the more important direction to get right per the plan's own
-// framing (over-masking breaks extracted rules; under-masking is the
-// narrower, second-order risk here since a genuinely personal figure with
-// zero nearby entity reference is rare in practice).
+// and it's the more important direction to get right: over-masking breaks
+// extracted rules; under-masking is the narrower, second-order risk here
+// since a genuinely personal figure with zero nearby entity reference is
+// rare in practice.
 //
 // -- Known false-positive failure mode (accepted, not fixed) --
 //
@@ -61,7 +61,7 @@ import type { LayerResult, RawMatch } from "./types.js";
 //     statement Jane happens to be the one saying, not Jane's own $50.
 //     But her masked placeholder sits well within the adjacency window of
 //     the figure. Masked.
-// Both are deliberate over-masking, not bugs: per the plan's own framing,
+// Both are deliberate over-masking, not bugs:
 // under-masking a real personal figure (a leak) is worse than an
 // unnecessary [AMOUNT_n] in a draft rule (a nuisance). Narrowing the
 // window to dodge these would also start missing real "the customer's

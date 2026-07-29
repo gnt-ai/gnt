@@ -1,5 +1,5 @@
-"""onboarding_events — funnel-tracking table for fix-plan-v2 item 6
-(first-session success instrumentation). One row per milestone an org
+"""onboarding_events — funnel-tracking table for first-session success
+instrumentation. One row per milestone an org
 hits on the way to a working setup (slack_connected, github_connected,
 capture, rule_proposed, rule_approved); routers/brain.py's
 /v1/onboarding/status aggregates counts off it. Genuinely org-scoped with

@@ -13,9 +13,9 @@ async def get_roi_summary(
     org: OrgContext = Depends(get_current_org),
     session: AsyncSession = Depends(get_session),
 ):
-    """This org's ROI numbers (fix-plan-v2 item 10 — the plan's own
-    "painkiller acceptance gate": rules served, actions checked,
-    blocked/needs_human counts, gap count, coverage growth), the same
+    """This org's ROI numbers (rules served, actions checked,
+    blocked/needs_human counts, gap count, coverage growth) — the metrics
+    that make the case gnt is worth keeping installed, the same
     aggregation workers/tasks_digest.py's weekly email sends
     (gnt.roi_summary.build_roi_summary), surfaced here for `gnt status` —
     see that CLI command for how this renders. Current 7-day window vs.

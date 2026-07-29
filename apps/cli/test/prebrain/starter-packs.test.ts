@@ -1,4 +1,4 @@
-// Tests the starter-pack data module itself (fix-plan-v3 2.5): packs.jsonl
+// Tests the starter-pack data module itself: packs.jsonl
 // loads and every rule in it has the required fields and reads as an
 // editable starting point, not a stated fact -- plus resolveStarterPacks'
 // "all"/comma-list/unknown-id parsing. See ../prebrain-pipeline.test.ts for

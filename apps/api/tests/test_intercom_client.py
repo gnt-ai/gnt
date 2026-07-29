@@ -1,5 +1,5 @@
-"""gnt.intercom.client — the Intercom REST adapter (connector sprint T4.3).
-Mocks at the module's own _get/_post boundary (same shape
+"""gnt.intercom.client — the Intercom REST adapter, one of this codebase's
+helpdesk connectors. Mocks at the module's own _get/_post boundary (same shape
 test_zendesk_client.py uses for its own _get), so nothing here makes a
 real network call.
 

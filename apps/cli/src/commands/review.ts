@@ -107,7 +107,7 @@ function render(rules: Rule[], index: number, message: Message): void {
   lines.push(...wrapText(rule.body, width).map((line) => text(line)));
   lines.push("");
   const confidencePct = `${Math.round(rule.confidence * 100)}%`;
-  // fix-plan-v2 item 18 — confidence is a model-assigned estimate, never
+  // Confidence is a model-assigned estimate, never
   // independently verified, same "(estimate)" labeling stale.ts already
   // applies to freshness.
   lines.push(

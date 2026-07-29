@@ -1,4 +1,4 @@
-"""Shared types for the server-side privacy gate (fix-plan-v3 3.0).
+"""Shared types for the server-side privacy gate.
 
 Python port of apps/cli/src/privacy-gate/types.ts, with one deliberate
 shape difference: GateLayer here has no "contextual" member. The CLI gate's
@@ -83,7 +83,7 @@ class LayerResult:
 @dataclass
 class PrivacyGateMapping:
     """Bidirectional lookup -- real value -> placeholder and back. The CLI
-    gate needs both directions for its detokenization step (1.3); this
+    gate needs both directions for its detokenization step; this
     server-side gate never detokenizes (masking is permanent here -- see
     __init__.py), so only value_to_placeholder is actually consumed
     downstream today. Both directions are kept anyway: it's the same

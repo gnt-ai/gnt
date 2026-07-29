@@ -1,4 +1,4 @@
-"""fix-plan-v3 item C2 -- key expiry and rotation. Covers three things
+"""Key expiry and rotation. Covers three things
 test_settings_keys.py / test_settings_cli_keys.py don't:
 
 1. resolve_api_key_row now rejects an expired key the same way it already

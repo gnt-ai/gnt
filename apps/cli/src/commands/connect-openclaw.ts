@@ -1,4 +1,4 @@
-// `gnt connect openclaw` (connector sprint T6.1): the mirror image of
+// `gnt connect openclaw`: the mirror image of
 // connect-notion-mcp.ts/connect-monday-mcp.ts. Those point this CLI AT a
 // third party's MCP server to read from it; this one points a third
 // party's agent harness (OpenClaw) AT gnt's own MCP endpoint so it can
@@ -112,7 +112,7 @@ async function mintKey(): Promise<string | null> {
 // One real read against gnt's live MCP endpoint before anything is written
 // to OpenClaw's config -- the same "validate before save" bias every other
 // connect flow in this CLI already has (see mcp-framework/connect.ts's own
-// doc comment), applied to the reversed direction T6.1 wires up.
+// doc comment), applied to the reversed direction this command wires up.
 async function validateKeyLive(key: string): Promise<void> {
   const transport = new StreamableHTTPClientTransport(new URL(GNT_MCP_ENDPOINT), {
     requestInit: { headers: { Authorization: `Bearer ${key}` } },

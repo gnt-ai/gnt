@@ -1,12 +1,11 @@
-"""Calibration-data instrumentation for fix-plan-v2 item 18 (label
-confidence/decay as uncalibrated, and start collecting calibration data).
+"""Calibration-data instrumentation: label confidence/decay as uncalibrated,
+and start collecting calibration data.
 Confidence scores are model-assigned at creation time and decay lambdas
 are admitted first-pass guesses — see mcp_server/server.py's and
 routers/rules.py's `confidence_estimate` field, and gnt.staleness's
 module docstring, for where and why those numbers get labeled. This
-module is the other half of item 18: capturing the real-world signals a
-future calibration pass would need to check whether those guesses are
-any good.
+module captures the real-world signals a future calibration pass would
+need to check whether those guesses are any good.
 
 Same append-only, best-effort, org-scoped discipline as gap_tracking.py
 and onboarding_metrics.py: every public function here owns its own
@@ -139,9 +138,11 @@ async def log_conflict_override_if_flagged(
 async def log_revalidation_if_previously_stale(
     session: AsyncSession, org_id: str, rule_slug: str, action: str
 ) -> None:
-    """Re-validation outcome from item 9. Called from deprecate_rule and
-    edit_rule. A no-op unless item 9's last nightly
-    compute_rule_staleness run had this exact rule flagged stale — most
+    """Re-validation outcome from the nightly rule-staleness sweep
+    (gnt.staleness, run via workers/tasks_staleness.py's
+    compute_rule_staleness). Called from deprecate_rule and edit_rule. A
+    no-op unless that sweep's last nightly run had this exact rule
+    flagged stale — most
     deprecations/edits aren't a response to a staleness flag, and logging
     one for every ordinary edit would drown the signal this exists to
     capture."""

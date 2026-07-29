@@ -1,5 +1,5 @@
-"""onboarding_events (fix-plan-v2 item 6 — first-session success
-instrumentation). Covers: log_onboarding_event writes a real row and is
+"""onboarding_events — first-session success instrumentation. Covers:
+log_onboarding_event writes a real row and is
 genuinely best-effort (a failure never raises out to the caller), RLS
 actually isolates one org's events from another's at the database level
 (mirrors test_compile_skill_pack.py's org-scoping pattern), and
@@ -118,7 +118,7 @@ async def test_onboarding_status_is_scoped_to_current_org(db_session, test_app_f
 
 
 async def test_onboarding_status_reports_five_rule_milestone(db_session, test_app_factory, org_a):
-    """fix-plan-v3 2.6's success metric: reached_five_rules_milestone flips
+    """The onboarding success metric: reached_five_rules_milestone flips
     True the moment rules_approved hits RULES_APPROVED_MILESTONE (5), and
     not a single event before that."""
     await ensure_org(db_session, org_a)

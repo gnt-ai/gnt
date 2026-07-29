@@ -1,5 +1,5 @@
-// Tests the wired-up pipeline `gnt prebrain` runs after chunk collection
-// (fix-plan-v3 2.4): privacy gate -> extraction -> topic grouping ->
+// Tests the wired-up pipeline `gnt prebrain` runs after chunk collection:
+// privacy gate -> extraction -> topic grouping ->
 // create/submit/batch-propose. See prebrain.test.ts for the earlier
 // walker/chunk-collection stage this file doesn't re-test.
 //
@@ -516,7 +516,7 @@ test("a partial-failure run clearly states how many of the total chunks failed a
   expect(summary.chunksScanned).toBe(2);
 });
 
-// --starter-packs (fix-plan-v3 2.5): curated starter-pack rules join the
+// --starter-packs: curated starter-pack rules join the
 // exact same create -> submit -> batch-propose pipeline real extraction
 // output goes through, for orgs whose local sources are too thin to
 // extract much from. See test/prebrain/starter-packs.test.ts for the pack

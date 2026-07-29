@@ -1,4 +1,4 @@
-// Repo-scan walker (fix-plan-v3 2.1): walks the repo `gnt prebrain` is run
+// Repo-scan walker: walks the repo `gnt prebrain` is run
 // inside -- defaults to process.cwd(), which is the whole contract: this
 // walker assumes it's invoked from a repo root (or run.ts/the command
 // layer resolves an explicit path first), it doesn't go looking for a

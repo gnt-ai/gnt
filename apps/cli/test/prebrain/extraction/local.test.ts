@@ -96,7 +96,7 @@ test("sends a non-streaming request with a system/user message pair and a JSON-s
   expect(body.format.properties.rules).toBeDefined();
 });
 
-// Regression test for fix-plan-v3 4.1's extraction eval finding (see
+// Regression test for an extraction eval finding (see
 // apps/cli/eval/extraction/README.md, "The gap"): the real eval run
 // against llama3.1:8b measured 0% recall because Ollama's grammar-
 // constrained structured output silently free-generates prose instead of

@@ -1,6 +1,6 @@
-"""Rule-retrieval quality harness — fix-plan-v2 item 12. Scores hit@1, hit@3,
+"""Rule-retrieval quality harness. Scores hit@1, hit@3,
 MRR, and recall@k against a corpus of query -> expected-rule-id cases,
-grouped into the same four query families item 12 names: exact_name,
+grouped into four query families: exact_name,
 paraphrase, keyword_only, multi_rule.
 
 Pure and provider-agnostic: this module never calls a search API itself.

@@ -1,4 +1,4 @@
-// Live-Granola adapter (connector sprint T2.1): reads meeting notes and
+// Live-Granola adapter: reads meeting notes and
 // verbatim transcripts from customer-chosen Granola folders through
 // Granola's own official MCP server. Opt-in only: this walker only runs
 // when `gnt prebrain --mcp-granola --granola-folders <id>` is passed (see
@@ -14,8 +14,8 @@
 //
 // This adapter also introduces the shared transcript chunker
 // (../transcript-chunk.ts) -- see that file's own header comment for the
-// speaker-turn and decision-moment heuristics it implements. Zoom (T2.2)
-// and the meeting-export walkers (T3.3) are built to reuse it directly.
+// speaker-turn and decision-moment heuristics it implements. The Zoom
+// adapter and the meeting-export walkers are built to reuse it directly.
 //
 // -- Tool names: verified, not guessed --
 // GRANOLA_READS below names get_meeting_transcript, get_meetings,

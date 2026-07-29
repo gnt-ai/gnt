@@ -1,4 +1,4 @@
-"""v3 fix-plan Tier 0 (C9b) — worker concurrency cap. There isn't much to
+"""Worker concurrency cap. There isn't much to
 meaningfully exercise behaviorally here (that would mean actually running
 arq's Worker loop against a live Redis with real jobs, well past what a
 config value earns) — this confirms WorkerSettings carries a deliberate,

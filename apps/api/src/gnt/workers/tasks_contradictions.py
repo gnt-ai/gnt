@@ -1,6 +1,6 @@
-"""Nightly cross-time contradiction sweep (fix-plan-v2 item 13 —
-continuous contradiction sweeps; fix-plan-v3 3.2 — proposed-resolution
-PRs). pipeline/rule_conflict.py's judge_conflict only ever runs at
+"""Nightly cross-time contradiction sweep, which also opens a
+proposed-resolution PR alongside the GitHub issue it files.
+pipeline/rule_conflict.py's judge_conflict only ever runs at
 propose-time, comparing a new rule against its single nearest approved
 neighbor — two rules approved months apart, never proposed near each
 other, can contradict silently forever. This job re-runs that exact same
@@ -16,10 +16,10 @@ read/write through a normal scope_to_org'd session, one org at a time,
 never a single cross-org statement.
 
 Never deprecates or otherwise changes rule_a/rule_b's own status directly
-— that's a hard constraint of the plan item, not a preference, and it's
+— that's a hard constraint on this sweep, not a preference, and it's
 structurally true of this file: nothing here imports put_rule,
 deprecate_rule, or approve_rule, or calls any of them directly. What this
-module DOES write, as of 3.2, is a brand new draft row proposing one
+module DOES write is a brand new draft row proposing one
 concrete resolution — routers/rules.py's create_rule_amendment +
 submit_rule_for_review + propose_rule_for_org, the exact same
 edit-then-submit-then-propose lifecycle a human amending an approved rule
@@ -146,11 +146,12 @@ async def sweep_contradictions_for_org(org_id: str) -> None:
                 break
             if issues_filed >= settings.contradiction_sweep_max_issues_per_org:
                 break
-            # C9a — cost gate, checked before every judge_conflict call
-            # this loop is about to make, same quiet-break shape as the
-            # two budget checks above (not an exception-per-pair loop —
-            # see gnt.llm_quota's own docstring on why this call site uses
-            # the bool shape instead of enforce_llm_quota's raising one).
+            # Per-org LLM spend quota check, checked before every
+            # judge_conflict call this loop is about to make, same
+            # quiet-break shape as the two budget checks above (not an
+            # exception-per-pair loop — see gnt.llm_quota's own docstring
+            # on why this call site uses the bool shape instead of
+            # enforce_llm_quota's raising one).
             if not await check_llm_quota(org_id):
                 break
             attempted, filed = await _process_pair(session, org_id, connection, pat, rule_a, rule_b)
@@ -203,7 +204,7 @@ async def _process_pair(
         issue = await create_issue(
             connection.repo_url, pat, _issue_title(rule_a, rule_b), _issue_body(rule_a, rule_b, verdict)
         )
-        # fix-plan-v3 3.2 — a real proposed-resolution PR alongside the
+        # A real proposed-resolution PR alongside the
         # issue above, not instead of it: the issue stays the durable,
         # searchable record of the finding even if the PR attempt below
         # fails or a human rejects it outright; the PR is the upgrade,
@@ -235,7 +236,7 @@ async def _process_pair(
 def _order_by_approval(rule_a: dict, rule_b: dict) -> tuple[dict, dict]:
     """Which of the two contradicting rules gets amended: the one approved
     EARLIER defers to the one approved later. Reasoning (this sweep's own
-    call — the plan text leaves it open): the whole reason this sweep
+    call, not dictated by anything upstream): the whole reason this sweep
     exists is that judge_conflict at propose-time only ever compares a new
     rule against its nearest neighbor, so the pairs it catches here are
     routinely rules "approved months apart" (see module docstring) — the
@@ -321,7 +322,7 @@ async def _propose_resolution(
 
         pr_title = f"Resolve contradiction: {older['title']}"
         pr_intro = (
-            "Opened automatically by gnt's nightly contradiction sweep (fix-plan-v3 3.2) — proposes "
+            "Opened automatically by gnt's nightly contradiction sweep — proposes "
             f"one concrete resolution for the contradiction flagged in issue #{issue.number}. This PR "
             "amends the older of the two rules below to defer to the newer one; merging it approves "
             "the amendment exactly like any other proposed rule. Reject, edit, or close this PR instead "
@@ -346,7 +347,7 @@ def _issue_title(rule_a: dict, rule_b: dict) -> str:
 
 def _issue_body(rule_a: dict, rule_b: dict, verdict: Any) -> str:
     return (
-        "Opened automatically by gnt's nightly contradiction sweep (fix-plan-v2 item 13) — "
+        "Opened automatically by gnt's nightly contradiction sweep — "
         "a human needs to resolve this. Nothing about this issue changes either rule's status "
         "directly; the sweep never deprecates or edits `rule_a`/`rule_b` themselves.\n\n"
         f"**Relation:** {verdict.relation} (model-assigned estimate — not a verified fact)\n"
@@ -363,8 +364,9 @@ def _issue_body(rule_a: dict, rule_b: dict, verdict: Any) -> str:
 
 
 def _same_tag_pairs(rules: list[dict], max_pairs: int) -> list[tuple[dict, dict]]:
-    """Same-topic-first candidate generation — the plan's own "same
-    topic/tag first" ask. Groups approved rules by shared tag and pairs
+    """Same-topic-first candidate generation: rules sharing a tag are the
+    ones most likely to actually contradict, so they're compared before
+    anything else. Groups approved rules by shared tag and pairs
     within each group before anything else runs. Tags are iterated in
     sorted order and each group's rules in list order, so a given corpus
     produces the same candidate pairs run to run. A pair sharing more

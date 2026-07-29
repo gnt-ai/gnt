@@ -1,4 +1,4 @@
-"""gnt.ai fix plan v2, item 5: proves the published MCP endpoint genuinely
+"""Proves the published MCP endpoint genuinely
 answers real MCP protocol requests, not just a health check or a
 direct-call test of the tool functions (that's what test_mcp_tools.py
 already covers, and it says so in its own docstring).
@@ -13,10 +13,10 @@ transport security settings, McpAuthMiddleware's bearer-key resolution,
 tool registration on the real `mcp` object, and the real response shape —
 without needing production credentials or a real deployed server.
 
-The mount path under test comes from settings.mcp_url (Part 1's
-source-of-truth constant), not a hardcoded "/mcp" literal — this is what
-actually proves the published URL and the constant stay in sync, not just
-that some MCP server somewhere answers.
+The mount path under test comes from settings.mcp_url, the single
+source-of-truth constant for the published URL, not a hardcoded "/mcp"
+literal — this is what actually proves the published URL and the constant
+stay in sync, not just that some MCP server somewhere answers.
 
 Note: FastMCP's StreamableHTTPSessionManager can only have `.run()` called
 once per process (it raises RuntimeError on a second call) — this file
@@ -118,9 +118,9 @@ async def test_published_mcp_url_answers_real_protocol_requests(real_org_and_key
         _rule_dict(org_id, f"rules/{bare_id}", "Published MCP URL test rule", tags=["e2e-mcp-url"]),
     )
 
-    # The mount path under test — derived from settings.mcp_url (Part 1's
-    # constant), never a hardcoded "/mcp" literal, so this test actually
-    # fails if the mount and the published URL ever drift apart.
+    # The mount path under test — derived from settings.mcp_url, the
+    # source-of-truth constant, never a hardcoded "/mcp" literal, so this
+    # test actually fails if the mount and the published URL ever drift apart.
     mcp_path = urlsplit(get_settings().mcp_url).path
 
     test_app = FastAPI()
@@ -173,8 +173,8 @@ async def test_published_mcp_url_answers_real_protocol_requests(real_org_and_key
                 assert "e2e-mcp-url" in response_text
                 assert approved["title"] in response_text
 
-                # gnt-fix-plan-v2 item 11: search_rules now runs through
-                # apps/store's hybrid retrieval path (see store.ts) --
+                # search_rules now runs through apps/store's hybrid
+                # (keyword + semantic) retrieval path (see store.ts) --
                 # proves that path answers a real MCP protocol call too,
                 # not just get_rule above. The multi-word phrase lexically
                 # matches the rule's title/body (no embedding provider

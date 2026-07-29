@@ -77,9 +77,9 @@ async def create_cli_key(
     on top of that is a separate backstop: a live session, compromised or
     scripted, shouldn't be able to mint unlimited admin-snapshotting keys.
     The key this returns still isn't meant to be handed to an agent — it
-    carries the minting human's own admin status. fix-plan-v3 item C2:
-    also stamps a default expires_at (cli_key_default_ttl_days, 90 days)
-    — a live human logs back in well within that window, so this bounds
+    carries the minting human's own admin status. Also stamps a default
+    expires_at (cli_key_default_ttl_days, 90 days) — a live human logs
+    back in well within that window, so this bounds
     how long a laptop-left-somewhere credential stays valid without
     anyone needing to remember to revoke it by hand."""
     await ensure_org(session, org.org_id)
@@ -138,8 +138,8 @@ async def create_mcp_key(
     org: OrgContext = Depends(enforce_mcp_key_rate_limit),
     session: AsyncSession = Depends(get_session),
 ):
-    """No default expires_at, unlike create_cli_key above — fix-plan-v3
-    item C2 asks for a default TTL specifically "for new CLI keys". An
+    """No default expires_at, unlike create_cli_key above — that default
+    TTL is scoped specifically to CLI keys. An
     MCP key is handed to an agent and left running unattended for however
     long that integration is meant to live; there's no human login cadence
     to bound it against the way a CLI key has one, and a silent expiry
@@ -194,8 +194,9 @@ async def rotate_mcp_key(
     """Mirrors rotate_cli_key, scoped to key_type == "mcp". Rate limited
     the same as create_mcp_key (rotation mints a new row, same abuse
     surface as minting outright) -- picked up in a rebase onto main after
-    a sibling fix-plan task added that limit post-fork; wired in here to
-    close the gap rather than ship this PR without it. enforce_mcp_key_
+    a sibling change added that limit after this branch had already
+    forked from it; wired in here to close the gap rather than ship this
+    PR without it. enforce_mcp_key_
     rate_limit wraps get_current_org, still the right AUTH gate on its
     own (not require_session, matching create_mcp_key and revoke_mcp_key
     above): an MCP key is never admin-capable regardless of who mints or
@@ -265,7 +266,7 @@ async def rotate_cli_key(
     org: OrgContext = Depends(enforce_cli_key_rate_limit),
     session: AsyncSession = Depends(get_session),
 ):
-    """fix-plan-v3 item C2. Mints a replacement CLI key, THEN revokes the
+    """Mints a replacement CLI key, THEN revokes the
     one being rotated — in that order, so a failure between the two steps
     (e.g. the commit below never lands) leaves the caller with two valid
     keys rather than revoke-then-fail-to-create, which would lock them
@@ -317,7 +318,7 @@ async def create_webhook_token(
     org: OrgContext = Depends(require_admin),
     session: AsyncSession = Depends(get_session),
 ):
-    """fix-plan-v2 item 14 — mints the credential a Zapier/monday/HubSpot
+    """Mints the credential a Zapier/monday/HubSpot
     webhook config posts to routers/webhooks.py's ingest endpoint with.
     require_admin (not require_session like create_cli_key): this token
     can only ever create draft rules, nothing McpApiKey-authenticated

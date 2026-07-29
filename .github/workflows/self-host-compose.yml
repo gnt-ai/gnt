@@ -50,7 +50,7 @@ jobs:
     # for it to guard.
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
       # Fernet requires a 32-byte urlsafe-base64 key -- exactly what
       # `openssl rand -base64 32 | tr '+/' '-_'` produces (Fernet.generate_key()

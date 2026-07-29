@@ -1,7 +1,7 @@
-"""Shared ROI aggregation (fix-plan-v2 item 10) — the one place that
+"""Shared ROI aggregation — the one place that
 combines roi_counters (gnt.roi_metrics), rule_gaps (gnt.gap_tracking), and
-rule_staleness (gnt.staleness) into the numbers the plan's acceptance gate
-asks for: rules served, actions checked, blocked/needs_human counts, gap
+rule_staleness (gnt.staleness) into the ROI numbers the product reports on:
+rules served, actions checked, blocked/needs_human counts, gap
 count, coverage growth. Both consumers of this data — GET /v1/roi/summary
 (routers/roi.py, backing `gnt status`) and the weekly digest email
 (workers/tasks_digest.py) — call build_roi_summary rather than each
@@ -29,8 +29,8 @@ async def build_roi_summary(
     current and prior `window_days`-day windows (roi_metrics.
     summary_for_window), rule_gaps counted over the same two windows
     (gap_tracking.count_gaps_between — the "coverage growth" signal), and
-    item 9's re-validation-due count (gnt.staleness.list_due_for_
-    revalidation) folded in per routers/rules.py's own docstring pointing
+    the re-validation-due count from the nightly staleness sweep
+    (gnt.staleness.list_due_for_revalidation) folded in per routers/rules.py's own docstring pointing
     that prompt at this digest once it existed. Assumes the caller has
     already scope_to_org'd `session` for `org_id` — summary_for_window/
     count_gaps_between/list_due_for_revalidation each re-scope it anyway

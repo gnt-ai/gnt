@@ -1,4 +1,4 @@
-// Tests the local-only MCP-in token storage (fix-plan-v3 3.4) --
+// Tests the local-only MCP-in token storage --
 // saveMcpToken/loadMcpToken -- kept in a file separate from the api_key
 // credentials.json tests (see logout.test.ts) since these are a
 // deliberately distinct trust boundary (see credentials.ts's own doc

@@ -10,11 +10,11 @@
 // field stripping (the tool that actually carries comment text) and
 // assertCredentialsNeverLogged run against the real adapter rather than a
 // synthetic one -- the same convention mcp-linear.test.ts/mcp-sentry.test.ts/
-// mcp-granola.test.ts already establish for themselves (T2.9 verification).
+// mcp-granola.test.ts already establish for themselves.
 //
 // Tool names and response shapes here are @notionhq/notion-mcp-server's
-// real ones (confirmed live against v2.4.1, connector-sprint follow-up),
-// not the plain-REST-endpoint names this file originally guessed --
+// real ones (confirmed live against v2.4.1), not the plain-REST-endpoint
+// names this file originally guessed --
 // search results carry a title at properties.title.title[].plain_text,
 // and API-retrieve-page-markdown's own response is a JSON envelope
 // ({"object":"page_markdown","markdown":"..."}), not raw markdown text.

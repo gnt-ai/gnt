@@ -1,5 +1,5 @@
-// Tests the pure text-patching logic behind `gnt connect hermes`
-// (connector sprint T6.2) -- see src/hermes-config.ts's own doc comment
+// Tests the pure text-patching logic behind `gnt connect hermes` --
+// see src/hermes-config.ts's own doc comment
 // for why this edits config.yaml as text instead of round-tripping it
 // through a YAML library, and why the Authorization header is always the
 // literal ${GNT_MCP_KEY} placeholder rather than a real key.

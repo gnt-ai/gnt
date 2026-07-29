@@ -15,7 +15,7 @@ export type RuleStatus = "draft" | "in_review" | "pending_merge" | "approved" | 
 
 /**
  * Deliberately opaque, not a fixed shape — this field has carried two
- * different provenance shapes since fix-plan-v3 2.1, neither of which
+ * different provenance shapes over time, neither of which
  * this seam ever reads a field off of itself (see the one write site
  * that does, log-decision.ts's escalation-rule creation, which only ever
  * writes, never reads, its own literal): the original
@@ -190,8 +190,8 @@ export interface GntStore {
   ingest(source: IngestBatch): Promise<IngestReceipt>;
 
   /**
-   * Org offboarding (fix-plan-v3 tier 0 item 0.3, C4): hard-deletes this
-   * org's entire rules mirror — every page, chunk, and embedding under its
+   * Org offboarding: hard-deletes this org's entire rules mirror — every
+   * page, chunk, and embedding under its
    * source row, cascading via the schema's own FK constraints. A no-op
    * returning pagesDeleted: 0 if the org never wrote a rule (no source was
    * ever bootstrapped for it), not an error — an org with zero rules is a

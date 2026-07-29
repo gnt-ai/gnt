@@ -96,9 +96,9 @@ class RejectRuleRequest(BaseModel):
 
 
 class BatchProposeRequest(BaseModel):
-    """fix-plan-v3 2.4 — batches several already-in_review rules into ONE
-    PR instead of propose_rule's one-PR-per-rule. A deliberate founder call
-    (not "fake" batching via pacing individual propose_rule calls): the
+    """Batches several already-in_review rules into ONE
+    PR instead of propose_rule's one-PR-per-rule. A deliberate design
+    choice (not "fake" batching via pacing individual propose_rule calls): the
     customer reviews 5-8 related rules as a single PR, not 5-8 separate
     ones."""
 
@@ -118,7 +118,7 @@ def _serialize(rule: dict[str, Any]) -> dict[str, Any]:
         "body": rule["body"],
         "status": rule["status"],
         "confidence": rule["confidence"],
-        # fix-plan-v2 item 18 — confidence is a model-assigned score set
+        # Confidence is a model-assigned score set
         # once at creation time, never independently checked against
         # reality. Labeled explicitly, same convention as freshness's own
         # "estimate" field below, so it never reads as a verified
@@ -139,7 +139,7 @@ def _serialize(rule: dict[str, Any]) -> dict[str, Any]:
         "created_at": rule["createdAt"],
         "pr_number": rule.get("prNumber"),
         "pr_url": rule.get("prUrl"),
-        # fix-plan-v2 item 9 — None for a rule that's never been approved
+        # None for a rule that's never been approved
         # (draft/in_review/pending_merge have no approvedAt yet). Computed
         # live, always an explicit estimate — see mcp_server/server.py's
         # identical field for the full reasoning.
@@ -165,16 +165,17 @@ async def create_draft_rule(
     org_id: str, user_id: str, body: CreateRuleRequest, *, apply_privacy_gate: bool = False
 ) -> dict[str, Any]:
     """The actual draft-rule-creation logic behind POST /v1/rules below —
-    pulled out so routers/webhooks.py's ingest endpoint (fix-plan-v2 item
-    14) can create the exact same shape of draft rule a human/CLI caller
-    would, through a completely different auth path (a URL-embedded
-    per-org webhook token, not get_current_org), without duplicating the
+    pulled out so routers/webhooks.py's generic ingest endpoint can create
+    the exact same shape of draft rule a human/CLI caller would, through a
+    completely different auth path (a URL-embedded per-org webhook token,
+    not get_current_org), without duplicating the
     sanitize/rule-dict/put_rule/audit sequence. Caller is responsible for
     ensure_org + committing that first — this function only writes the
     rule itself.
 
-    v3 fix-plan Tier 0 (C9b) — "capture/storage ceilings": the ceiling
-    check below lives here, not duplicated in each router, precisely
+    The draft-count ceiling check below (a cap on how many drafts an org
+    can have open at once, guarding against runaway/automated draft
+    creation) lives here, not duplicated in each router, precisely
     because this is the one function both create_rule and
     routers/webhooks.py's ingest_webhook already share — the same reason
     this function was pulled out of create_rule in the first place. Doesn't
@@ -182,7 +183,7 @@ async def create_draft_rule(
     already-approved rule, not runaway creation, and it doesn't call this
     function at all).
 
-    fix-plan-v3 3.0 — apply_privacy_gate, default False. create_rule below
+    apply_privacy_gate, default False. create_rule below
     (POST /v1/rules, a human or the CLI directly typing/submitting a rule)
     never sets it: a deliberate action by whoever's typing to expose this
     exact content to gnt doesn't need gnt masking it back at them, and
@@ -313,16 +314,17 @@ async def get_rules_due_for_revalidation(
     session: AsyncSession = Depends(get_session),
 ):
     """Approved rules this org's last nightly compute_rule_staleness run
-    (fix-plan-v2 item 9) flagged as past the staleness threshold — due for
-    a human to confirm still true, or open a deprecation/refresh PR.
-    Backs `gnt stale`.
+    flagged as past the staleness threshold — due for a human to confirm
+    still true, or open a deprecation/refresh PR. Backs `gnt stale`.
 
-    A stopgap, not the final home for this: the plan text puts this
-    prompt in a weekly digest email, which doesn't exist yet (fix-plan-v2
-    item 10, held until after this and item 13 land). This list is the
-    same underlying signal, surfaced as CLI visibility instead — wire it
-    into the digest once item 10 exists rather than building a second
-    parallel version of it.
+    A stopgap, not the final home for this: the eventual plan is to
+    surface this prompt in a weekly digest email, which doesn't exist
+    yet — it's waiting on that digest itself and on the nightly
+    contradiction-sweep worker (workers/tasks_contradictions.py), which
+    also needs to land first. This list is the same underlying signal,
+    surfaced as CLI visibility instead — wire it into the digest once
+    that email exists rather than building a second parallel version of
+    it.
 
     Registered before /{rule_id} in this file, but doesn't actually need
     to be — "staleness"/"due" are two path segments, "{rule_id}" matches
@@ -342,10 +344,12 @@ async def get_rule(
 
 async def submit_rule_for_review(org_id: str, user_id: str, rule: dict[str, Any]) -> dict[str, Any]:
     """The draft -> in_review flip behind POST /{rule_id}/submit below —
-    pulled out so workers/tasks_contradictions.py's contradiction sweep
-    (fix-plan-v3 3.2) can push a proposed-resolution draft it just created
-    through the exact same status transition a human submitting a rule
-    through the API gets, without duplicating the put_rule/audit sequence.
+    pulled out so workers/tasks_contradictions.py's nightly contradiction
+    sweep (which finds rules that contradict each other and opens a PR
+    proposing how to resolve it) can push a proposed-resolution draft it
+    just created through the exact same status transition a human
+    submitting a rule through the API gets, without duplicating the
+    put_rule/audit sequence.
     Raises ValueError (not HTTPException — this has no request/response of
     its own) if `rule` isn't a draft; the HTTP endpoint below translates
     that into its usual 400."""
@@ -380,8 +384,8 @@ async def submit_rule(
 
 
 # propose_rule_for_org's default PR intro — pulled to a module constant so
-# workers/tasks_contradictions.py's contradiction sweep (fix-plan-v3 3.2)
-# can reuse it verbatim for the parts of a proposed-resolution PR that
+# workers/tasks_contradictions.py's nightly contradiction sweep can reuse
+# it verbatim for the parts of a proposed-resolution PR that
 # aren't specific to why the sweep opened it (see that module's own
 # pr_intro override for the sweep-specific framing it prepends instead).
 _DEFAULT_PROPOSE_PR_INTRO = "Opened by `gnt review` — merging this PR approves the rule."
@@ -399,8 +403,8 @@ async def propose_rule_for_org(
     pr_intro: str = _DEFAULT_PROPOSE_PR_INTRO,
 ) -> tuple[dict[str, Any], PullRequestResult]:
     """The branch/file/PR-opening core behind POST /{rule_id}/propose below
-    — pulled out so workers/tasks_contradictions.py's contradiction sweep
-    (fix-plan-v3 3.2) can push a proposed-resolution draft it just created
+    — pulled out so workers/tasks_contradictions.py's nightly contradiction
+    sweep can push a proposed-resolution draft it just created
     (via create_rule_amendment + submit_rule_for_review above) through the
     exact same submit-then-propose lifecycle a human editing a rule through
     the API gets, rather than reimplementing the branch/file/PR mechanics a
@@ -442,7 +446,7 @@ async def propose_rule_for_org(
     # have one, since plenty of legitimate rules won't.
     if rule.get("source"):
         pr_body += f"\n\n**Source:** {rule['source']}"
-    # fix-plan-v2 item 18 — confidence is a model-assigned estimate, never
+    # Confidence is a model-assigned estimate, never
     # independently verified, and the PR body is the one confidence
     # surface `gnt review`'s own labeling (theme.ts's confidenceColor)
     # can't reach: a reviewer merges this PR on GitHub, not in the
@@ -538,8 +542,9 @@ async def propose_rule(
 
 
 def _batch_pr_title(rules: list[dict[str, Any]]) -> str:
-    """Keeps the PR title readable regardless of batch size — the plan's
-    own target is 5-8 rules per PR, and spelling out 8 full titles in a
+    """Keeps the PR title readable regardless of batch size — batch-propose
+    groups 5-8 rules per PR by topic (see config.py's
+    max_rules_per_batch_propose), and spelling out 8 full titles in a
     GitHub PR title would be unreadable long before that ceiling."""
     titles = [rule["title"] for rule in rules]
     if len(titles) <= 3:
@@ -576,7 +581,7 @@ async def batch_propose_rules(
     org: OrgContext = Depends(require_entitled_admin),
     session: AsyncSession = Depends(get_session),
 ):
-    """propose_rule's batched sibling (fix-plan-v3 2.4) — one branch, one
+    """propose_rule's batched sibling — one branch, one
     put_file per rule, ONE pull request for the whole batch, and every
     rule in it moves to pending_merge together carrying the SAME
     prNumber/prUrl. Built for `gnt prebrain`'s draft-rule output (5-8
@@ -775,7 +780,7 @@ async def deprecate_rule(
         before=before,
         after=rule,
     )
-    # fix-plan-v2 item 18 calibration data — before, not rule: age is
+    # Calibration data — before, not rule: age is
     # measured off the rule as it stood right before this deprecation,
     # same object log_revalidation_if_previously_stale below checks.
     await log_deprecation(session, org.org_id, before)
@@ -792,8 +797,8 @@ async def create_rule_amendment(
 ) -> dict[str, Any]:
     """The actual new-draft-version-of-an-approved-rule logic behind POST
     /{rule_id}/edit below — pulled out, same reasoning as create_draft_rule
-    above, so workers/tasks_contradictions.py's contradiction sweep
-    (fix-plan-v3 3.2) can create the exact same shape of amendment draft a
+    above, so workers/tasks_contradictions.py's nightly contradiction
+    sweep can create the exact same shape of amendment draft a
     human editing an approved rule through the API would — new slug, new
     draft row, previousVersionId pointing at `current`, version bumped by
     one — through a completely different caller (a nightly cron job, not
@@ -836,7 +841,7 @@ async def create_rule_amendment(
         before=None,
         after=new_version,
     )
-    # fix-plan-v2 item 18 calibration data — current, the rule this edit
+    # Calibration data — current, the rule this edit
     # is superseding, not new_version, which was never in RuleStaleness's
     # snapshot to begin with.
     await log_revalidation_if_previously_stale(session, org_id, current["slug"], "edited")

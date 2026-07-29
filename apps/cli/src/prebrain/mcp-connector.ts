@@ -1,4 +1,4 @@
-// Shared MCP-client core for the two "MCP-in" walkers (fix-plan-v3 3.4):
+// Shared MCP-client core for the two "MCP-in" walkers:
 // gnt connecting OUT, as a client, to a customer's own Notion/monday.com
 // MCP server to read content. This is the mirror image of apps/api's own
 // MCP server (other agents call INTO that one, see test_mcp_tools.py for

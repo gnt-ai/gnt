@@ -1,4 +1,4 @@
-// Live-Linear adapter (connector sprint T2.3): reads issue descriptions
+// Live-Linear adapter: reads issue descriptions
 // and comments, plus project documents, from customer-chosen teams and
 // projects through Linear's own official MCP server -- an issue's title
 // and description become a rule's title-shaped source content, its
@@ -83,9 +83,9 @@
 // author before this file ever sees it. A comment thread here ends up
 // structurally identical to what mcp-monday.ts already does for an item's
 // updates: one joined block of comment bodies under its own heading. A
-// dedicated chunker was considered and not built for this reason -- T2.4
-// (Jira) should make the same call unless its own tool responses turn out
-// to carry a shape this reasoning doesn't cover.
+// dedicated chunker was considered and not built for this reason -- the
+// Jira adapter should make the same call unless its own tool responses
+// turn out to carry a shape this reasoning doesn't cover.
 import { chunkText } from "./chunk.js";
 import { buildProseDocument } from "./mcp-framework/document.js";
 import { resolveMcpToken, runMcpInWalk } from "./mcp-framework/walker.js";

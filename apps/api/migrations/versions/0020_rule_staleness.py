@@ -1,5 +1,5 @@
-"""rule_staleness — nightly staleness snapshot for fix-plan-v2 item 9
-(staleness surfaced at serving time). Genuinely org-scoped with no
+"""rule_staleness — nightly staleness snapshot so staleness can be surfaced
+at serving time. Genuinely org-scoped with no
 auth-bootstrap lookup need, same reasoning as migration 0019's rule_gaps,
 so RLS follows the same pattern.
 

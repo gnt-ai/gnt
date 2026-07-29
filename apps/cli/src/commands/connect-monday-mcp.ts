@@ -1,4 +1,4 @@
-// `gnt connect monday-mcp` (fix-plan-v3 3.4): stores a monday.com API
+// `gnt connect monday-mcp`: stores a monday.com API
 // token locally for `gnt prebrain --mcp-monday` to use. Built on the
 // connector framework's shared runConnectFlow (mcp-framework/connect.ts)
 // rather than a hand-written saveMcpToken call -- runConnectFlow validates
@@ -6,7 +6,7 @@
 // customer never ends up with a saved-but-broken token. Same pattern
 // connect-linear-mcp.ts/connect-sentry-mcp.ts/connect-granola-mcp.ts already
 // use (this connector predates the framework and originally hand-wrote the
-// save; T2.9's verification pass brought it onto runConnectFlow like the
+// save; it was later migrated onto runConnectFlow like the
 // rest).
 //
 // -- Why this file supplies its own `validate`, unlike the other three --

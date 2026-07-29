@@ -1,6 +1,6 @@
-"""Founder/support tool for an org-wide key kill switch (security fix-plan
-item C1) -- lists every mcp_api_keys row (both cli and mcp) for one org,
-and optionally revokes every one that isn't already revoked.
+"""Founder/support tool for an org-wide key kill switch -- lists every
+mcp_api_keys row (both cli and mcp) for one org, and optionally revokes
+every one that isn't already revoked.
 
 Talks to the database directly rather than through an HTTP endpoint:
 mcp_api_keys is what issues per-org auth in the first place, so there's no

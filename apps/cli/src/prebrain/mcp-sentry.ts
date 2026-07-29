@@ -1,4 +1,4 @@
-// Live-Sentry adapter (connector sprint T2.5): reads a project's issue
+// Live-Sentry adapter: reads a project's issue
 // titles and statuses through Sentry's own official MCP server. Same
 // framework shape as mcp-notion.ts/mcp-monday.ts -- declare a server, a
 // read-only allowlist, and a chunker, then walk. See this directory's
@@ -17,8 +17,8 @@
 // gives.
 //
 // -- What this adapter reads, and why it's narrower than issue comments --
-// T2.5's original scope called for postmortem and issue-comment prose.
-// That scope was checked against the live getsentry/sentry-mcp reference
+// This adapter's original scope called for postmortem and issue-comment
+// prose. That scope was checked against the live getsentry/sentry-mcp reference
 // server source (packages/mcp-core/src/toolDefinitions.json, surfaces.ts,
 // and the individual tool handlers under tools/catalog/), not assumed from
 // documentation, and two facts changed the design:

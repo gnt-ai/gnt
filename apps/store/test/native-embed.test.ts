@@ -2,8 +2,8 @@ import { afterEach, beforeEach, describe, expect, test } from "bun:test";
 import { EMBEDDING_DIMENSIONS, EmbedError, zeroEntropyEmbed } from "../src/native/embed.ts";
 
 /** Deterministic, no-network coverage of the ZeroEntropy embed transport —
- * mocks globalThis.fetch so this never makes a real paid call (Global Rule
- * 6), while still proving the transport speaks ZE's actual wire shape
+ * mocks globalThis.fetch so this never makes a real paid call, while
+ * still proving the transport speaks ZE's actual wire shape
  * (`{results: [{embedding}]}`, not the AI-SDK-normalized `{data: [...]}`
  * shape the vendored engine's gateway rewrites it to) and enforces the
  * 1280-dim contract content_chunks.embedding is fixed to. */

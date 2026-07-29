@@ -1,6 +1,6 @@
-// Privacy-gate quality harness -- fix-plan-v3 1.4 (the corpus/measured-
-// recall half; open-sourcing the module is a separate, deferred decision
-// and not this file's concern).
+// Privacy-gate quality harness (the corpus/measured-recall half;
+// open-sourcing the module is a separate decision and not this file's
+// concern).
 //
 // Mirrors the shape of apps/api/eval/rule_retrieval/harness.py: pure
 // scoring, no knowledge of how a result was produced. This module never

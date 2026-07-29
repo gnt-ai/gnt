@@ -61,11 +61,10 @@ NOTE_MAX_CHARS = 160
 
 def summarize(comment: str) -> str:
     """Most of config.py's field comments are multi-paragraph design
-    rationale (fix-plan item numbers, migration references) -- accurate,
-    but unreadable stuffed whole into a table cell. Truncates to a short
-    lead-in instead of a hand-picked summary, so this stays a mechanical
-    transform of the real comment (can't drift) rather than editorial
-    content (could)."""
+    rationale -- accurate, but unreadable stuffed whole into a table cell.
+    Truncates to a short lead-in instead of a hand-picked summary, so this
+    stays a mechanical transform of the real comment (can't drift) rather
+    than editorial content (could)."""
     if len(comment) <= NOTE_MAX_CHARS:
         return comment
     cut = comment[:NOTE_MAX_CHARS].rsplit(" ", 1)[0]

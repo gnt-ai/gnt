@@ -8,7 +8,7 @@ function yesNo(value: boolean): string {
   return value ? success("yes") : error("no");
 }
 
-// fix-plan-v2 item 10 -- "N (+M vs. last week)" / "N (flat vs. last week)",
+// "N (+M vs. last week)" / "N (flat vs. last week)",
 // same shape gnt.email.render_weekly_digest uses for the email version of
 // these same numbers (apps/api/src/gnt/email.py's own _delta helper) --
 // one definition of what "moving" looks like, not two independently
@@ -62,7 +62,7 @@ export async function status(): Promise<void> {
     ["Slack connected", yesNo(data.slack_connected)],
     ["MCP key exists", yesNo(data.mcp_key_exists)],
   ];
-  // MCP-in connector health (connector sprint T1): each registered adapter
+  // MCP-in connector health: each registered adapter
   // contributes its own line the same way Slack/GitHub do above. Read from
   // this device's local token store, not the API -- these tokens never
   // reach gnt's servers -- so no fetch and nothing to fail here. A new
@@ -71,18 +71,18 @@ export async function status(): Promise<void> {
   for (const connector of mcpConnectorHealth()) {
     lines.push([`${connector.label} connected`, yesNo(connector.connected)]);
   }
-  // GitLab threads (connector sprint T4.1) is a direct-REST connector, not
+  // GitLab threads is a direct-REST connector, not
   // an MCP-in adapter, so it isn't in MCP_IN_ADAPTERS and mcpConnectorHealth
   // above never sees it -- same local-token-presence definition of
   // "connected" as that loop uses, read straight off this device's own
   // mcp-tokens.json.
   lines.push(["GitLab threads connected", yesNo(loadMcpToken(GITLAB_TOKEN_ID) !== undefined)]);
-  // HubSpot notes (connector sprint T2.8): not an MCP-in adapter (see
+  // HubSpot notes: not an MCP-in adapter (see
   // prebrain/hubspot-notes.ts's own doc comment for why), so it isn't in
   // MCP_IN_ADAPTERS/mcpConnectorHealth above -- same local-token-presence
   // check, added by hand for this one connector.
   lines.push(["HubSpot connected", yesNo(loadMcpToken(HUBSPOT_TOKEN_ID) !== undefined)]);
-  // Airtable (connector sprint T4.4): a direct-REST connector, not an
+  // Airtable: a direct-REST connector, not an
   // MCP-in adapter, so it isn't in MCP_IN_ADAPTERS and doesn't come out of
   // mcpConnectorHealth() above -- same reason figma-comments.ts/
   // datadog-notebooks.ts's own connectors aren't in that registry either.
@@ -120,7 +120,7 @@ export async function status(): Promise<void> {
       // malformed onboarding response body -- omit the lines, not the command
     }
   }
-  // fix-plan-v2 item 9 -- same best-effort treatment. limit=1 above since
+  // Same best-effort treatment. limit=1 above since
   // this only needs the count; `gnt stale` has the full list.
   if (staleResult.status === "fulfilled" && staleResult.value.ok) {
     try {
@@ -133,9 +133,9 @@ export async function status(): Promise<void> {
       // malformed staleness response body -- omit the line, not the command
     }
   }
-  // fix-plan-v2 item 10 -- the plan's own "painkiller acceptance gate"
-  // numbers, same best-effort treatment as billing/onboarding/staleness
-  // above: a hiccup here omits these lines, not the rest of `gnt status`.
+  // ROI/acceptance-gate numbers, same best-effort treatment as
+  // billing/onboarding/staleness above: a hiccup here omits these lines,
+  // not the rest of `gnt status`.
   if (roiResult.status === "fulfilled" && roiResult.value.ok) {
     try {
       const roi = await roiResult.value.json();

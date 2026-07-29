@@ -1,15 +1,14 @@
-"""fix-plan-v3 3.1 — the /brain slash command, revived to create draft
-rules instead of returning the retired-stub message. Covers: a non-empty
-`text` creates a real draft rule through the same create_draft_rule() every
-other draft-rule front door shares, with the server-side privacy gate
-applied (fix-plan-v3 3.0) exactly like routers/webhooks.py's ingest_webhook
-— proven with a real PII payload masked end to end, not just that the gate
-function runs in isolation. Empty/whitespace-only text is a no-op (the
-usage message, no rule created). Tenant isolation: a workspace's command
-can only ever create a rule visible to the org that workspace is connected
-to. Signature verification and the unknown-workspace branch (both
-untouched by this task) are covered directly too, since no test file for
-this router existed before this task.
+"""The /brain slash command, revived to create draft rules instead of
+returning the retired-stub message. Covers: a non-empty `text` creates a
+real draft rule through the same create_draft_rule() every other
+draft-rule front door shares, with the server-side privacy gate applied
+exactly like routers/webhooks.py's ingest_webhook — proven with a real
+PII payload masked end to end, not just that the gate function runs in
+isolation. Empty/whitespace-only text is a no-op (the usage message, no
+rule created). Tenant isolation: a workspace's command can only ever
+create a rule visible to the org that workspace is connected to.
+Signature verification and the unknown-workspace branch are covered
+directly too, since no test file for this router existed before now.
 """
 
 import hashlib
@@ -320,10 +319,10 @@ async def test_slash_command_help_and_bare_text_return_the_same_usage_message(
 async def test_slash_command_masks_a_real_email_end_to_end(
     test_app_factory, db_session, slack_routers
 ):
-    """fix-plan-v3 3.0's server-side privacy gate applies here exactly like
-    it does on the webhook ingest path — a Slack message is the same kind
-    of ambient third-party content the gate exists for. Proven with a
-    real detector hit, not just that apply_privacy_gate=True is passed."""
+    """The server-side privacy gate applies here exactly like it does on
+    the webhook ingest path — a Slack message is the same kind of ambient
+    third-party content the gate exists for. Proven with a real detector
+    hit, not just that apply_privacy_gate=True is passed."""
     org_id = f"org_test_{uuid.uuid4().hex[:8]}"
     team_id = await _connect_workspace(db_session, org_id)
 

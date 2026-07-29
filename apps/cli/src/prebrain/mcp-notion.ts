@@ -1,4 +1,4 @@
-// Live-Notion adapter (fix-plan-v3 3.4): the MCP-in mirror of
+// Live-Notion adapter: the MCP-in mirror of
 // notion-export.ts -- same target content (pages, plus their comments),
 // same PrebrainChunk shape, same chunkText heuristic -- but read live
 // through Notion's own official MCP server instead of a static

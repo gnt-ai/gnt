@@ -1,5 +1,5 @@
-"""sync_zendesk / sync_zendesk_for_org (connector sprint T4.2). Mirrors
-test_tasks_contradictions.py's shape: exercised for real against a test
+"""sync_zendesk / sync_zendesk_for_org, the Zendesk helpdesk connector.
+Mirrors test_tasks_contradictions.py's shape: exercised for real against a test
 Postgres + the real store subprocess, with the Zendesk client, the
 extraction call, and the GitHub client all mocked at their own call
 boundaries.
@@ -51,10 +51,10 @@ async def _test_db_sessionmaker(monkeypatch):
     async def _noop(*args, **kwargs):
         return None
 
-    # C9a's own dedicated coverage lives in tests/test_llm_quota.py — every
-    # test here that isn't specifically exercising the quota gate stubs it
-    # out, same convention test_tasks_contradictions.py's own
-    # _test_db_sessionmaker fixture uses.
+    # The LLM spend quota gate has its own dedicated coverage in
+    # tests/test_llm_quota.py — every test here that isn't specifically
+    # exercising the quota gate stubs it out, same convention
+    # test_tasks_contradictions.py's own _test_db_sessionmaker fixture uses.
     monkeypatch.setattr(tasks_zendesk, "check_llm_quota", _ok)
     monkeypatch.setattr(tasks_zendesk, "record_llm_usage", _noop)
     yield session_factory
@@ -271,11 +271,12 @@ async def test_candidate_proposed_as_a_real_pr_when_github_is_connected(
 async def test_content_reaching_extraction_is_already_gate_masked(
     _test_db_sessionmaker, org_a, _no_articles_or_tickets, _mock_extraction, monkeypatch
 ):
-    """fix-plan-v3 3.0 — the founder decision behind this task requires
-    masking BEFORE extraction, not just before storage. Proves it
-    directly: a macro whose action text contains an email address must
-    reach the extraction call with that email already replaced by a
-    placeholder, never the raw address."""
+    """PII masking is a hard requirement on the extraction path itself, not
+    just before storage: content must be masked BEFORE it ever reaches the
+    extraction call, not filtered afterward. Proves it directly: a macro
+    whose action text contains an email address must reach the extraction
+    call with that email already replaced by a placeholder, never the raw
+    address."""
     _state, calls = _mock_extraction
 
     async def _macros(subdomain, agent_email, api_token):

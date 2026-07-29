@@ -1,7 +1,7 @@
 # gnt.ai onboarding guide
 
 Setup reference for the `gnt` CLI (npm package `@gnt-ai/cli`, source at
-github.com/gnt-ai/gnt). Hosted at gntai.dev, not gnt.ai — that domain
+github.com/lukaadzic/GNT-AI). Hosted at gntai.dev, not gnt.ai — that domain
 currently points elsewhere and isn't under this project's control; gntai.dev
 is the real one.
 

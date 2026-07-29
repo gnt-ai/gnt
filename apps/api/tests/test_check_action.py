@@ -1,15 +1,15 @@
 """Unit coverage for check_action's verdict logic (gnt/action_check.py),
 mocked at the store-retrieval / LLM-judge boundary — the same discipline
-tests/test_rule_conflict.py uses (Global Rule 6: no real embedding or LLM
-calls from a test loop). The end-to-end wiring through the real apps/store,
+tests/test_rule_conflict.py uses (no real embedding or LLM calls from a
+test loop). The end-to-end wiring through the real apps/store,
 including tenant scoping, is exercised in tests/test_mcp_tools.py.
 
 The point of this file is the non-negotiable guarantee: check_action never
 fabricates a verdict. Every failure mode — zero coverage, retrieval error,
-LLM/parse error, an ungrounded or fabricated citation, an exhausted C9a LLM
+LLM/parse error, an ungrounded or fabricated citation, an exhausted LLM
 spend quota — must land on needs_human, never on allowed or blocked.
 
-C9a's real quota gate (gnt.llm_quota) and the plan's monthly
+The real quota gate (gnt.llm_quota) and the plan's monthly
 check_action cap (gnt.plan_limits) are both stubbed out by default for
 every test in this file (see _no_llm_quota_gate below) — both are real
 Postgres-backed checks with their own dedicated coverage
@@ -52,7 +52,8 @@ def _bare(rule: dict) -> str:
 
 def _judgment(verdict: str, cited_rule_ids: list[str], reason: str) -> tuple[CheckActionJudgment, int, int]:
     # judge_action returns (judgment, input_tokens, output_tokens) — see its
-    # own docstring on why (C9a's cost tracking needs the real usage).
+    # own docstring on why (LLM spend tracking needs the real usage, not an
+    # estimate).
     # Token counts here are arbitrary but non-zero, matching a real response.
     return CheckActionJudgment(verdict=verdict, cited_rule_ids=cited_rule_ids, reason=reason), 120, 40
 
@@ -86,8 +87,8 @@ async def test_retrieval_failure_returns_needs_human(monkeypatch):
     """A retrieval failure must degrade to needs_human — never surface as a
     verdict, and never crash the tool. Also proves no_coverage stays False
     here even though rules_retrieved is also 0: a retrieval failure is a
-    system error, not "nothing governs this" (fix-plan item 8's gap logging
-    must not conflate the two off rules_retrieved alone)."""
+    system error, not "nothing governs this" (gap logging must not conflate
+    the two off rules_retrieved alone)."""
 
     async def _boom(org_id, query):
         raise RuntimeError("store unreachable")
@@ -101,7 +102,7 @@ async def test_retrieval_failure_returns_needs_human(monkeypatch):
 
 
 async def test_llm_quota_exceeded_returns_needs_human(monkeypatch):
-    """C9a — an exhausted monthly LLM spend quota (this org's own, or the
+    """An exhausted monthly LLM spend quota (this org's own, or the
     global circuit breaker) must degrade to needs_human, the same
     conservative default every other failure mode here uses, and the paid
     judge_action call must never fire."""
@@ -286,7 +287,7 @@ async def test_below_threshold_rules_excluded(monkeypatch):
 
 
 async def test_llm_usage_recorded_after_a_successful_call(monkeypatch):
-    """C9a — a successful judge_action call must record its real token
+    """A successful judge_action call must record its real token
     usage (not a flat estimate) via record_llm_usage, using the model
     config.py's check_action_model names."""
     from gnt.config import get_settings
@@ -318,7 +319,7 @@ async def test_llm_usage_recorded_after_a_successful_call(monkeypatch):
 
 def test_judge_action_wraps_and_sanitizes_untrusted_input(monkeypatch):
     """judge_action must treat the caller's description/context as data: it
-    sanitizes them (Global Rule 2b) and wraps them in a delimited block the
+    sanitizes them and wraps them in a delimited block the
     system prompt marks as data-not-instructions. This proves an injection
     phrase in the description is defanged before it reaches the model, and
     that the retrieved rule's id is what the model is told to cite."""

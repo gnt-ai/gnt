@@ -3,14 +3,15 @@ opening a PR (see pipeline/rule_conflict.py's module docstring for why
 this is soft, not a blocking gate like the old decision_rules pipeline's
 RuleReviewCase). Mocks at the search_rules/judge_conflict boundary for
 find_conflict's own branching; judge_conflict gets its own direct
-coverage below (fix-plan-v2 item 17) since it does sanitize + wrap the
+coverage below since it does sanitize + wrap the
 rule text it sends the model, same discipline as
 tests/test_check_action.py's judge_action test.
 
-C9a's real quota gate (gnt.llm_quota) is stubbed out by default for every
-test in this file (see _no_llm_quota_gate below) — it has its own
-dedicated coverage in tests/test_llm_quota.py; one test below overrides
-the stub to prove the gate is actually wired into find_conflict."""
+The real per-org LLM spend quota gate (gnt.llm_quota) is stubbed out by
+default for every test in this file (see _no_llm_quota_gate below) — it
+has its own dedicated coverage in tests/test_llm_quota.py; one test below
+overrides the stub to prove the gate is actually wired into
+find_conflict."""
 
 import pytest
 
@@ -40,7 +41,8 @@ def _hit(slug: str, title: str = "Existing rule", body: str = "Existing body") -
 
 def _verdict(relation: str, explanation: str) -> tuple[RuleMergeVerdict, int, int]:
     # judge_conflict returns (verdict, input_tokens, output_tokens) — see
-    # its own docstring on why (C9a's cost tracking needs the real usage).
+    # its own docstring on why: the per-org LLM spend quota's cost
+    # tracking needs the real usage, not an estimate.
     return RuleMergeVerdict(relation=relation, explanation=explanation), 150, 45
 
 
@@ -121,7 +123,7 @@ async def test_judge_failure_returns_none(monkeypatch):
 
 
 async def test_llm_quota_exceeded_returns_none_and_skips_judge(monkeypatch):
-    """C9a — an exhausted LLM spend quota falls into the same "any failure
+    """An exhausted per-org LLM spend quota falls into the same "any failure
     = no conflict found" path as every other failure mode here (see the
     module docstring: this is a soft, best-effort check that never blocks
     propose_rule from opening its PR). The paid judge_conflict call must
@@ -143,7 +145,7 @@ async def test_llm_quota_exceeded_returns_none_and_skips_judge(monkeypatch):
 
 
 async def test_llm_usage_recorded_after_a_successful_call(monkeypatch):
-    """C9a — a successful judge_conflict call must record its real token
+    """A successful judge_conflict call must record its real token
     usage (not a flat estimate) via record_llm_usage, using the model
     config.py's rule_merge_model names."""
     from gnt.config import get_settings
@@ -174,7 +176,8 @@ async def test_llm_usage_recorded_after_a_successful_call(monkeypatch):
 
 def test_judge_conflict_wraps_and_sanitizes_both_rules(monkeypatch):
     """judge_conflict must treat both rule bodies as data: sanitize them
-    (Global Rule 2b) and wrap each in its own delimited block. The
+    (never let rule text be interpreted as instructions to the model) and
+    wrap each in its own delimited block. The
     "existing" rule is nominally already-approved, but its stored body can
     be overwritten by whatever a merged PR's file diff contains
     (routers/github_webhook.py has no sanitize() call on that path) — so

@@ -1,17 +1,17 @@
-"""check_action — the enforcement tool (gnt.ai fix plan v2, item 7).
+"""check_action — the enforcement tool.
 
 Every other MCP tool lets an agent *look policy up*; this one intercepts an
 action before the agent takes it and returns a verdict — allowed, blocked, or
 needs_human — grounded in the org's approved, human-reviewed rules. Lookup is
 a vitamin; interception is the painkiller.
 
-The single non-negotiable property (a standing rule in the plan): check_action
-must NEVER fabricate a verdict. A retrieval failure, a zero-coverage query, a
-malformed model response, or an LLM error all degrade to needs_human — never
-silently to `allowed` (an agent would proceed thinking it was cleared) and
-never to `blocked` (a false positive that erodes trust). That guarantee lives
-in the CODE below, not just in the prompt: `evaluate_action`'s verdict starts
-at needs_human and only flips to allowed/blocked on an explicit, well-formed
+The single non-negotiable property: check_action must NEVER fabricate a
+verdict. A retrieval failure, a zero-coverage query, a malformed model
+response, or an LLM error all degrade to needs_human — never silently to
+`allowed` (an agent would proceed thinking it was cleared) and never to
+`blocked` (a false positive that erodes trust). That guarantee lives in the
+CODE below, not just in the prompt: `evaluate_action`'s verdict starts at
+needs_human and only flips to allowed/blocked on an explicit, well-formed
 model response that cites at least one rule we actually retrieved. A prompt can
 be ignored by the model; this control flow cannot.
 
@@ -19,13 +19,12 @@ Retrieval reuses the exact same org-scoped path as search_rules (store_client's
 `search_rules`, which the store scopes per org) — there is no second retrieval
 mechanism, and no way for this tool to read another org's rules.
 
-fix-plan-v2 item 8 (gap-aware answers): the returned dict's `no_coverage` flag
-marks the one needs_human case that specifically means "no approved rule
-exists for this" — as opposed to a retrieval failure, an LLM error, or the
-rules being retrieved but ambiguous — so mcp_server/server.py can log it as an
-org coverage gap without guessing from `rules_retrieved == 0` alone (that
-alone is also true for a retrieval failure — see the comment on `_needs_human`
-below).
+The returned dict's `no_coverage` flag marks the one needs_human case that
+specifically means "no approved rule exists for this" — as opposed to a
+retrieval failure, an LLM error, or the rules being retrieved but ambiguous —
+so mcp_server/server.py can log it as an org coverage gap without guessing
+from `rules_retrieved == 0` alone (that alone is also true for a retrieval
+failure — see the comment on `_needs_human` below).
 """
 
 import asyncio
@@ -104,8 +103,8 @@ def judge_action(
     verdict. Structured output (CheckActionJudgment) means a malformed answer
     raises rather than parsing into a bogus allowed/blocked.
 
-    Returns (judgment, input_tokens, output_tokens) — C9a's cost tracking
-    (gnt.llm_quota) needs the real token counts this call actually used,
+    Returns (judgment, input_tokens, output_tokens) — the cost tracking in
+    gnt.llm_quota needs the real token counts this call actually used,
     not a flat per-call estimate, so evaluate_action can record real spend
     right after this returns."""
     action_lines = [f"Action: {sanitize(description)}"]
@@ -139,14 +138,13 @@ def _needs_human(reason: str, *, rules_retrieved: int, no_coverage: bool = False
         "reason": reason,
         "cited_rules": [],
         "rules_retrieved": rules_retrieved,
-        # fix-plan-v2 item 8 (gap-aware answers): distinguishes WHY this
-        # needs_human happened. rules_retrieved == 0 alone is ambiguous —
-        # it's also what a retrieval-failure needs_human returns (the
-        # except block right below in evaluate_action), which is a system
-        # error, not a coverage gap. no_coverage is only ever True from the
-        # explicit "if not retrieved" branch: a genuine "no approved rule
-        # covers this" case, the only kind mcp_server/server.py should log
-        # as a gap for `gnt gaps`.
+        # Distinguishes WHY this needs_human happened. rules_retrieved == 0
+        # alone is ambiguous — it's also what a retrieval-failure needs_human
+        # returns (the except block right below in evaluate_action), which
+        # is a system error, not a coverage gap. no_coverage is only ever
+        # True from the explicit "if not retrieved" branch: a genuine "no
+        # approved rule covers this" case, the only kind mcp_server/server.py
+        # should log as a gap for `gnt gaps`.
         "no_coverage": no_coverage,
     }
 
@@ -183,7 +181,7 @@ async def evaluate_action(org_id: str, description: str, context: str | None = N
             no_coverage=True,
         )
 
-    # C9a — cost gate, checked BEFORE the paid model call fires. An
+    # Cost gate, checked BEFORE the paid model call fires. An
     # exceeded quota (this org's own, or the global circuit breaker) or a
     # failure reading spend both degrade to needs_human here, the same
     # conservative default every other failure mode in this function

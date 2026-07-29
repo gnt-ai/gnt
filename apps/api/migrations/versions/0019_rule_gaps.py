@@ -1,4 +1,4 @@
-"""rule_gaps — coverage-gap log for fix-plan-v2 item 8 (gap-aware answers).
+"""rule_gaps — coverage-gap log backing gap-aware answers.
 One row per search_rules/check_action call that surfaced a "no approved
 rule covers this" signal; `gnt gaps` aggregates these to show an org its
 top uncovered queries. Genuinely org-scoped with no auth-bootstrap lookup

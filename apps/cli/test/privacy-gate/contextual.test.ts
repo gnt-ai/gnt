@@ -1,5 +1,5 @@
 // Layer 3 (local-model contextual pass) is a documented no-op stub until
-// fix-plan-v3 2.3 wires up a real local model runtime -- see the writeup
+// a real local model runtime gets wired up -- see the writeup
 // in layer3-contextual.ts. These tests exist to prove the interface shape
 // is right and that it's a true pass-through: layers 1 and 2 still do all
 // the work end to end with layer 3 contributing nothing on top.

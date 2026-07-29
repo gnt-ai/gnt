@@ -1,4 +1,4 @@
-// Tests for the redaction report -- fix-plan-v3 1.3's audit trail. Two
+// Tests for the redaction report -- the privacy gate's audit trail. Two
 // sections: buildRedactionReport (pure content, no I/O, covers every
 // PlaceholderKind the layers above it can produce) and writeRedactionReport
 // (a real write into a GNT_CONFIG_DIR-scoped tmpdir, matching the pattern

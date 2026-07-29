@@ -1,6 +1,6 @@
-"""fix-plan-v3 tier 0 item 0.3 (C4) — org offboarding.
+"""Org offboarding.
 
-Covers the two non-negotiables the plan calls out explicitly: a non-admin
+Covers the two non-negotiables for this flow: a non-admin
 (and an admin-snapshotted API key) can never kick this off, and an org can
 never delete an org it doesn't belong to. Plus the mechanics: the
 confirmation gate genuinely requires two calls (a bare confirm with no

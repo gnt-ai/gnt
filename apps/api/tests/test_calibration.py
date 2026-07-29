@@ -1,5 +1,5 @@
-"""calibration_events / calibration.py (fix-plan-v2 item 18 — label
-confidence/decay as uncalibrated, and start collecting calibration data).
+"""calibration_events / calibration.py — labels confidence/decay as
+uncalibrated, and starts collecting calibration data.
 Covers each of the three calibration inputs' write paths directly (this
 module has no HTTP surface of its own — routers/rules.py and
 routers/github_webhook.py's own tests cover the call sites), that every

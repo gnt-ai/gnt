@@ -1,5 +1,5 @@
 // Extraction: turns gate-passed source chunks into structured draft
-// rules, in either of two modes (fix-plan-v3 2.3). Both modes run
+// rules, in either of two modes. Both modes run
 // entirely from this CLI process on the customer's device -- cloud mode
 // calls Anthropic's Messages API directly (cloud.ts), local mode calls a
 // local Ollama daemon directly (local.ts). Neither mode's model call
@@ -7,9 +7,9 @@
 // own `Anthropic` client from a key that came from the caller's own
 // machine and calls Anthropic's API directly; extractFromChunkLocal
 // fetches a `localhost` (or otherwise caller-specified) Ollama endpoint
-// directly. That's what "source text reaches a cloud model only from
-// their device... nothing routes through gnt infrastructure"
-// (fix-plan-v3's locked architecture constraint 2) means in code: there
+// directly. That's the hard architecture constraint that "source text
+// reaches a cloud model only from their device... nothing routes through
+// gnt infrastructure" means in code: there
 // is no fetch call anywhere in this module, or in cloud.ts/local.ts,
 // that targets a gnt-owned host.
 import { extractFromChunkCloud } from "./cloud.js";
@@ -63,10 +63,10 @@ function excerptOf(text: string): string {
   return collapsed.length > EXCERPT_MAX_CHARS ? `${collapsed.slice(0, EXCERPT_MAX_CHARS - 1)}…` : collapsed;
 }
 
-// "README.md:42-58", or "README.md:42" for a single-line chunk -- the
-// readable provenance string fix-plan-v3 2.3 asks for, built straight
-// off the chunk's own local path/line-span fields so task 2.4 can pass
-// it through to CreateRuleRequest.source unchanged.
+// "README.md:42-58", or "README.md:42" for a single-line chunk -- a
+// readable provenance string, built straight
+// off the chunk's own local path/line-span fields so the draft-PR step
+// downstream can pass it through to CreateRuleRequest.source unchanged.
 function buildSourceString(chunk: PrebrainChunk): string {
   return chunk.startLine === chunk.endLine
     ? `${chunk.sourcePath}:${chunk.startLine}`
@@ -167,7 +167,7 @@ async function mapWithConcurrency<T, R>(
  * whatever partial results survived with no clear signal of the size of
  * what got dropped).
  *
- * C9a's per-org LLM spend quota (gnt.llm_quota, enforced server-side on
+ * The per-org LLM spend quota (gnt.llm_quota, enforced server-side on
  * gnt's own call sites: check_action, propose_rule's conflict check)
  * does not apply here -- this call never reaches gnt's servers at all.
  * The customer's own Anthropic key, or their own local Ollama daemon,

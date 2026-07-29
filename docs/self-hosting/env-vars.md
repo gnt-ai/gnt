@@ -43,22 +43,22 @@ default and is required to boot even if you never connect Slack — see the
 | `TRANSCRIBE_RATE_LIMIT_PER_HOUR` | `int` | no | `60` |  |
 | `CONTRIBUTOR_HASH_SECRET` | `str` | yes | `(no default)` |  |
 | `CLI_KEY_RATE_LIMIT_PER_HOUR` | `int` | no | `10` | Abuse backstop on POST /v1/settings/cli-key (gnt login's minting endpoint) — not a cost concern like transcribe above, since minting a key is cheap. It's here… |
-| `CLI_KEY_DEFAULT_TTL_DAYS` | `int` | no | `90` | fix-plan-v3 item C2 — key expiry and rotation. Applied to newly minted CLI keys only (create_cli_key), not MCP keys (create_mcp_key leaves expires_at null) —… |
-| `WEBHOOK_INGEST_RATE_LIMIT_PER_HOUR` | `int` | no | `100` | fix-plan-v2 item 14 — generic webhook ingestion (routers/webhooks.py). This one's a real abuse vector, not just cost: unlike cli_key_rate_ limit_per_hour above… |
-| `MCP_KEY_RATE_LIMIT_PER_HOUR` | `int` | no | `30` | v3 fix-plan Tier 0 audit finding: create_mcp_key had no rate limit at all, unlike its cli-key sibling above. Same abuse-backstop reasoning as… |
-| `WEBHOOK_INGEST_IP_RATE_LIMIT_PER_HOUR` | `int` | no | `1000` | v3 fix-plan Tier 0 (C9b) — per-IP backstop on the webhook ingest endpoint, on top of webhook_ingest_rate_limit_per_hour above. That limit is keyed per org… |
-| `MAX_DRAFT_RULES_PER_ORG` | `int` | no | `500` | v3 fix-plan Tier 0 (C9b) — "capture/storage ceilings". With the old capture pipeline retired, unbounded draft-rule creation is the closest live equivalent:… |
-| `MAX_RULES_PER_BATCH_PROPOSE` | `int` | no | `20` | fix-plan-v3 2.4 — batch-propose (routers/rules.py) opens one PR for several rules at once. The plan's own recommended batch size is 5-8 rules per PR grouped by… |
+| `CLI_KEY_DEFAULT_TTL_DAYS` | `int` | no | `90` | Key expiry and rotation. Applied to newly minted CLI keys only (create_cli_key), not MCP keys (create_mcp_key leaves expires_at null) — see settings.py's… |
+| `WEBHOOK_INGEST_RATE_LIMIT_PER_HOUR` | `int` | no | `100` | Generic webhook ingestion (routers/webhooks.py) rate limit. This one's a real abuse vector, not just cost: unlike cli_key_rate_ limit_per_hour above (gated on… |
+| `MCP_KEY_RATE_LIMIT_PER_HOUR` | `int` | no | `30` | create_mcp_key had no rate limit at all, unlike its cli-key sibling above. Same abuse-backstop reasoning as cli_key_rate_limit_per_hour (minting a key is… |
+| `WEBHOOK_INGEST_IP_RATE_LIMIT_PER_HOUR` | `int` | no | `1000` | Per-IP backstop on the webhook ingest endpoint, on top of webhook_ingest_rate_limit_per_hour above. That limit is keyed per org (resolved from the token), so… |
+| `MAX_DRAFT_RULES_PER_ORG` | `int` | no | `500` | Storage ceiling on unreviewed draft rules. With the old capture pipeline retired, unbounded draft-rule creation is the closest live equivalent: both POST… |
+| `MAX_RULES_PER_BATCH_PROPOSE` | `int` | no | `20` | batch-propose (routers/rules.py) opens one PR for several rules at once. gnt prebrain's own grouping heuristic targets 5-8 rules per PR grouped by topic — this… |
 | `WEB_ORIGIN` | `str` | no | `'http://localhost:3000'` | apps/web's own public base URL. Doubles as the Better Auth jwt plugin's "iss"/"aud" claim value (apps/web/lib/auth.ts doesn't override either) and the base for… |
 | `API_ORIGIN` | `str` | no | `'http://localhost:8000'` | This API's own public origin — needed to build the exact redirect_uri sent to Slack's OAuth authorize/token endpoints, which must byte-for- byte match what's… |
 | `MCP_EXTRA_ALLOWED_HOSTS` | `str` | no | `''` | Extra hostnames the MCP server's dns-rebinding check accepts besides api_origin's own — comma-separated. Exists for the legacy .up.railway.app domain:… |
 | `COMPILE_DEBOUNCE_SECONDS` | `int` | no | `600` | Skill packs compile `debounce_seconds` after a rule is approved (github_webhook.py's merge handler enqueues the compile job) — dedupes on job id, so several… |
-| `WORKER_MAX_CONCURRENT_JOBS` | `int` | no | `8` | v3 fix-plan Tier 0 (C9b) — worker concurrency cap (workers/worker.py's WorkerSettings.max_jobs). Previously unset, which left arq's own library default (10) as… |
+| `WORKER_MAX_CONCURRENT_JOBS` | `int` | no | `8` | Worker concurrency cap (workers/worker.py's WorkerSettings.max_jobs). Previously unset, which left arq's own library default (10) as the effective cap rather… |
 | `RULE_MERGE_MODEL` | `str` | no | `'claude-haiku-4-5'` | Rule-conflict check propose_rule runs before opening a PR (git-native rules — see pipeline/rule_conflict.py). Cheapest tier for now (validation phase) — Haiku… |
 | `CHECK_ACTION_MODEL` | `str` | no | `'claude-haiku-4-5'` | The LLM judge behind check_action (the enforcement tool — see action_check.py). Haiku-class on purpose: check_action runs inline in an agent's action path, so… |
-| `CONTRADICTION_SWEEP_MAX_COMPARISONS_PER_ORG` | `int` | no | `20` | Nightly contradiction sweep (fix-plan-v2 item 13 — workers/ tasks_contradictions.py). Two separate budgets, not one, because a judge_conflict call and a filed… |
+| `CONTRADICTION_SWEEP_MAX_COMPARISONS_PER_ORG` | `int` | no | `20` | Nightly contradiction sweep (workers/ tasks_contradictions.py). Two separate budgets, not one, because a judge_conflict call and a filed GitHub issue cost… |
 | `CONTRADICTION_SWEEP_MAX_ISSUES_PER_ORG` | `int` | no | `5` |  |
-| `LLM_MONTHLY_QUOTA_PER_ORG_USD` | `float` | no | `5.0` | C9a (fix-plan-v3 Tier 0 prerequisite 0.1) — per-org monthly LLM spend quota, and the global aggregate circuit breaker cap. See gnt.llm_quota for… |
+| `LLM_MONTHLY_QUOTA_PER_ORG_USD` | `float` | no | `5.0` | Per-org monthly LLM spend quota, and the global aggregate circuit breaker cap. See gnt.llm_quota for enforcement/recording and the three call sites it gates… |
 | `LLM_GLOBAL_MONTHLY_CAP_USD` | `float` | no | `50.0` |  |
 | `SLACK_CLIENT_ID` | `str` | yes | `(no default)` | Slack connector — OAuth install (routers/slack.py, gnt/slack/oauth.py) plus the /brain slash command. Client id/secret/signing secret come from a Slack app the… |
 | `SLACK_CLIENT_SECRET` | `str` | yes | `(no default)` |  |
@@ -70,33 +70,33 @@ default and is required to boot even if you never connect Slack — see the
 | `GITHUB_APP_CLIENT_ID` | `str | None` | no | `None` |  |
 | `GITHUB_APP_PRIVATE_KEY` | `str | None` | no | `None` |  |
 | `GITHUB_APP_WEBHOOK_SECRET` | `str | None` | no | `None` |  |
-| `ZENDESK_TOKEN_ENCRYPTION_KEY` | `str` | yes | `(no default)` | Zendesk connector (connector sprint T4.2) — continuous server-side sync, not a CLI-local one-shot (founder decision, 2026-07-18, see workers/tasks_zendesk.py's… |
+| `ZENDESK_TOKEN_ENCRYPTION_KEY` | `str` | yes | `(no default)` | Zendesk connector — continuous server-side sync, not a CLI-local one-shot (founder decision, 2026-07-18, see workers/tasks_zendesk.py's module docstring).… |
 | `ZENDESK_SWEEP_MAX_ITEMS_PER_ORG` | `int` | no | `50` | Nightly Zendesk sync (workers/tasks_zendesk.py). Same "founder-tunable numeric knob, cheap default for the validation phase" convention as… |
-| `NOTION_CLIENT_ID` | `str` | yes | `(no default)` | Notion connector (OAuth sprint T14 dashboard track) — a real OAuth app, unlike Slack's, needs no vendor-side app review to acquire: notion_client_id/secret… |
+| `NOTION_CLIENT_ID` | `str` | yes | `(no default)` | Notion connector — a real OAuth app, unlike Slack's, needs no vendor-side app review to acquire: notion_client_id/secret came from Notion's own dynamic client… |
 | `NOTION_CLIENT_SECRET` | `str` | yes | `(no default)` |  |
 | `NOTION_STATE_SECRET` | `str` | yes | `(no default)` |  |
 | `NOTION_TOKEN_ENCRYPTION_KEY` | `str` | yes | `(no default)` |  |
-| `LINEAR_CLIENT_ID` | `str` | yes | `(no default)` | Linear connector (OAuth sprint T14 dashboard track) — reuses the same "gnt CLI" OAuth app already registered at linear.app/settings/api/ applications for the… |
+| `LINEAR_CLIENT_ID` | `str` | yes | `(no default)` | Linear connector — reuses the same "gnt CLI" OAuth app already registered at linear.app/settings/api/ applications for the CLI's own loopback-redirect flow… |
 | `LINEAR_STATE_SECRET` | `str` | yes | `(no default)` |  |
 | `LINEAR_TOKEN_ENCRYPTION_KEY` | `str` | yes | `(no default)` |  |
-| `INTERCOM_TOKEN_ENCRYPTION_KEY` | `str` | yes | `(no default)` | Intercom connector (connector sprint T4.3) — continuous server-side sync, same architecture as Zendesk's (T4.2, see workers/tasks_intercom.py's module… |
+| `INTERCOM_TOKEN_ENCRYPTION_KEY` | `str` | yes | `(no default)` | Intercom connector — continuous server-side sync, same architecture as Zendesk's (see workers/tasks_intercom.py's module docstring). Self-serve Personal Access… |
 | `INTERCOM_SWEEP_MAX_ITEMS_PER_ORG` | `int` | no | `50` | Nightly Intercom sync (workers/tasks_intercom.py) — same founder- tunable-knob convention zendesk_sweep_max_items_per_org establishes, its own separate cap… |
 | `CONTENT_EXTRACTION_MODEL` | `str` | no | `'claude-haiku-4-5'` | Haiku-tier, same reasoning as check_action_model/rule_merge_model above — turning one piece of already gate-masked support prose into zero or more candidate… |
-| `SEARCH_RULES_SIMILARITY_THRESHOLD` | `float` | no | `0.4` | Execution plan Phase 2 — MCP serving layer over the rules table. |
+| `SEARCH_RULES_SIMILARITY_THRESHOLD` | `float` | no | `0.4` | MCP serving layer over the rules table. |
 | `SEARCH_RULES_RESULT_LIMIT` | `int` | no | `10` |  |
 | `MCP_RATE_LIMIT_PER_KEY` | `int` | no | `100` | Per-key, not per-org — an org with several keys (e.g. one per deployed agent) shouldn't have one noisy integration exhaust the budget for the others. |
 | `MCP_RATE_LIMIT_WINDOW_SECONDS` | `int` | no | `3600` |  |
-| `STORE_API_URL` | `str` | no | `'http://127.0.0.1:8787'` | Migration Phase 4 — apps/store is the internal API in front of the engine-backed seam. store_internal_api_secret authenticates every call to it (a different… |
+| `STORE_API_URL` | `str` | no | `'http://127.0.0.1:8787'` | apps/store is the internal API in front of the engine-backed seam. store_internal_api_secret authenticates every call to it (a different secret from… |
 | `STORE_INTERNAL_API_SECRET` | `str` | yes | `(no default)` |  |
 | `APPROVAL_SIGNING_SECRET` | `str` | yes | `(no default)` |  |
 | `STORE_HTTP_TIMEOUT_SECONDS` | `float` | no | `10.0` |  |
-| `SENTRY_DSN` | `str | None` | no | `None` | M6 hardening — error monitoring. Optional: unset (the default) means sentry_sdk.init(dsn=None) below, which is a documented no-op — local dev and CI never need… |
+| `SENTRY_DSN` | `str | None` | no | `None` | Error monitoring. Optional: unset (the default) means sentry_sdk.init(dsn=None) below, which is a documented no-op — local dev and CI never need this… |
 | `STRIPE_SECRET_KEY` | `str | None` | no | `None` | Monetization — two tiers now: base ($29/mo, stripe_price_id, 1500 check_action calls/month) and pro ($149/mo, stripe_price_id_pro, 8000 calls/month — also the… |
 | `STRIPE_WEBHOOK_SECRET` | `str | None` | no | `None` |  |
 | `STRIPE_PRICE_ID` | `str | None` | no | `None` |  |
 | `STRIPE_PRICE_ID_PRO` | `str | None` | no | `None` |  |
 | `BILLING_TRIAL_DAYS` | `int` | no | `14` |  |
-| `RESEND_API_KEY` | `str | None` | no | `None` | Weekly digest email (fix-plan-v2 item 10 — workers/tasks_digest.py, gnt/email.py). Same Resend account apps/web/lib/email.ts already uses for Better Auth's… |
+| `RESEND_API_KEY` | `str | None` | no | `None` | Weekly digest email (workers/tasks_digest.py, gnt/email.py). Same Resend account apps/web/lib/email.ts already uses for Better Auth's login OTP/invite emails,… |
 | `RESEND_FROM_EMAIL` | `str` | no | `'gnt.ai <notifications@gntai.dev>'` | Mirrors email.ts's FROM_EMAIL fallback exactly — gntai.dev is verified in Resend (DKIM/SPF/DMARC records live), a real sending address. |
 | `PLATFORM_ADMIN_EMAILS` | `str` | no | `''` | Comma-separated allowlist for the internal platform-admin dashboard — a signed-in user whose email is on this list can view/manage every org across the… |
 <!-- AUTOGENERATED:apps-api END -->

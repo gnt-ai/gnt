@@ -1,4 +1,4 @@
-// Outlook export walker (connector sprint T3.5): reads a portable Outlook
+// Outlook export walker: reads a portable Outlook
 // mail export -- a directory of individual .eml message files, or a
 // single mbox-shaped file if the customer bridged their mailbox through a
 // tool that produces one -- with zero Microsoft Graph API approval

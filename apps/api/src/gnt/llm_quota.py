@@ -1,12 +1,12 @@
 """Per-org monthly LLM spend quota, plus a global aggregate circuit
-breaker (gnt-fix-plan-v3 Tier 0 prerequisite 0.1 — "C9a"). check_action
-made every agent decision an LLM call on the bill; ingestion multiplies
-that exposure. Nothing before this tracked dollars — rate_limit.py's
-check_rate_limit/check_sliding_window_rate_limit bound REQUEST COUNT per
-org (abuse), and roi_counters (migration 0023) counts call VOLUME per
-org/day for the customer-facing ROI number — neither tracks spend, and
-conflating the two would be wrong: an org could be well under its request
-rate limit and still be burning real money on long completions.
+breaker. check_action made every agent decision an LLM call on the bill;
+ingestion multiplies that exposure. Nothing before this tracked dollars —
+rate_limit.py's check_rate_limit/check_sliding_window_rate_limit bound
+REQUEST COUNT per org (abuse), and roi_counters (migration 0023) counts
+call VOLUME per org/day for the customer-facing ROI number — neither
+tracks spend, and conflating the two would be wrong: an org could be
+well under its request rate limit and still be burning real money on
+long completions.
 
 Enforced BEFORE the paid call fires, at all three LLM-backed call sites:
 action_check.py's judge_action (check_action — the highest-volume one,
@@ -72,12 +72,11 @@ _FALLBACK_PRICING_PER_MTOK_USD = (3.00, 15.00)
 
 _MICROS_PER_DOLLAR = 1_000_000
 
-# Fixed at the plan's own numbers (fix-plan-v3 item 0.1: "founder alerts
-# at 50/80/100 percent") rather than a Settings knob — these are the
-# plan's explicit checkpoints, not a number this codebase's own judgment
-# picked, so there's nothing to tune per-deploy. Each tuple is
-# (fraction of the global cap, Sentry level, the LlmUsageGlobal column
-# that marks "already sent this month").
+# Fixed at 50/80/100 percent (founder-alert checkpoints) rather than a
+# Settings knob — these are deliberate product thresholds, not a number
+# this codebase's own judgment picked, so there's nothing to tune
+# per-deploy. Each tuple is (fraction of the global cap, Sentry level,
+# the LlmUsageGlobal column that marks "already sent this month").
 _ALERT_THRESHOLDS: tuple[tuple[float, str, str], ...] = (
     (0.5, "warning", "alert_50_sent_at"),
     (0.8, "error", "alert_80_sent_at"),

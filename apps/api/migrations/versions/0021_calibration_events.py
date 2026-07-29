@@ -1,6 +1,6 @@
-"""calibration_events — calibration-signal log for fix-plan-v2 item 18
-(label confidence/decay as uncalibrated, and start collecting calibration
-data). Genuinely org-scoped with no auth-bootstrap lookup need, same
+"""calibration_events — calibration-signal log used to label confidence/
+decay as uncalibrated and start collecting calibration data. Genuinely
+org-scoped with no auth-bootstrap lookup need, same
 reasoning as migration 0019's rule_gaps and 0020's rule_staleness, so RLS
 follows the same pattern.
 

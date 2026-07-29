@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask a question
+    url: https://github.com/gnt-ai/gnt/discussions
+    about: Usage questions, self-hosting help, general discussion. Not for bugs or feature requests.

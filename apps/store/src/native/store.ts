@@ -127,8 +127,8 @@ export class NativeStore implements GntStore {
    * (zeroEntropyRerank) — the same convention EngineStore's own embedFn
    * default uses (`embedFn = embedQuery`) — so production callers get a
    * working reranker with no extra wiring. Every test/eval call site must
-   * override it explicitly with a fake or a fixture replay (Global Rule 6:
-   * no real paid API calls from a test loop); the existing test suite
+   * override it explicitly with a fake or a fixture replay (tests must
+   * never make real paid API calls); the existing test suite
    * already follows that convention for embedFn and this mirrors it.
    */
   constructor(embedFn: EmbedFn, rerankFn: RerankFn = zeroEntropyRerank) {

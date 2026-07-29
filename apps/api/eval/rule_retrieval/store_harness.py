@@ -77,12 +77,12 @@ class EvalStoreHarness:
             "GNT_STORE_INTERNAL_API_SECRET": self._secret,
             "GNT_APPROVAL_SIGNING_SECRET": self._approval_secret,
             "GNT_STORE_EVAL_EMBEDDINGS_FIXTURE": str(_EMBEDDINGS_FIXTURE),
-            # item 11: the reranker ships on, so the eval exercises it too —
-            # via a committed zerank-2 score fixture replayed for free (no
-            # live call). record_rerank_fixture.py sets GNT_STORE_EVAL_RERANK_
-            # RECORD instead, to capture that fixture against the live
-            # provider; pass it through when present so the recorder's live
-            # run reaches the real reranker.
+            # The reranker ships on for every org, so the eval exercises it
+            # too — via a committed zerank-2 score fixture replayed for free
+            # (no live call). record_rerank_fixture.py sets
+            # GNT_STORE_EVAL_RERANK_RECORD instead, to capture that fixture
+            # against the live provider; pass it through when present so
+            # the recorder's live run reaches the real reranker.
             "GNT_STORE_EVAL_RERANK_FIXTURE": str(_RERANK_FIXTURE),
         }
         # GNT_STORE_EVAL_NATIVE_DATABASE_URL, when set in the parent

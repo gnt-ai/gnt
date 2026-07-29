@@ -54,11 +54,11 @@ async def onboarding_status(
     org: OrgContext = Depends(get_current_org),
     session: AsyncSession = Depends(get_session),
 ):
-    """fix-plan-v2 item 6 — "how close is this org to a working setup",
-    aggregated off onboarding_events (gnt/onboarding_metrics.py). Item 10's
-    future ROI metering reads off the same table, so counts stay a flat
-    event_type -> count map here rather than baking in today's five known
-    types.
+    """This org's onboarding progress — "how close is this org to a working
+    setup" — aggregated off onboarding_events (gnt/onboarding_metrics.py).
+    Planned future ROI metering will read off the same table, so counts
+    stay a flat event_type -> count map here rather than baking in today's
+    five known types.
 
     connected_cli isn't an onboarding_event (gnt login has no event-log
     call site, unlike the Slack/GitHub connect routes and rule proposal) —
@@ -68,9 +68,9 @@ async def onboarding_status(
     apps/web/components/onboarding-status.tsx polls this for the /welcome
     page's live step checklist.
 
-    reached_five_rules_milestone (fix-plan-v3 2.6) is the plan's own
-    "org reaches N approved rules in first session" success metric,
-    N=5 — derived straight off the same counts, not a second query,
+    reached_five_rules_milestone is this product's "org reaches N approved
+    rules in first session" success metric, N=5 — derived straight off
+    the same counts, not a second query,
     since rules_approved already is that lifetime-cumulative count (see
     onboarding_metrics.RULES_APPROVED_MILESTONE for why that's an
     accurate proxy for "first session" here)."""
@@ -91,7 +91,7 @@ async def onboarding_status(
 
     rules_approved = counts.get("rule_approved", 0)
 
-    # fix-plan (GitHub App migration) — an org still on the legacy PAT flow
+    # GitHub App migration — an org still on the legacy PAT flow
     # (a github_connections row with installation_id NULL) is flagged here
     # so `gnt status` can nudge them at `gnt connect github --upgrade`,
     # rather than requiring anyone to notice on their own that a materially

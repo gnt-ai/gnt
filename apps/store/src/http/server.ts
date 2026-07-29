@@ -42,8 +42,8 @@ const AUDIT_ACTION_VALUES = [
   "rejected",
   "deprecated",
   "decision_logged",
-  // fix-plan-v3 3.0 — server-side privacy gate's own audit entry, see
-  // AuditEntry.action's own comment in core/store.ts.
+  // Server-side privacy gate's own audit entry, see AuditEntry.action's
+  // own comment in core/store.ts.
   "privacy_gate_masked",
 ] as const;
 const SOURCE_KIND_VALUES = ["slack", "doc", "capture", "escalation"] as const;
@@ -51,8 +51,8 @@ const SOURCE_KIND_VALUES = ["slack", "doc", "capture", "escalation"] as const;
 // Deliberately opaque (see core/store.ts's SourceCitation type docstring)
 // -- this has carried the legacy source_type/source_id/permalink/
 // captured_at shape and `gnt prebrain`'s extraction-citation shape
-// (sourcePath/startLine/endLine/walker/excerpt) since fix-plan-v3 2.1,
-// and nothing in this seam reads a specific field off either. Requiring
+// (sourcePath/startLine/endLine/walker/excerpt) over time, and nothing
+// in this seam reads a specific field off either. Requiring
 // source_type here (the schema's original, narrower shape) rejected every
 // real prebrain-extracted citation outright -- any rule proposed with one
 // 400'd on the very first putPage. z.record(), not z.object() with a
@@ -159,7 +159,7 @@ const GithubSourceBodySchema = z.object({
   pat: z.string().min(1),
 });
 
-// fix-plan-v3 tier 0 item 0.3 (C4) — org offboarding's store-side delete.
+// Org offboarding's store-side delete.
 // No confirmation flag here: the confirmation gate lives one layer up
 // (apps/api's two-step request/confirm flow) — by the time this seam sees
 // the call, a human has already confirmed.
@@ -287,7 +287,7 @@ async function handleListRulesByPr(store: GntStore, prNumber: number, orgId: str
   // GntStore method needed, this is exactly what listPages already
   // supports, just filtered client-side to every rule matching this PR.
   //
-  // fix-plan-v3 2.4 — this used to be .find() and returned (at most) one
+  // This used to be .find() and returned (at most) one
   // rule. Batched propose (apps/api's POST /v1/rules/batch-propose) can
   // now put several rules on the SAME pull request, all sharing the same
   // prNumber, so the webhook handler that turns a merge into an approval
@@ -440,7 +440,7 @@ export interface NetworkExposureConfig {
 }
 
 /**
- * Item 16's gate, take two. The first version keyed off bind address
+ * Network-exposure gate, take two. The first version keyed off bind address
  * (loopback vs. not) and it crash-looped production: Railway containers
  * MUST bind 0.0.0.0 to be reachable by *anything*, including Railway's own
  * private network — see this package's README for the full explanation.
@@ -485,7 +485,7 @@ export function resolveNetworkExposure(config: NetworkExposureConfig): string {
         `GNT_STORE_BIND=${config.bind}). This is an internal-only service — apps/api reaches it ` +
         "over Railway's private network and it should never be internet-reachable. Set " +
         "GNT_STORE_ALLOW_PUBLIC_DOMAIN=1 to explicitly acknowledge a deliberate public " +
-        "deployment (and make sure it actually sits behind auth — see item 1 of the fix plan).",
+        "deployment (and make sure it actually sits behind auth).",
     );
   }
 
@@ -564,10 +564,11 @@ async function main(): Promise<void> {
   let store: StoreWithGithubSource;
   if (testFakeEmbed) {
     const { fakeEmbed } = await import("../testing/fake-embed.ts");
-    // Same live-call gate as the embed above (Global Rule 6) — this test
-    // path must never construct NativeStore's real zeroEntropyRerank
-    // default, since apps/store/.env auto-loads a real ZEROENTROPY_API_KEY
-    // into every subprocess spawned from this directory.
+    // Same live-call gate as the embed above (tests must never make a
+    // real paid provider call) — this test path must never construct
+    // NativeStore's real zeroEntropyRerank default, since apps/store/.env
+    // auto-loads a real ZEROENTROPY_API_KEY into every subprocess spawned
+    // from this directory.
     const { fakeRerank } = await import("../testing/fake-rerank.ts");
     const native = new NativeStore(fakeEmbed, fakeRerank);
     await native.init({ engine: "postgres", orgId: "__store_bootstrap__" });

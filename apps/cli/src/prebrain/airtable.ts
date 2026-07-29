@@ -1,4 +1,4 @@
-// Live-Airtable client (connector sprint T4.4): the one connector in this
+// Live-Airtable client: the one connector in this
 // sprint where a base's schema is entirely customer-defined, so there is no
 // safe field list this file could hardcode the way every other connector
 // here does. Direct against Airtable's own REST/Metadata API, not an MCP
@@ -219,8 +219,7 @@ function parseStoredAirtableConfig(raw: string | undefined): AirtableConnectorCo
   }
 }
 
-// `gnt status`'s own health-line check (connector sprint T4.4, T5's own
-// "health line in gnt status" requirement). This connector isn't in
+// `gnt status`'s own health-line check. This connector isn't in
 // MCP_IN_ADAPTERS -- it's a direct-REST connector, not an MCP-in one, same
 // as figma-comments.ts/datadog-notebooks.ts -- so it doesn't come from
 // mcpConnectorHealth() for free; status.ts calls this directly instead.

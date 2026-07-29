@@ -90,7 +90,7 @@ const FAQ = [
   },
   {
     q: "Do we have to pay to use gnt?",
-    a: "No. gnt is source-available under FSL-1.1-Apache-2.0 (converts to Apache-2.0 two years after launch) -- docker compose up runs the same API, MCP server, worker, and rules store on your own infrastructure with your own keys, for free. These two tiers are for the hosted version: managed infra, upgrades, and support handled for you instead of running it yourself. See docs/self-hosting/README.md in the repo.",
+    a: "No. gnt is source-available under FSL-1.1-Apache-2.0 (it converts to Apache-2.0 two years after launch). Run docker compose up and you get the same API, MCP server, worker, and rules store on your own infrastructure, with your own keys, for free. These two tiers are for the hosted version: managed infra, upgrades, and support, so you don't have to run it yourself. See docs/self-hosting/README.md in the repo.",
   },
 ];
 

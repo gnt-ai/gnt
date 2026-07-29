@@ -3,9 +3,9 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import type { DetectionHit, GateLayer, PlaceholderKind } from "./types.js";
 
-// This is the audit trail from fix-plan-v3 1.3: "Every run writes a local
-// redaction report: what was masked, by which layer, with the mapping,
-// stored only on the customer's device." It's what makes "your raw data
+// This is the audit trail behind the privacy gate: every run writes a local
+// redaction report -- what was masked, by which layer, with the mapping,
+// stored only on the customer's device. It's what makes "your raw data
 // never touches gnt's servers" inspectable rather than a bare claim --
 // anyone can open this file after a gate run and see exactly what got
 // replaced and why. Pure local file I/O, no network call, same

@@ -1,14 +1,15 @@
-"""Weekly digest email (fix-plan-v2 item 10 — ROI metering and the weekly
-number). This is the plan's own "painkiller acceptance gate" made real: a
-customer org sees, in this email, how many times agents consulted rules,
-how many actions were blocked/flagged, and which queries found no rule —
-aggregated by gnt.roi_summary.build_roi_summary off roi_counters
-(gnt.roi_metrics, fed by mcp_server/server.py's search_rules/get_rule/
-check_action) and rule_gaps (gnt.gap_tracking, fix-plan-v2 item 8), plus
-item 9's staleness signal (gnt.staleness) so this is the one place the
-plan's own text originally pointed that prompt at (see routers/rules.py's
-get_rules_due_for_revalidation docstring: "wire it into the digest once
-item 10 exists rather than building a second parallel version of it").
+"""Weekly digest email — ROI metering turned into the weekly number a
+customer org actually reads, and the concrete evidence that gnt is
+worth keeping installed: a customer org sees, in this email, how many
+times agents consulted rules, how many actions were blocked/flagged, and which
+queries found no rule — aggregated by gnt.roi_summary.build_roi_summary
+off roi_counters (gnt.roi_metrics, fed by mcp_server/server.py's
+search_rules/get_rule/check_action) and rule_gaps (gnt.gap_tracking, the
+coverage-gap tracker), plus the staleness signal (gnt.staleness) — this
+is the one place routers/rules.py's get_rules_due_for_revalidation
+docstring pointed that prompt at from the start: wire staleness into
+this digest once ROI metering exists here, rather than building a second
+parallel version of it.
 
 Follows workers/tasks_staleness.py's reference two-tier session pattern
 for every cron job in this codebase (see that module's own docstring for
@@ -26,7 +27,7 @@ any failure reading Better Auth's own tables (unverified against a live
 DB as of this module's introduction — see that module's own docstring).
 Neither failure mode raises, so a misconfigured or not-yet-configured org
 never breaks another org's run, and the digest job's absence of email
-capability never touches the rest of this plan item's non-email surface
+capability never touches ROI metering's other non-email surfaces
 (`gnt status --org`, GET /v1/roi/summary) at all — those read roi_counters
 directly, nothing here.
 """

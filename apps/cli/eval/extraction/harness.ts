@@ -1,4 +1,4 @@
-// Extraction quality harness -- fix-plan-v3 4.1.
+// Extraction quality harness.
 //
 // Mirrors the shape of apps/api/eval/rule_retrieval/harness.py and
 // apps/cli/eval/privacy-gate/harness.ts: pure scoring, no knowledge of how

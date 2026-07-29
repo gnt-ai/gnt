@@ -1,5 +1,5 @@
-"""contradiction_findings — dedup log for fix-plan-v2 item 13 (continuous
-contradiction sweeps). Genuinely org-scoped with no auth-bootstrap lookup
+"""contradiction_findings — dedup log for the continuous contradiction
+sweeps. Genuinely org-scoped with no auth-bootstrap lookup
 need, same reasoning as migration 0019's rule_gaps, 0020's rule_staleness,
 and 0021's calibration_events, so RLS follows the same pattern.
 

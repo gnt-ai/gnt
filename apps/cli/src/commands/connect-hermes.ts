@@ -1,4 +1,4 @@
-// `gnt connect hermes` (connector sprint T6.2): points a local Hermes
+// `gnt connect hermes`: points a local Hermes
 // Agent install (github.com/NousResearch/hermes-agent) at gnt's published
 // MCP endpoint, so Hermes can call check_action, search_rules, get_rule,
 // list_skill_packs, and get_skill_pack the same way any other MCP client

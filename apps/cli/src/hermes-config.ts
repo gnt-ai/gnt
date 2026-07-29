@@ -1,6 +1,6 @@
-// Pure text-editing logic behind `gnt connect hermes` (connector sprint
-// T6.2), split out of commands/connect-hermes.ts so it's testable without
-// a filesystem or a terminal.
+// Pure text-editing logic behind `gnt connect hermes`, split out of
+// commands/connect-hermes.ts so it's testable without a filesystem or a
+// terminal.
 //
 // Hermes Agent (github.com/NousResearch/hermes-agent) reads its MCP server
 // list from ~/.hermes/config.yaml under a top-level `mcp_servers:` key --

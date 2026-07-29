@@ -48,7 +48,8 @@ def _fmt(title: str, body: str) -> str:
 def judge_conflict(
     existing_title: str, existing_body: str, new_title: str, new_body: str
 ) -> tuple[RuleMergeVerdict, int, int]:
-    """Both rules are sanitized (Global Rule 2b) and wrapped in delimited
+    """Both rules are sanitized — untrusted content must never be
+    interpreted as instructions to the model — and wrapped in delimited
     data blocks before reaching the model — the same convention
     action_check.py's judge_action uses. The new rule is proposer-authored
     text a human hasn't reviewed yet at the point this check runs (it's
@@ -58,8 +59,8 @@ def judge_conflict(
     file straight off GitHub, with no sanitize() call on that path) — so
     this re-sanitizes both rather than trusting either one's provenance.
 
-    Returns (verdict, input_tokens, output_tokens) — C9a's cost tracking
-    (gnt.llm_quota) needs the real token counts this call actually used,
+    Returns (verdict, input_tokens, output_tokens) — the LLM spend quota
+    gate (gnt.llm_quota) needs the real token counts this call actually used,
     not a flat per-call estimate, so both callers (find_conflict,
     workers/tasks_contradictions.py's _process_pair) can record real
     spend right after this returns."""
@@ -104,8 +105,9 @@ async def find_conflict(org_id: str, rule: dict) -> dict | None:
         if candidate is None:
             return None
 
-        # C9a — cost gate before the paid judge_conflict call. Falls into
-        # the same broad except below as every other failure this
+        # Checks the org's remaining LLM spend quota before making the paid
+        # judge_conflict call. Falls into the same broad except below as
+        # every other failure this
         # best-effort check already treats as "no conflict found" — a
         # quota block never turns into a reason propose_rule can't open
         # its PR (see module docstring).

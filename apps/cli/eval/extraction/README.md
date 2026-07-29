@@ -1,4 +1,4 @@
-# Extraction quality eval (fix-plan-v3 4.1)
+# Extraction quality eval
 
 A benchmark for `gnt prebrain`'s extraction step
 (`apps/cli/src/prebrain/extraction/`): seeded source documents with
@@ -53,7 +53,7 @@ differently from the other two: see "CI wiring" below.
     extraction pass over this kind of prose should find zero rules; any
     rule extracted from one of these documents is by definition a false
     positive.
-  - Per connector-sprint T2.9: `mcp-notion` and `mcp-monday` were the two
+  - `mcp-notion` and `mcp-monday` were the two
     connectors this eval shipped without a fixture for (every other walker
     that existed at the time had at least one) -- one `policy` and one
     `no_policy` document were added for each, proving both connectors'
@@ -142,9 +142,8 @@ bun run eval:extraction -- --mode local --ollama-model llama3.1:8b --write-basel
 Cloud mode calls the real `extractFromChunkCloud` path once per document
 (34 real Anthropic API calls against `claude-haiku-4-5`, this codebase's
 established cost-conscious model choice -- see `DEFAULT_MODEL` in
-`apps/cli/src/prebrain/extraction/cloud.ts` and fix-plan-v3 2.3's own
-status note). Local mode calls the real `extractFromChunkLocal` path
-against whatever Ollama daemon `--ollama-host` points at (default
+`apps/cli/src/prebrain/extraction/cloud.ts`). Local mode calls the real
+`extractFromChunkLocal` path against whatever Ollama daemon `--ollama-host` points at (default
 `http://localhost:11434`, same as `local.ts`'s own default), with no API
 cost but the reliability caveats `local.ts`'s own doc comment already
 names (weaker instruction-following, occasional non-conforming JSON).
@@ -179,7 +178,7 @@ model-quality regression.
 
 ## Local mode: measured separately, gap documented
 
-Per fix-plan-v3 4.1, local-only extraction (Llama 3.1 8B via Ollama, see
+Local-only extraction (Llama 3.1 8B via Ollama, see
 `DEFAULT_OLLAMA_MODEL` in `local.ts`) is measured separately from cloud
 mode and does not run in CI -- GitHub Actions runners don't have a local
 Ollama daemon available, and local-mode's whole point is running on a
@@ -308,7 +307,7 @@ against.
 
 ## Extraction changes merge only with eval results in the PR
 
-Process expectation from fix-plan-v3 4.1, not a hard git-hook gate: if
+Process expectation, not a hard git-hook gate: if
 your PR touches `apps/cli/src/prebrain/extraction/` (the prompt in
 `schema.ts`, either mode's call logic, the schema itself), run
 `bun run eval:extraction -- --mode cloud` locally (or check the

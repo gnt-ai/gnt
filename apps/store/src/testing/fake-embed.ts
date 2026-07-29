@@ -1,6 +1,6 @@
 /**
- * Deterministic, non-semantic fake embedding — Global Rule 6 (no real
- * paid embedding API calls from a test loop). Lives in src/, not test/,
+ * Deterministic, non-semantic fake embedding — tests must never make a
+ * real paid embedding API call. Lives in src/, not test/,
  * so the HTTP server's test-mode switch (GNT_STORE_TEST_FAKE_EMBED) can
  * import it too, for cross-process test fixtures (e.g. the Python
  * backend's pytest suite spawning a real server) — never for production

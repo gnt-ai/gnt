@@ -1,4 +1,4 @@
-// `gnt connect gitlab-threads` (connector sprint T4.1): stores a GitLab
+// `gnt connect gitlab-threads`: stores a GitLab
 // personal or project access token, and an optional instance base URL,
 // locally for `gnt prebrain --gitlab-threads` to use. Not an MCP-in
 // connector -- see ../prebrain/gitlab-threads.ts's own doc comment for why

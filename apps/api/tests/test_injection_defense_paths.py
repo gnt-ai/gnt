@@ -1,32 +1,32 @@
-"""fix-plan-v2 item 17 — mechanical proof that every path sending
-externally-originated text to a model sanitizes it and wraps it in the
-delimited data-block convention (Global Rule 2a/2b), at the point the
-text is actually handed to the model.
+"""Mechanical proof that every path sending externally-originated text to
+a model sanitizes it and wraps it in a delimited data-block (so the model
+can tell quoted third-party content apart from actual instructions), at
+the point the text is actually handed to the model.
 
-The plan text that originally scoped this item (capture, Slack ingest,
-transcribe, extraction, ask_brain excerpts, check_action context) predates
-the retirement of the capture/extraction/ask_brain pipeline. routers/
+The set of paths this covers used to include capture, Slack ingest,
+transcribe, extraction, ask_brain excerpts, and check_action context, but
+the capture/extraction/ask_brain pipeline has since been retired. routers/
 brain.py is read-only (summary/status endpoints, no model calls).
 routers/slack.py's slash_command was a retired stub when this file was
-first written; fix-plan-v3 3.1 revived it to create draft rules via
+first written; it was later revived to create draft rules via
 create_draft_rule, the same function POST /v1/rules and
 routers/webhooks.py's ingest_webhook already share — still no model call
 of its own (a rule's conflict check, the one place draft-rule creation
 can reach an LLM, only runs later, at propose time, not here).
 
 What's left, found by grepping every call into gnt.anthropic_client and
-gnt.groq_client across apps/api/src/gnt rather than trusting the plan's
-list:
+gnt.groq_client across apps/api/src/gnt rather than trusting a hand-kept
+list that can go stale:
 
 - gnt.action_check.judge_action — check_action's action description/context
   (already sanitized + wrapped; covered directly in tests/test_check_action.py)
 - gnt.pipeline.rule_conflict.judge_conflict — propose_rule's conflict check
-  (was NOT sanitized/wrapped before this item; fixed here, covered in
+  (was NOT sanitized/wrapped before this was caught; fixed here, covered in
   tests/test_rule_conflict.py)
-- gnt.pipeline.content_extraction.extract_candidate_rules — the connector
-  sprint T4.3 Intercom sync (and T4.2's Zendesk sync) turning already-
-  gate-masked support prose into candidate rules (sanitized + wrapped from
-  the start; covered in tests/test_content_extraction.py)
+- gnt.pipeline.content_extraction.extract_candidate_rules — the Intercom
+  sync (and the Zendesk sync) turning already-gate-masked support prose
+  into candidate rules (sanitized + wrapped from the start; covered in
+  tests/test_content_extraction.py)
 - gnt.routers.transcribe — audio bytes in, a transcript string out via
   Groq's Whisper endpoint. This sends untrusted AUDIO to a model, not
   untrusted TEXT — sanitize() has nothing to defang there, and nothing
@@ -115,8 +115,8 @@ def test_every_anthropic_messages_parse_call_site_is_in_the_registry():
 
 class _Usage:
     # judge_action/judge_conflict both read response.usage.{input,output}_tokens
-    # now (C9a's cost tracking) — both fakes below need this attribute or the
-    # real function body raises before returning.
+    # now (cost tracking added to these calls) — both fakes below need this
+    # attribute or the real function body raises before returning.
     input_tokens = 100
     output_tokens = 20
 

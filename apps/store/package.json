@@ -15,15 +15,15 @@
     "serve": "bun run src/http/server.ts"
   },
   "dependencies": {
-    "js-yaml": "^3",
+    "js-yaml": "^5",
     "postgres": "^3.4.9",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@eslint/js": "^9",
+    "@eslint/js": "^10",
     "@types/bun": "^1.2.0",
     "@types/js-yaml": "^3",
-    "eslint": "^9",
+    "eslint": "^10",
     "typescript": "^5",
     "typescript-eslint": "^8"
   },

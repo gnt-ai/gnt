@@ -9,7 +9,7 @@
  */
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowDown, ArrowRight } from "lucide-react";
 import { CopyCtaButton } from "@/components/copy-cta-button";
 import { FaqList } from "@/components/faq-list";
 import { InstallTabs } from "@/components/install-tabs";
@@ -18,9 +18,9 @@ import { MarketingHeader } from "@/components/marketing-header";
 import { TerminalBlock } from "@/components/terminal-block";
 import packageJson from "../package.json";
 
-const TITLE = "gnt.ai: The brain for AI companies. In your terminal.";
+const TITLE = "gnt.ai: The rulebook your agents actually check.";
 const DESCRIPTION =
-  "Checks what an agent's about to do against your rules before it does it. Everything else lives as files in your own repo, and approval is a merged PR.";
+  "Rules live as files in your repo. Agents call check_action before anything risky, and every answer traces back to a merged PR.";
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -61,53 +61,59 @@ const PIPELINE = [
   {
     label: "Draft",
     desc: "gnt prebrain scans this repo and drafts your first rules automatically. After that: Slack, a webhook, a dozen-plus connectors, or by hand.",
+    lines: [
+      "$ gnt prebrain",
+      "# scans this repo, drafts your first rules",
+      "✓ Opened PR: acme/rules#412",
+    ],
+    copyText: "gnt prebrain",
   },
   {
     label: "Review",
     desc: "gnt review turns anything drafted outside prebrain into a real PR. prebrain opens its own directly.",
+    lines: [
+      "$ gnt review",
+      "1 rule awaiting approval: refund-threshold",
+      "✓ Opened PR: acme/rules#413",
+    ],
+    copyText: "gnt review",
   },
   {
     label: "Merge",
     desc: "A human merges it on GitHub — that's the approval, nothing else.",
+    lines: [
+      "$ git log -1 --oneline",
+      "a3f1c9d Merge pull request #412 from acme/rules",
+      "✓ Rule is live. Any MCP client can query it now.",
+    ],
+    copyText: "git log -1 --oneline",
   },
 ];
 
 const FAQ = [
   {
     q: "What does check_action actually do?",
-    a: "You describe the action in plain English, gnt checks it against your org's approved rules before the agent does it, and hands back allowed, blocked, or needs_human — plus exactly which rule made the call. If nothing covers the situation, you get needs_human, never a guess.",
+    a: "You describe the action in plain English. gnt checks it against your org's approved rules before the agent does it, and hands back allowed, blocked, or needs_human, plus exactly which rule made the call. If nothing covers the situation, you get needs_human, never a guess.",
   },
   {
     q: "Does gnt.ai store our data?",
-    a: "Not your approved rules — those live as files in your own git repo, not in a database we control. If something comes in through a webhook, Slack, or the Zendesk/Intercom sync, it does pass through gnt's servers first, but it's privacy-gated on arrival and sits as a draft until you approve or reject it.",
+    a: "Yes, and it's not either/or. Rules are files in your own git repo, reviewed and merged like code, and gnt also stores them in its own database, since that's what search_rules and get_rule read from over MCP. Anything that comes in through a webhook, Slack, or a sync passes through gnt's servers too, gets privacy-gated on arrival, and sits as a draft until you approve or reject it.",
   },
   {
     q: "Which agents can connect?",
-    a: "Any MCP-compatible client — Claude, GPT, or something you built yourself. One endpoint, five tools: check_action, search_rules, get_rule, list_skill_packs, get_skill_pack.",
+    a: "Any MCP-compatible client: Claude, GPT, or something you built yourself. One endpoint, five tools: check_action, search_rules, get_rule, list_skill_packs, get_skill_pack.",
   },
   {
     q: "What happens when gnt doesn't know something?",
-    a: "search_rules only ever hands back approved, cited rules — it never makes anything up. If nothing matches, you get an empty result, not an invented answer.",
+    a: "search_rules only ever hands back approved, cited rules. It never makes anything up. If nothing matches, you get an empty result, not an invented answer.",
   },
   {
     q: "What's a skill pack?",
     a: "A versioned, compiled bundle of your org's approved rules that an agent can pull and verify by hash. Run gnt pull from the terminal to grab the latest one, or use list_skill_packs and get_skill_pack over MCP.",
   },
   {
-    q: "How do we get our first rules in?",
-    a: "Run gnt prebrain. It scans your repo and docs, asks you a few quick questions, and opens your first pull requests for you. If you don't have much written policy yet, editable starter packs — refunds, discounts, engineering conventions, incident response — fill the gap.",
-  },
-  {
-    q: "Can we self-host it?",
-    a: "Yes. One docker-compose.yml gets the full API, MCP server, worker, and rules store running on your own infrastructure, with your own keys. Your rules live in your own git repo either way — hosted or self-hosted.",
-  },
-  {
-    q: "Is gnt open source?",
-    a: "Source-available under FSL-1.1-Apache-2.0 — you can read every line, self-host it, modify it, and send changes back. The one thing you can't do is sell a competing hosted version of gnt itself, and even that restriction lifts automatically two years after this repo goes public, converting to plain Apache-2.0.",
-  },
-  {
     q: "How much does it cost?",
-    a: "$29/month gets you 1,500 check_action calls and a 14-day free trial. $149/month gets you 8,000 calls and is the only tier that can invite people already on another org — billed immediately, no trial. Full breakdown on the pricing page.",
+    a: "$29/month gets you 1,500 check_action calls and a 14-day free trial. $149/month gets you 8,000 calls and is the only tier that can invite people already on another org, billed immediately with no trial. Full breakdown on the pricing page.",
   },
 ];
 
@@ -116,11 +122,14 @@ const CLI_LINES = [
   "$ gnt login",
   "✓ Logged in. Credentials saved to ~/.gnt/credentials.json",
   "",
+  "$ gnt connect github",
+  "✓ Connected. Rules will open as PRs against your repo.",
+  "",
   "$ gnt prebrain",
-  "# scans this repo, asks a few questions, drafts your first rules",
+  "# scans this repo, drafts your first rules",
   "✓ Opened PR: https://github.com/acme/rules/pull/412",
   "",
-  "# merge it on GitHub. that merge is the approval.",
+  "# merge it on GitHub. That merge is the approval.",
 ];
 
 const CLI_COPY_TEXT = "npm install -g @gnt-ai/cli";
@@ -167,6 +176,55 @@ function Section({ id, children }: { id?: string; children: React.ReactNode }) {
   );
 }
 
+// Real mechanism diagrams, not stock illustration -- each step is a
+// bordered box (same visual language as every other box on the page,
+// TerminalBlock included) connected by an arrow. Row on desktop, column
+// on mobile (ArrowRight rotates to ArrowDown below sm), so it never
+// forces horizontal scroll on a phone. This is what replaces the "real
+// annotated screenshot" placeholder for the mechanics that don't need a
+// live dashboard to show honestly -- the request flow and the
+// architecture are both true regardless of what data is in any
+// particular account.
+function FlowDiagram({ steps }: { steps: { label: string; sub?: string }[] }) {
+  return (
+    <div className="flex flex-col sm:flex-row sm:items-stretch gap-3 sm:gap-0">
+      {steps.map((step, i) => (
+        <div key={step.label} className="flex flex-col sm:flex-row items-center flex-1">
+          <div className="w-full border border-border rounded-[4px] px-4 py-3 text-center">
+            <p className="font-mono text-sm font-bold">{step.label}</p>
+            {step.sub ? <p className="font-mono text-xs text-muted mt-1">{step.sub}</p> : null}
+          </div>
+          {i < steps.length - 1 ? (
+            <div className="shrink-0 text-muted py-2 sm:py-0 sm:px-3" aria-hidden="true">
+              <ArrowDown className="h-4 w-4 sm:hidden" />
+              <ArrowRight className="h-4 w-4 hidden sm:block" />
+            </div>
+          ) : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const PROVENANCE_STEPS = [
+  { label: "Agent acts", sub: "calls check_action" },
+  { label: "gnt checks", sub: "against rules/*.md" },
+  { label: "Matched rule", sub: "cited by id + title" },
+  { label: "Rule's git file", sub: "frontmatter links the approving PR" },
+];
+
+const CLI_PRIVACY_STEPS = [
+  { label: "Your source material", sub: "repo, docs, connected tools" },
+  { label: "Privacy gate", sub: "runs on your device" },
+  { label: "Your model provider", sub: "Anthropic direct, or --mode local" },
+];
+
+const SERVER_PRIVACY_STEPS = [
+  { label: "Webhook, Slack, or a sync", sub: "no device of yours in this path" },
+  { label: "gnt's server", sub: "masked on arrival" },
+  { label: "Stays masked", sub: "unrecoverable after" },
+];
+
 // No server-side session fetch here on purpose -- the marketing content
 // below never depends on auth state (only the header's own sign-in/sign-up
 // vs. sign-out buttons do, and MarketingHeader's client-side useSession()
@@ -210,16 +268,16 @@ export default function LandingPage() {
                 <ArrowRight className="h-3.5 w-3.5 transition-transform duration-150 ease-out-strong group-hover:translate-x-0.5" />
               </Link>
             </div>
-            {/* Headline names the mechanism, not the category -- "the
-                brain for AI companies" told you what we call ourselves;
-                this tells you what happens the moment an agent tries
-                something. */}
+            {/* Headline names the mechanism, not the category -- not what
+                we call ourselves, but the actual habit an agent has to
+                have: checking before it acts, every time. */}
             <h1 className="font-mono text-2xl sm:text-3xl font-bold tracking-tight leading-tight">
-              Check the agent&apos;s next move. Before it happens.
+              The rulebook your agents actually check.
             </h1>
             <p className="font-mono text-sm text-muted">
-              Every rule lives as a file in your repo, reviewed like code. Approval is a merged
-              pull request.
+              Rules live as files in your repo. Agents call{" "}
+              <code className="font-bold">check_action</code> before anything risky. Every answer
+              traces to a merged PR.
             </p>
             <div className="w-full max-w-md mt-2">
               <InstallTabs />
@@ -259,6 +317,28 @@ export default function LandingPage() {
             <TerminalBlock lines={CLI_LINES} copyText={CLI_COPY_TEXT} />
           </div>
 
+          {/* Proof bar -- real, checkable signals only (license, source,
+              self-host path), no invented stats or counts. Thin on purpose:
+              a footnote-weight strip right under the install walkthrough,
+              not another full Section like the ones around it. */}
+          <div className="w-full border-t border-border px-6 py-4 flex flex-wrap items-center gap-x-6 gap-y-2 font-mono text-sm text-muted">
+            <span>FSL-1.1-Apache-2.0, source-available</span>
+            <Link
+              href="https://github.com/gnt-ai/gnt"
+              target="_blank"
+              rel="noreferrer"
+              className="text-foreground hover:opacity-80 transition-opacity duration-150 ease-out-strong"
+            >
+              Source on GitHub
+            </Link>
+            <Link
+              href="#source-available"
+              className="text-foreground hover:opacity-80 transition-opacity duration-150 ease-out-strong"
+            >
+              Self-hostable
+            </Link>
+          </div>
+
           {/* What is gnt.ai? -- bracket-marker capability list, direct
               structural match to the reference's "What is OpenCode?"
               section: [+] prefix, bold label, muted description. */}
@@ -289,62 +369,103 @@ export default function LandingPage() {
             </ul>
           </Section>
 
-          {/* How it works -- the pipeline is inherently sequential
-              (draft → review → merge), so this stays a numbered list
-              rather than forcing it into the bracket-marker vocabulary
-              above, which is for parallel capabilities, not an ordered
-              flow. */}
+          {/* How it works -- each step is a real terminal snippet next to
+              its description, not just prose (see PIPELINE's own lines/
+              copyText). Text and card swap sides on alternate steps so
+              the section reads as a sequence, not three identical rows --
+              same idea as Graphify's step cards, gnt's own palette
+              (theme-dark-surface card, same as the hero's terminal). */}
           <Section id="how-it-works">
             <SectionLabel>How it works</SectionLabel>
-            <ol className="flex flex-col gap-6">
+            <ol className="flex flex-col gap-10">
               {PIPELINE.map((step, i) => (
-                <li
-                  key={step.label}
-                  className="group flex gap-4 font-mono text-sm leading-relaxed"
-                >
-                  {/* Numeral sized up from the body copy around it -- the
-                      one place on the page a bare number is allowed to
-                      carry weight, since it's a real ordinal step count,
-                      not a decorative eyebrow. Shifts to full foreground on
-                      hover -- the one hover affordance this list didn't have
-                      before, same 150ms/ease-out-strong idiom every other
-                      hover state on the page already uses, not a new one. */}
-                  <span className="text-2xl font-bold leading-none text-muted shrink-0 tabular-nums transition-colors duration-150 ease-out-strong group-hover:text-foreground">
-                    {i + 1}
-                  </span>
-                  <p className="pt-1">
-                    <span className="font-bold">{step.label}.</span>{" "}
-                    <span className="text-muted">{step.desc}</span>
-                  </p>
+                <li key={step.label} className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                  <div
+                    className={`flex gap-4 sm:w-2/5 ${i % 2 === 1 ? "sm:order-2" : ""}`}
+                  >
+                    <span className="text-2xl font-bold leading-none text-muted shrink-0 tabular-nums">
+                      {i + 1}
+                    </span>
+                    <p className="font-mono text-sm leading-relaxed pt-1">
+                      <span className="font-bold">{step.label}.</span>{" "}
+                      <span className="text-muted">{step.desc}</span>
+                    </p>
+                  </div>
+                  <div className={`theme-dark-surface sm:w-3/5 ${i % 2 === 1 ? "sm:order-1" : ""}`}>
+                    <TerminalBlock lines={step.lines} copyText={step.copyText} />
+                  </div>
                 </li>
               ))}
             </ol>
           </Section>
+        </div>
 
-          {/* Built for privacy first -- two real trust boundaries, shown as
-              a side-by-side comparison instead of two lookalike paragraphs
-              stacked on top of each other. Same facts as before (see
-              apps/api/src/gnt/pipeline/privacy_gate/__init__.py's module
-              docstring for the server-side gate's full reasoning), just
-              laid out so the CLI-vs-webhook split is something you see in
-              one glance, not something you have to read twice to notice --
-              also the one section on the page that breaks from the
-              single-paragraph rhythm every other Section uses, on purpose. */}
+        {/* The honest pitch -- placed once the mechanism's been explained
+            (what it is, how it works), before the proof/comparison/trust
+            detail that follows. Names the actual moment people go looking
+            for something like this: after an agent did something expensive
+            with no record of why. Breaks past the boxed frame (the hero
+            above is the other one) -- full-bleed and set in the largest
+            body type on the page, so it reads as a statement, not another
+            paragraph the same weight as the FAQ answers further down. No
+            forced dark surface here; that trick is TerminalBlock's alone
+            (see its own comment) and only inverts correctly in one theme
+            direction. */}
+        <div className="w-full border-y border-border">
+          <div className="max-w-3xl mx-auto px-6 py-16 lg:py-24">
+            <p className="font-mono text-xl sm:text-2xl leading-snug">
+              Most teams find us after an agent already did something expensive, or wrong, or
+              just embarrassing, and nobody could say which rule should have caught it.{" "}
+              <code className="font-mono font-bold">check_action</code> would have.{" "}
+              <span className="text-muted">
+                If that&apos;s not you yet, good. This is what you set up before it is, not
+                after.
+              </span>
+            </p>
+          </div>
+        </div>
+
+        <div className="w-full max-w-3xl sm:border-x sm:border-border">
+          {/* Provenance -- the payoff section above makes the claim in
+              prose; this is the same claim as a diagram, since "every
+              rule traces to its approving PR" is exactly the kind of
+              thing that's faster to see than to read. Real mechanism
+              (see FlowDiagram's own comment for what backs it), not a
+              screenshot of a UI that doesn't have a dashboard view of
+              this yet -- that's still a real gap, tracked separately,
+              not papered over with a mockup. */}
+          <Section id="provenance">
+            <SectionLabel>Every answer has a paper trail</SectionLabel>
+            <FlowDiagram steps={PROVENANCE_STEPS} />
+          </Section>
+
+          {/* Built for privacy first -- two real trust boundaries, each as
+              its own diagram + short caption instead of a paragraph.
+              Same facts as before (see apps/api/src/gnt/pipeline/
+              privacy_gate/__init__.py's module docstring for the
+              server-side gate's full reasoning), just something you see
+              in one glance, not something you have to read twice to
+              notice -- stacked full-width rather than a 2-column grid
+              since a 3-step diagram needs the room a half-width column
+              doesn't have. */}
           <Section id="privacy">
             <SectionLabel>Built to stay out of your data</SectionLabel>
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div>
-                <p className="font-mono text-sm font-bold mb-1">gnt prebrain (CLI)</p>
-                <p className="font-mono text-sm text-muted leading-relaxed">
-                  Processed on your device. A local privacy gate screens anything before it
-                  reaches a cloud model. Never touches gnt&apos;s servers, never trains on it.
+            <div className="flex flex-col gap-8">
+              <div className="border border-border rounded-[4px] p-4">
+                <p className="font-mono text-sm font-bold mb-4">gnt prebrain (CLI)</p>
+                <FlowDiagram steps={CLI_PRIVACY_STEPS} />
+                <p className="font-mono text-sm text-muted leading-relaxed mt-4">
+                  Cloud by default, direct from your device to your own model provider, never to
+                  gnt&apos;s servers. The one exception: once rules are drafted, gnt posts them to
+                  its own API to open the PR. That request is how the PR gets created.
                 </p>
               </div>
-              <div>
-                <p className="font-mono text-sm font-bold mb-1">Webhook, Slack, or a sync</p>
-                <p className="font-mono text-sm text-muted leading-relaxed">
-                  No device of yours in that path, so it reaches gnt&apos;s server, gets masked
-                  on arrival, and stays that way — unrecoverable after.
+              <div className="border border-border rounded-[4px] p-4">
+                <p className="font-mono text-sm font-bold mb-4">Webhook, Slack, or a sync</p>
+                <FlowDiagram steps={SERVER_PRIVACY_STEPS} />
+                <p className="font-mono text-sm text-muted leading-relaxed mt-4">
+                  No device of yours in this path, so it reaches gnt&apos;s server first, and gets
+                  masked the moment it arrives.
                 </p>
               </div>
             </div>
@@ -407,34 +528,11 @@ export default function LandingPage() {
               capability list's bracketed, always-visible [+] rows above. */}
           <Section>
             <SectionLabel>Frequently asked questions</SectionLabel>
-            <FaqList items={FAQ} />
+            <div className="border border-border rounded-[4px] px-4">
+              <FaqList items={FAQ} />
+            </div>
           </Section>
 
-        </div>
-
-        {/* The honest pitch, right before the ask -- deliberately not the
-            hero framing (that stays calm/proactive for people who haven't
-            had the bad night yet). This one names the actual moment people
-            go looking for something like this: after an agent did something
-            expensive with no record of why. The page's second and last
-            break past the boxed frame (the hero above is the first) --
-            full-bleed and set in the largest body type on the page, so it
-            actually reads as a statement and not another paragraph the
-            same weight as the FAQ answers around it. No forced dark
-            surface here; that trick is TerminalBlock's alone (see its own
-            comment) and only inverts correctly in one theme direction. */}
-        <div className="w-full border-y border-border">
-          <div className="max-w-3xl mx-auto px-6 py-16 lg:py-24">
-            <p className="font-mono text-xl sm:text-2xl leading-snug">
-              Most teams find us after an agent already did something expensive, or wrong, or
-              just embarrassing, and nobody could say which rule should have caught it.{" "}
-              <code className="font-mono font-bold">check_action</code> would have.{" "}
-              <span className="text-muted">
-                If that&apos;s not you yet, good — this is what you set up before it is, not
-                after.
-              </span>
-            </p>
-          </div>
         </div>
 
         {/* Closing CTA -- a confidence statement, then the same primary

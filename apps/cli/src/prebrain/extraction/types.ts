@@ -1,15 +1,15 @@
-// Shared types for prebrain extraction (fix-plan-v3 2.3). See ./index.ts
+// Shared types for prebrain extraction. See ./index.ts
 // for the entry point.
 
-// The walker task (fix-plan-v3 2.1) and the company-profile pass (2.2)
-// both landed on main while this task was in flight -- import their real,
+// The walker module and the company-profile pass
+// both landed on main while this module was in flight -- import their real,
 // merged types directly rather than the narrow local placeholders this
-// module used while all three were running in parallel.
+// module used while all three were being built in parallel.
 import type { PrebrainChunk } from "../types.js";
 export type { PrebrainChunk } from "../types.js";
 
 // Loosely typed on purpose -- extraction treats this as optional
-// enrichment context only, per fix-plan-v3 2.3's own scope call: it must
+// enrichment context only: it must
 // produce correct output with no profile at all, so nothing in this
 // module hard-imports CompanyProfile or pins to its exact shape (which
 // the profile task, not this one, owns). describeProfile in schema.ts
@@ -62,7 +62,7 @@ export interface ExtractionOptions {
   // are set. An explicit value here always wins over its own env var
   // fallback (see resolveCloudCredential in cloud.ts) -- accepting the key
   // as a parameter, rather than this module doing its own single hardcoded
-  // lookup, is what fix-plan-v3 2.3 calls out as the extension point a
+  // lookup, is the extension point a
   // later key source needs: adding one becomes a change to
   // resolveCloudCredential alone, not a rewrite of extractRules or either
   // mode's call site. Unused in local mode, which talks to a local Ollama
@@ -81,7 +81,8 @@ export interface ExtractionOptions {
   localConcurrency?: number;
   // Defaults true whenever a gateway credential is used -- real customer
   // source text always gets Vercel AI Gateway's zero-data-retention
-  // routing, per fix-plan-v3's locked architecture constraint. The one
+  // routing; that's a hard architecture requirement, not a default to
+  // relax casually. The one
   // caller allowed to pass false is eval/extraction/run.ts's --no-zdr
   // flag: that script only ever sends the synthetic, repo-committed
   // corpus (never a real customer's text), and ZDR is a Pro/Enterprise-

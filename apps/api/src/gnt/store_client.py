@@ -1,5 +1,5 @@
 """Async client for apps/store's internal HTTP API — the only way this
-backend talks to the engine-backed seam (migration Phase 4). Every call
+backend talks to the engine-backed seam. Every call
 carries the shared bearer token; approving a rule additionally needs a
 signature computed with approval_signing_secret (see approval.py), which
 this client passes through rather than computes — the caller decides
@@ -96,7 +96,7 @@ async def append_audit(
         "approved",
         "rejected",
         "deprecated",
-        # fix-plan-v3 3.0 — the server-side privacy gate's own audit entry,
+        # The server-side privacy gate's own audit entry,
         # written by create_draft_rule when the webhook ingestion path
         # (routers/webhooks.py) masks PII/secrets before storing a rule.
         # See gnt.pipeline.privacy_gate/redaction_record.py.
@@ -133,7 +133,7 @@ async def get_audit_trail(org_id: str, rule_slug: str) -> list[dict[str, Any]]:
 async def list_rules_by_pr(org_id: str, pr_number: int) -> list[dict[str, Any]]:
     """Looks up every pending_merge rule an open PR belongs to — the
     webhook handler's entry point for turning a merge event into one or
-    more approvals. Plural because fix-plan-v3 2.4's batch-propose puts
+    more approvals. Plural because batch-propose can put
     several rules on the same PR (same prNumber); an empty list is the
     ordinary "gnt doesn't recognize this merged PR" case (an unrelated PR,
     or a PR whose rule(s) already moved past pending_merge), not an error —
@@ -170,7 +170,7 @@ async def sync_github_source(org_id: str, repo_url: str, pat: str) -> dict[str, 
 
 
 async def delete_org_source(org_id: str) -> dict[str, Any]:
-    """fix-plan-v3 tier 0 item 0.3 (C4) — hard-deletes this org's entire
+    """Hard-deletes this org's entire
     rules mirror (every page/chunk/embedding under its engine source).
     Irreversible; no confirmation flag on this call itself — the
     confirmation gate lives one layer up, in routers/org_admin.py's

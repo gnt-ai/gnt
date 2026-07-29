@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const alt = "gnt.ai — The brain for AI companies. In your terminal.";
+export const alt = "gnt.ai: The rulebook your agents actually check.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -13,9 +13,8 @@ const MUTED = "#9a9898";
 const BORDER = "rgba(253, 252, 252, 0.12)";
 
 const WORDMARK = "gnt.ai";
-const HEADLINE = "The brain for AI companies. In your terminal.";
-const SUBHEAD =
-  "Checks what an agent's about to do against your rules before it does it.";
+const HEADLINE = "The rulebook your agents actually check.";
+const SUBHEAD = "Rules live as files in your repo. Every answer traces to a merged PR.";
 
 // Same IBM Plex Mono the site itself renders with (layout.tsx) -- this
 // route has no dynamic APIs, so Next statically generates the image once

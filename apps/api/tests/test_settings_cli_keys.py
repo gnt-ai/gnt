@@ -1,4 +1,4 @@
-"""Security fix-plan item C1 -- CLI keys had no server-side revocation at
+"""CLI keys had no server-side revocation at
 all (`gnt logout` only ever deleted the local credentials file; the key
 itself stayed valid indefinitely). CLI keys can carry an admin snapshot
 (see McpApiKey.is_admin / migration 0010), which is exactly why this

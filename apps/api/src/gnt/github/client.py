@@ -250,9 +250,9 @@ class IssueResult:
 
 async def create_issue(repo_url: str, pat: str, title: str, body: str) -> IssueResult:
     """Opens an issue on the org's connected rules repo — used by the
-    nightly contradiction sweep (fix-plan-v2 item 13) to flag two
-    approved rules that may contradict each other for a human to
-    resolve. An issue, not a PR: there's no proposed code change to
+    nightly contradiction sweep to flag two approved rules that may
+    contradict each other for a human to resolve. An issue, not a PR:
+    there's no proposed code change to
     review here, just a finding that needs human attention, so
     open_pull_request's branch/file-diff machinery doesn't apply.
 

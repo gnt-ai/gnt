@@ -130,7 +130,7 @@ async def github_webhook(
     if not isinstance(pr_number, int):
         return JSONResponse({"ok": True})
 
-    # fix-plan-v3 2.4 — plural because batch-propose (routers/rules.py) can
+    # Plural because batch-propose (routers/rules.py) can
     # put several rules on the SAME merged PR (same prNumber). Each one
     # still gets its own file, its own approval, its own audit trail —
     # this list is just how many of those this one merge event needs to
@@ -208,8 +208,9 @@ async def _approve_one_rule(
 ) -> dict:
     """Approves exactly one rule out of a (possibly multi-rule) merged PR —
     the per-rule body of what used to be the whole webhook handler before
-    fix-plan-v3 2.4's batching, extracted so it can run once per rule
-    sharing a batched PR instead of exactly once per merge event.
+    batch-propose support let one merge event carry several rules,
+    extracted so it can run once per rule sharing a batched PR instead of
+    exactly once per merge event.
 
     Never raises: every failure mode here (an unreadable/unparseable file,
     a lock conflict, a rejected approval signature) is caught and reported
@@ -354,9 +355,9 @@ async def _approve_one_rule(
     # dedupes on job id, see its own docstring), so firing them N times for
     # N approved rules in one batch has no downside beyond N (cheap) calls.
     await log_onboarding_event(session, connection.org_id, "rule_approved")
-    # fix-plan-v2 item 18 calibration data — a no-op unless
-    # propose_rule/batch_propose_rules flagged a conflict on this exact PR
-    # for this exact rule; see calibration.py's docstring.
+    # Calibration data — a no-op unless propose_rule/batch_propose_rules
+    # flagged a conflict on this exact PR for this exact rule; see
+    # calibration.py's docstring.
     await log_conflict_override_if_flagged(session, connection.org_id, rule["slug"], pr_number)
     # The knowledge-unit capture pipeline used to be what (accidentally)
     # kept skill packs fresh — every capture recompiled the org's pack, so

@@ -1,4 +1,4 @@
-// Live-Zoom adapter (connector sprint T2.2): reads recording transcripts
+// Live-Zoom adapter: reads recording transcripts
 // from customer-chosen Zoom hosts, scoped to a date range, through Zoom's
 // own official MCP server. Same framework shape as mcp-notion.ts/
 // mcp-linear.ts/mcp-sentry.ts -- declare a server, a read-only allowlist,

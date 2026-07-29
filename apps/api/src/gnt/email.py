@@ -1,6 +1,6 @@
 """Resend-backed email sending for apps/api (Python side). Nothing in this
-codebase sent email from Python before fix-plan-v2 item 10's weekly
-digest — apps/web/lib/email.ts already does this for Better Auth's login
+codebase sent email from Python before the weekly digest
+(workers/tasks_digest.py) — apps/web/lib/email.ts already does this for Better Auth's login
 OTP/invite emails, but that's Node, a separate process, a separate deploy
 target (Vercel), and has no reason to import into apps/api.
 
@@ -15,9 +15,9 @@ RESEND_API_KEY is optional (config.py), and is NOT yet set on Railway's
 api/worker services as of this module's introduction — only apps/web on
 Vercel has it. Every function here checks is_email_configured() first and
 logs-and-returns rather than raising when it's unset, so the weekly digest
-cron job (workers/tasks_digest.py) — and everything else in fix-plan-v2
-item 10 that doesn't depend on email at all (the ROI aggregation itself,
-`gnt status --org`) — keeps working with zero email capability until the
+cron job (workers/tasks_digest.py) — and everything else in that ROI-
+reporting feature that doesn't depend on email at all (the ROI aggregation
+itself, `gnt status --org`) — keeps working with zero email capability until the
 founder adds the real credentials.
 """
 

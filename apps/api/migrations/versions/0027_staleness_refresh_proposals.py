@@ -1,6 +1,6 @@
-"""staleness_refresh_proposals — dedup log for fix-plan-v3 3.2's
-staleness-sweep half (extend staleness sweeps to re-check flagged rules
-against fresh source material and open refresh-or-deprecate PRs). Same
+"""staleness_refresh_proposals — dedup log for the staleness-sweep side of
+rule refresh (staleness sweeps re-check flagged rules against fresh source
+material and open refresh-or-deprecate PRs). Same
 role for that sweep as migration 0022's contradiction_findings plays for
 the sibling contradiction sweep. Genuinely org-scoped with no
 auth-bootstrap lookup need, same reasoning as that table, so RLS follows

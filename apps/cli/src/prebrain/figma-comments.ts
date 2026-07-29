@@ -1,4 +1,4 @@
-// Live-Figma comments client (connector sprint T2.7 v2): reads comment
+// Live-Figma comments client: reads comment
 // threads on customer-chosen Figma files -- a comment's own message text
 // and the reply text below it -- as decision-prose candidates. Direct
 // against Figma's own REST API, not an MCP adapter: no child process is

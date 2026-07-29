@@ -1,5 +1,5 @@
-"""Intercom connector (connector sprint T4.3) — a continuous server-side
-sync, same architecture as Zendesk's (T4.2; see
+"""Intercom connector — a continuous server-side
+sync, same architecture as Zendesk's (see
 workers/tasks_intercom.py's module docstring). Three tables:
 
 intercom_connections — the per-org credential (a single encrypted access

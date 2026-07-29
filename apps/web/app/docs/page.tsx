@@ -243,7 +243,7 @@ const WEBHOOK_CURL_LINES = [
 
 const WEBHOOK_CURL_COPY_TEXT = WEBHOOK_CURL_LINES.join("\n");
 
-// Gmail export walker (connector sprint T3.4): the interim Gmail path --
+// Gmail export walker: the interim Gmail path --
 // gnt prebrain --gmail reads a Google Takeout mail export (.mbox), no
 // Google OAuth approval needed. The real Gmail OAuth connector replaces
 // this once it clears Google's own app-review process.
@@ -259,7 +259,7 @@ const GMAIL_COMMAND_LINES = [
 const GMAIL_COMMAND_COPY_TEXT =
   "gnt prebrain --gmail ~/Takeout/Mail/All\\ mail\\ Including\\ Spam\\ and\\ Trash.mbox --gmail-since 2026-01-01 --gmail-from acme.com";
 
-// Outlook export walker (connector sprint T3.5): same interim-local-path
+// Outlook export walker: same interim-local-path
 // framing as the Gmail export walker above -- gnt prebrain --outlook
 // reads a directory of .eml files (or a single mbox-shaped file), no
 // Microsoft Graph API approval needed. PST is explicitly out of scope;
@@ -277,7 +277,7 @@ const OUTLOOK_COMMAND_LINES = [
 const OUTLOOK_COMMAND_COPY_TEXT =
   "gnt prebrain --outlook ~/Exports/outlook-eml --outlook-since 2026-01-01 --outlook-from acme.com";
 
-// Meeting-notes export walker (connector sprint T3.3): gnt prebrain
+// Meeting-notes export walker: gnt prebrain
 // --meeting-notes reads Otter/Fireflies/Fathom transcript exports -- VTT/
 // SRT cue files and plain-text transcripts, auto-detected per file -- no
 // per-vendor approval or connection needed, same interim-local-path shape
@@ -291,9 +291,10 @@ const MEETING_NOTES_COMMAND_LINES = [
 
 const MEETING_NOTES_COMMAND_COPY_TEXT = "gnt prebrain --meeting-notes ~/Exports/meeting-transcripts";
 
-// Hermes Agent (connector sprint T6.2, Nous Research's agent harness,
-// github.com/NousResearch/hermes-agent): the serving-side half of T6 --
-// making an agent harness call gnt's MCP endpoint and actually use
+// Hermes Agent (Nous Research's agent harness,
+// github.com/NousResearch/hermes-agent): the serving-side half of this
+// integration work (the generic MCP-client guide further down is the
+// other half) -- making an agent harness call gnt's MCP endpoint and actually use
 // check_action, not just have it available. Config schema and skill
 // format verified live against Hermes's own docs
 // (hermes-agent.nousresearch.com/docs) at build time, not assumed from
@@ -328,7 +329,7 @@ const HERMES_SKILL_INSTALL_LINES = ["$ hermes skills install https://gntai.dev/s
 
 const HERMES_SKILL_INSTALL_COPY_TEXT = HERMES_SKILL_INSTALL_LINES.join("\n");
 
-// Granola MCP connector (connector sprint T2.1): gnt connect granola-mcp
+// Granola MCP connector: gnt connect granola-mcp
 // then gnt prebrain --mcp-granola --granola-folders <id> reads meeting
 // notes and transcripts from customer-chosen Granola folders, locally.
 const GRANOLA_CONNECT_LINES = ["$ gnt connect granola-mcp", "", "✓ Saved. Run `gnt prebrain --mcp-granola …` to read from it."];
@@ -344,7 +345,7 @@ const GRANOLA_COMMAND_LINES = [
 
 const GRANOLA_COMMAND_COPY_TEXT = "gnt prebrain --mcp-granola --granola-folders team-standups,eng-planning";
 
-// Figma comments walker (connector sprint T2.7 v2): gnt prebrain
+// Figma comments walker: gnt prebrain
 // --figma-comments reads comment threads on customer-chosen Figma files
 // direct against Figma's own REST API -- no MCP server, no third-party
 // package, no gnt server ever in the read path.
@@ -358,7 +359,7 @@ const FIGMA_COMMAND_LINES = [
 
 const FIGMA_COMMAND_COPY_TEXT = "gnt connect figma\ngnt prebrain --figma-comments --figma-files abc123,def456";
 
-// Datadog notebooks walker (connector sprint T2.6): gnt prebrain
+// Datadog notebooks walker: gnt prebrain
 // --datadog-notebooks reads notebook titles and markdown content direct
 // against Datadog's own REST API -- no MCP server, no gnt server ever in
 // the read path. Notebooks are also where Datadog's own incident
@@ -373,7 +374,7 @@ const DATADOG_COMMAND_LINES = [
 
 const DATADOG_COMMAND_COPY_TEXT = "gnt connect datadog\ngnt prebrain --datadog-notebooks --datadog-notebook-ids 4821,5093";
 
-// GitLab threads walker (connector sprint T4.1): gnt prebrain
+// GitLab threads walker: gnt prebrain
 // --gitlab-threads reads merge request and issue discussion threads on
 // customer-chosen GitLab projects direct against GitLab's own REST API --
 // no MCP server, no gnt server ever in the read path.
@@ -387,7 +388,7 @@ const GITLAB_COMMAND_LINES = [
 
 const GITLAB_COMMAND_COPY_TEXT = "gnt connect gitlab-threads\ngnt prebrain --gitlab-threads --gitlab-projects acme/widgets,42";
 
-// HubSpot notes walker (connector sprint T2.8): gnt prebrain --hubspot-notes
+// HubSpot notes walker: gnt prebrain --hubspot-notes
 // reads note text direct against HubSpot's own REST CRM API -- no MCP
 // server, no gnt server ever in the read path. Scoped to deal pipelines
 // and/or teams; never reads a contact, company, or deal record field.
@@ -402,7 +403,7 @@ const HUBSPOT_COMMAND_LINES = [
 const HUBSPOT_COMMAND_COPY_TEXT =
   "gnt connect hubspot\ngnt prebrain --hubspot-notes --hubspot-pipelines 12345 --hubspot-teams 67890";
 
-// Airtable connector (connector sprint T4.4): gnt prebrain --airtable
+// Airtable connector: gnt prebrain --airtable
 // reads direct from Airtable's own REST API -- no MCP server, no gnt
 // server ever in the read path. Unlike every other connector on this page,
 // it takes no scope flags: which base, which tables, and which fields are
@@ -418,7 +419,7 @@ const AIRTABLE_COMMAND_LINES = [
 
 const AIRTABLE_COMMAND_COPY_TEXT = "gnt connect airtable\ngnt prebrain --airtable";
 
-// Zoom MCP connector (connector sprint T2.2): gnt connect zoom-mcp then gnt
+// Zoom MCP connector: gnt connect zoom-mcp then gnt
 // prebrain --mcp-zoom --zoom-hosts <id> reads recording transcripts from
 // customer-chosen Zoom hosts, scoped to a date range, locally.
 const ZOOM_CONNECT_LINES = ["$ gnt connect zoom-mcp", "", "✓ Saved. Run `gnt prebrain --mcp-zoom …` to read from it."];
@@ -435,7 +436,7 @@ const ZOOM_COMMAND_LINES = [
 
 const ZOOM_COMMAND_COPY_TEXT = "gnt prebrain --mcp-zoom --zoom-hosts host@acme.com --zoom-from 2026-07-01 --zoom-to 2026-07-15";
 
-// Generic MCP-client harness guide (connector sprint T6.3). Everything
+// Generic MCP-client harness guide. Everything
 // above this point is ingestion -- reading content into gnt. This is the
 // other direction's generic case: wiring an arbitrary MCP-capable client
 // to call out to gnt's own endpoint. OpenClaw and Hermes each get a

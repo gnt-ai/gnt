@@ -1,6 +1,6 @@
-"""Nightly Intercom sync (connector sprint T4.3) — a continuous SERVER-SIDE
+"""Nightly Intercom sync — a continuous SERVER-SIDE
 connector, not a CLI-local one-shot. Same founder decision behind Zendesk's
-connector (T4.2, recorded 2026-07-18): an Intercom access token is a
+connector (recorded 2026-07-18): an Intercom access token is a
 standing server-side credential a scheduled job reads on its own
 timetable, the same shape as Slack's bot token, GitHub's PAT, or
 Zendesk's API token — not something a human runs a one-shot
@@ -37,8 +37,9 @@ Pipeline per org, per content item — identical shape to Zendesk's sync:
      internal note is exactly the ambient third-party content that gate
      exists for. This module's content_extraction_model call NEVER sees
      unmasked Intercom content.
-  3. Check the org's LLM spend quota (C9a) before spending an extraction
-     call; stop the org's run once exhausted, same quiet-break shape
+  3. Check the org's per-org LLM spend quota (the cost gate that runs
+     before any paid model call) before spending an extraction call; stop
+     the org's run once exhausted, same quiet-break shape
      workers/tasks_zendesk.py's own per-item budget check uses, never a
      raised exception mid-sync.
   4. Extract zero or more candidate rules from the masked text
@@ -114,7 +115,7 @@ _SYNC_ACTOR_ID = "gnt:intercom-sync"
 _CONVERSATION_LOOKBACK_DAYS = 7
 
 _PR_INTRO = (
-    "Opened automatically by gnt's nightly Intercom sync (connector sprint T4.3) — "
+    "Opened automatically by gnt's nightly Intercom sync — "
     "extracted from support content (a saved reply, an internal conversation note, "
     "or a help-center article), a human needs to review this before it's real "
     "policy. Reject or edit this PR if the extraction got it wrong."
@@ -251,8 +252,8 @@ async def _run_sync(session: AsyncSession, org_id: str, connection: IntercomConn
     async for item_type, item_id, text, source_label, source in _iter_content_items(
         access_token, settings.intercom_sweep_max_items_per_org
     ):
-        # C9a — cost gate, checked before every extraction call this loop
-        # is about to make, same quiet-break shape
+        # Per-org LLM spend quota check, checked before every extraction
+        # call this loop is about to make, same quiet-break shape
         # tasks_zendesk.py's own per-item budget check uses.
         if not await check_llm_quota(org_id):
             break
@@ -291,8 +292,8 @@ async def _process_item(
         if await has_been_processed(session, org_id, item_type, item_id, fingerprint):
             return 0
 
-        # fix-plan-v3 3.0 — masked BEFORE extraction, not just before
-        # storage. See module docstring.
+        # Masked BEFORE extraction, not just before storage. See module
+        # docstring.
         gate_result = apply_privacy_gate(text)
 
         candidates, input_tokens, output_tokens = await extract_candidate_rules_async(

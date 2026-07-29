@@ -43,8 +43,8 @@ Needs a running Postgres and Redis (`REDIS_URL`/`DATABASE_URL`) — see the repo
   `routers/transcribe.py` does server-side voice-input transcription via
   Groq.
 - **MCP server** (`mcp_server/`) — mounted at `/mcp`. This is the one
-  published, customer-facing, agent-facing MCP surface (fix plan item 4,
-  founder decision) — `settings.mcp_url` is the source-of-truth URL, echoed
+  published, customer-facing, agent-facing MCP surface (a founder decision)
+  — `settings.mcp_url` is the source-of-truth URL, echoed
   in the CLI (`gnt keys create`) and the docs site. Four tools, all reading
   from the git-native rules store: `search_rules`, `get_rule`,
   `list_skill_packs`, `get_skill_pack`. apps/store doesn't run an MCP
@@ -54,9 +54,10 @@ Needs a running Postgres and Redis (`REDIS_URL`/`DATABASE_URL`) — see the repo
   A separate, older knowledge-unit pipeline (`capture`, `list_topics`,
   `get_skill`, `search_knowledge`, `ask_brain` — triage/extract/embed via
   Voyage into a Postgres `knowledge_units` table) used to run alongside
-  this and was retired: it duplicated retrieval gnt.ai doesn't own (see
-  the fix plan's "not RAG" framing) and ran a second paid embedding
-  provider for a deprioritized feature. `KnowledgeUnit`/`Conflict`/
+  this and was retired: it duplicated retrieval gnt.ai doesn't own to
+  build (gnt.ai's product is rules, not a general-purpose RAG store) and
+  ran a second paid embedding provider for a deprioritized feature.
+  `KnowledgeUnit`/`Conflict`/
   `InterviewQuestion` tables and their migrations are left in place —
   existing rows are untouched, nothing writes new ones.
 

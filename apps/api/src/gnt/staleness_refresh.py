@@ -1,4 +1,4 @@
-"""Dedup log for fix-plan-v3 3.2's staleness-sweep half (see
+"""Dedup log for the staleness sweep's refresh-or-deprecate proposals (see
 workers/tasks_staleness.py for the nightly job that writes this table).
 One row per (org_id, rule_slug, reason, content_fingerprint) the sweep has
 already opened a refresh-or-deprecate PR for — checked before a new draft

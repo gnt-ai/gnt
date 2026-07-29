@@ -15,7 +15,7 @@ function overlaps(a: Span, b: Span): boolean {
 // over already-masked text (or text that already contains a placeholder
 // literally, e.g. pasted from a prior redaction report) never re-detects
 // or re-wraps a placeholder token -- see index.test.ts's idempotency case.
-// Exported so detokenize.ts (1.3) can substitute placeholders back to real
+// Exported so detokenize.ts can substitute placeholders back to real
 // values using this exact same pattern, rather than a second regex that
 // could drift out of sync with what the layers above actually emit.
 export const PLACEHOLDER_RE =

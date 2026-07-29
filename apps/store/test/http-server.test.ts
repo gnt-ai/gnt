@@ -31,7 +31,8 @@ function signRule(rule: RulePage, secret: string): string {
 /**
  * Real HTTP requests over a real socket (Bun.serve on an ephemeral
  * port) against a real store backed by real Postgres — only the embedding
- * and rerank calls are faked (Global Rule 6). This is the actual boundary
+ * and rerank calls are faked, since tests must never make real paid
+ * provider calls. This is the actual boundary
  * Python crosses in routers/rules.py, so it's tested as an HTTP client
  * would use it, not by calling handler functions directly.
  *
@@ -356,9 +357,9 @@ describe.skipIf(!reachable)("internal HTTP API", () => {
     expect(body.map((r) => r.slug)).toEqual([rule.slug]);
   });
 
-  // fix-plan-v3 2.4 — batched propose puts several rules on the same PR
-  // (same prNumber), so the webhook handler needs every one of them back,
-  // not just the first the store happens to iterate to.
+  // Batched propose puts several rules on the same PR (same prNumber),
+  // so the webhook handler needs every one of them back, not just the
+  // first the store happens to iterate to.
   test("GET /rules/by-pr/:pr_number returns every rule sharing that PR number", async () => {
     const ruleOne = makeRule({
       slug: "rules/http-by-pr-batch-1",
@@ -487,7 +488,7 @@ describe.skipIf(!reachable)("internal HTTP API", () => {
     expect(rule.tags.sort()).toEqual(["billing", "refunds"]);
   });
 
-  // fix-plan-v3 tier 0 item 0.3 (C4) — org offboarding's store-side delete.
+  // Org offboarding's store-side delete.
   test("POST /sources/delete removes an org's rules mirror — the deleted rule is gone afterward", async () => {
     const rule = makeRule({ slug: "rules/http-delete-me", org: "org-http-delete" });
     const putRes = await authed("/rules", { method: "POST", body: JSON.stringify({ rule }) });

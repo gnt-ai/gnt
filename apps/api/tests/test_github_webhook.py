@@ -200,7 +200,7 @@ async def test_merged_file_content_is_sanitized_before_it_becomes_the_approved_r
     this service ever generated — the same trust boundary as any other
     external input. Both check_action's _format_rules and rule_conflict's
     judge_conflict read a rule's title/body straight off storage with no
-    sanitization of their own (item 17), so this write is the one place
+    sanitization of their own, so this write is the one place
     that has to catch an injection attempt for every future reader."""
     await _connect_github(db_session, org_a)
     await put_rule(_rule_dict("rules/webhook-injection", org_a, pr_number=46))
@@ -512,7 +512,7 @@ async def test_cross_org_pr_number_collision_only_approves_the_matching_org_rule
 async def test_merge_with_a_prior_conflict_flag_logs_a_reviewer_override(
     webhook_client, db_session, org_a
 ):
-    """fix-plan-v2 item 18 calibration data — a human merging a PR that
+    """Calibration data: a human merging a PR that
     propose_rule flagged with a conflict warning is a real signal on
     whether pipeline/rule_conflict.py's soft check is worth trusting."""
     await _connect_github(db_session, org_a)
@@ -577,10 +577,10 @@ async def test_merge_without_a_prior_conflict_flag_logs_no_override(webhook_clie
     assert [e.event_type for e in events] == []
 
 
-# -- fix-plan-v3 2.4: batch-propose puts several rules on the SAME merged
+# -- batch-propose puts several rules on the SAME merged
 # PR (same prNumber). These tests exercise the webhook rework that
 # processes every rule sharing a merged PR, not just one -- the highest-
-# stakes part of this task per the plan. -----------------------------------
+# stakes part of this feature. ----------------------------------------------
 
 
 async def test_merged_batch_pr_flips_every_rule_to_approved(webhook_client, db_session, org_a):

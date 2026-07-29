@@ -1,4 +1,4 @@
-// Notion-export walker (fix-plan-v3 2.1): given a path to a Notion
+// Notion-export walker: given a path to a Notion
 // "Markdown & CSV" export .zip (NOT the HTML export), extracts it to a
 // local temp dir and walks the resulting .md files the same way docs-dir.ts
 // walks a user-pointed directory. See zip.ts's own doc comment for what's

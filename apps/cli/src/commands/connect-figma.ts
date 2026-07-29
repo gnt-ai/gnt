@@ -1,4 +1,4 @@
-// `gnt connect figma` (connector sprint T2.7 v2): stores a Figma personal
+// `gnt connect figma`: stores a Figma personal
 // access token locally for `gnt prebrain --figma-comments` to use. Not an
 // MCP-in connector -- see ../prebrain/figma-comments.ts's own doc comment
 // -- so this doesn't go through mcp-framework's runConnectFlow, which is

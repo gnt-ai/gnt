@@ -19,14 +19,22 @@ permissions:
 jobs:
   api-audit:
     name: api-audit (uv audit)
-    runs-on: ubuntu-latest
+    # Fork PRs never touch the self-hosted macOS box -- see the matching
+    # comment on ci.yml's `web` job for why, and
+    # .github/scripts/check_workflow_security.py for the guard that keeps
+    # this in place.
+    runs-on: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || fromJSON('["self-hosted","macOS"]') }}
+    # A hung job here blocks every other job queued behind it on the
+    # shared self-hosted runner -- see ci.yml's matching comment. None of
+    # these jobs touch a database, 10 min is generous.
+    timeout-minutes: 10
     defaults:
       run:
         working-directory: apps/api
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
-      - uses: astral-sh/setup-uv@caf0cab7a618c569241d31dcd442f54681755d39 # v3
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
           version: latest
           enable-cache: true
@@ -38,13 +46,14 @@ jobs:
 
   js-audit:
     name: js-audit (pnpm audit, bun audit)
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || fromJSON('["self-hosted","macOS"]') }}
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
-      - uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
 
-      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: pnpm
@@ -66,9 +75,10 @@ jobs:
 
   gitleaks:
     name: gitleaks
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || fromJSON('["self-hosted","macOS"]') }}
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
         with:
           # Full history, not the default shallow clone — gitleaks scans
           # git log, and a shallow checkout would only ever expose the tip
@@ -124,9 +134,10 @@ jobs:
 
   public-copy-scrub:
     name: public-copy-scrub (no third-party automation tool names)
-    runs-on: ubuntu-latest
+    runs-on: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || fromJSON('["self-hosted","macOS"]') }}
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
       # gnt's public surfaces describe the generic webhook in gnt's own
       # terms only ("any tool or system that can send an HTTP POST can
@@ -147,13 +158,18 @@ jobs:
             apps/cli/src/index.ts \
             apps/cli/src/commands \
             apps/cli/src/prebrain/starter-packs; then
-            echo "::error::found a third-party automation-tool name in public-facing copy; describe the webhook in gnt's own terms instead (see T0 scrub rule)"
+            echo "::error::found a third-party automation-tool name in public-facing copy; describe the webhook in gnt's own terms instead"
             exit 1
           fi
 
   workflow-security:
     name: workflow-security (fork-PR safety guard)
-    runs-on: ubuntu-latest
+    # Same fork-conditional runner as every other job: this only reads
+    # .github/workflows/*.yml with stdlib Python, so the self-hosted box is
+    # safe for same-repo runs, and fork PRs still go to a throwaway
+    # github-hosted runner like everywhere else.
+    runs-on: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository && 'ubuntu-latest' || fromJSON('["self-hosted","macOS"]') }}
+    timeout-minutes: 10
     steps:
-      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
       - run: python3 .github/scripts/check_workflow_security.py

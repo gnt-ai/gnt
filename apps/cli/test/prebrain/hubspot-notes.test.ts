@@ -50,8 +50,8 @@ function asSearchBody(body: unknown): HubspotSearchRequestBody {
 // A note entry shaped like a plausible "hydrated" HubSpot response: the
 // note's own body text sits alongside a fully populated embedded contact
 // object (email, phone, first/last name) and an embedded deal object
-// (amount, dealstage, closedate) -- exactly the shape T2.8's own task
-// description warns about. Real customer PII and real deal financials,
+// (amount, dealstage, closedate) -- exactly the highest-leak-risk shape
+// the header comment above describes. Real customer PII and real deal financials,
 // fenced off with an obviously-fake domain the same way every other
 // connector's own test fixtures in this directory are.
 function fixtureHydratedNote(id: string, body: string) {

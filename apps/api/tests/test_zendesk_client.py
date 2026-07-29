@@ -1,4 +1,4 @@
-"""gnt.zendesk.client — the Zendesk REST adapter (connector sprint T4.2).
+"""gnt.zendesk.client — the Zendesk REST adapter.
 Mocks at the module's own _get boundary (same shape test_github_client.py
 uses for _call), so nothing here makes a real network call.
 

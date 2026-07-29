@@ -1,4 +1,4 @@
-// The company profile pass -- fix-plan-v3 section 2.2. A short interactive
+// The company profile pass. A short interactive
 // pass at the very start of `gnt prebrain`: what the company does, which
 // functions run on agents, where decisions get made. Answers steer which
 // walkers run (2.1), how extracted rules get tagged, and which starter

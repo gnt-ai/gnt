@@ -1,4 +1,4 @@
-// `gnt connect jira-mcp` (connector sprint T2.4, OAuth sprint T14): stores
+// `gnt connect jira-mcp`: stores
 // a managed-OAuth marker locally for `gnt prebrain --mcp-jira` to use, in
 // place of the pasted Jira API token this command used to require. Built
 // on the connector framework's shared runManagedConnectFlow

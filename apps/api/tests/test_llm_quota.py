@@ -1,6 +1,6 @@
-"""gnt.llm_quota — fix-plan-v3 Tier 0 prerequisite 0.1 ("C9a"): per-org
-monthly LLM spend quota plus a global aggregate circuit breaker. Covers
-the plan's non-negotiables directly: a quota blocks a call once exceeded
+"""gnt.llm_quota — the per-org monthly LLM spend quota plus a global
+aggregate circuit breaker that gates real LLM calls before they go out.
+Covers the essential guarantees directly: a quota blocks a call once exceeded
 (per-org), a different org isn't blocked by another org's exhausted quota
 (tenant isolation), the global circuit breaker actually prevents a call
 at 100% global spend, alerts fire once per threshold (50/80/100 percent),

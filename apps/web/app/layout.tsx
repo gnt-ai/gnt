@@ -16,16 +16,16 @@ const ibmPlexMono = IBM_Plex_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL("https://gntai.dev"),
   title: "gnt.ai",
-  description: "The brain for AI companies. In your terminal.",
+  description: "Rules for AI agents, checked before every risky action.",
   openGraph: {
     type: "website",
     title: "gnt.ai",
-    description: "The brain for AI companies. In your terminal.",
+    description: "Rules for AI agents, checked before every risky action.",
   },
   twitter: {
     card: "summary_large_image",
     title: "gnt.ai",
-    description: "The brain for AI companies. In your terminal.",
+    description: "Rules for AI agents, checked before every risky action.",
   },
   verification: {
     google: "X9AdxjrlMn9JAJxcPMEBd9Dn3WoZIkBI3DKfBaOJtWc",

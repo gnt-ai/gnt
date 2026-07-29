@@ -2,12 +2,12 @@ import { z } from "zod";
 import { sanitize } from "./sanitize.js";
 import type { PrebrainProfile } from "./types.js";
 
-// "Ships versioned and inspectable in the CLI" (fix-plan-v3 2.3): this
+// The prompt and schema ship versioned and inspectable in the CLI: this
 // whole file -- the prompt text and the output schema together -- is
 // plain, readable TypeScript a customer can open and read, not fetched
 // remotely or obfuscated. Bump this whenever a change to the prompt text
 // or the schema below could shift model output, so a customer (or a
-// later eval run, task 4.1) can tell which version produced a given
+// later eval run) can tell which version produced a given
 // batch of draft rules.
 export const EXTRACTION_PROMPT_VERSION = 1;
 
@@ -52,7 +52,7 @@ export type ExtractionResult = z.infer<typeof ExtractionResultSchema>;
 // from what cloud mode actually enforces.
 export const EXTRACTION_JSON_SCHEMA = z.toJSONSchema(ExtractionResultSchema);
 
-// Reads CompanyProfile's real field names (fix-plan-v3 2.2,
+// Reads CompanyProfile's real field names (see
 // apps/cli/src/prebrain/profile.ts) via the loose PrebrainProfile type
 // rather than a typed import -- see that type's own doc comment for why.
 function describeProfile(profile: PrebrainProfile): string | null {
@@ -76,8 +76,8 @@ function describeProfile(profile: PrebrainProfile): string | null {
 // this as `system`, local.ts as the first message with role "system" --
 // Ollama's chat endpoint takes the same system/user message shape).
 //
-// `profile` is the company-profile pass's output (fix-plan-v3 2.2, not
-// this task's contract to depend on tightly -- see PrebrainProfile in
+// `profile` is the company-profile pass's output (not this module's
+// contract to depend on tightly -- see PrebrainProfile in
 // ../types.ts). When present, it's free-text a human typed during an
 // interactive Q&A, which makes it untrusted-origin same as source chunk
 // text: it gets sanitized and wrapped in its own labeled data block

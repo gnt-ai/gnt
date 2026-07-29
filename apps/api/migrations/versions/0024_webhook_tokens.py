@@ -1,4 +1,4 @@
-"""webhook_tokens — fix-plan-v2 item 14, generic webhook ingestion. See
+"""webhook_tokens — backs generic webhook ingestion. See
 gnt.db.models.WebhookToken for the full reasoning and gnt.routers.webhooks
 for the one endpoint this authenticates (draft-rule ingest only).
 

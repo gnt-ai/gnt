@@ -57,8 +57,10 @@ def test_extract_candidate_rules_can_return_zero_candidates(monkeypatch):
 def test_extract_candidate_rules_sanitizes_and_wraps_the_content(monkeypatch):
     """The content reaching this call could itself carry an injection
     attempt even after privacy-gate masking (masking targets PII, not
-    prompt-injection markers) — same Global Rule 2b discipline
-    judge_conflict already applies to rule bodies."""
+    prompt-injection markers) — same sanitize-and-delimit discipline
+    judge_conflict already applies to rule bodies: untrusted external
+    text gets cleaned and wrapped in a clearly delimited block before it
+    ever reaches a prompt."""
     fake_client, captured = _fake_client([])
     monkeypatch.setattr("gnt.pipeline.content_extraction.get_client", lambda: fake_client)
 

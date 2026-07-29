@@ -25,8 +25,8 @@ async function isReachable(url: string): Promise<boolean> {
 const reachable = await isReachable(DATABASE_URL);
 
 /**
- * Item 16, take two. The original version of this check keyed off bind
- * address (loopback vs. not) and crash-looped production: Railway
+ * Network-exposure gate, take two. The original version of this check
+ * keyed off bind address (loopback vs. not) and crash-looped production: Railway
  * containers must bind 0.0.0.0 to be reachable by anything, including
  * Railway's own private network, so "non-loopback bind" and "publicly
  * reachable" are different facts there — see apps/store/README.md's
@@ -70,7 +70,8 @@ describe("resolveNetworkExposure", () => {
     // old bind-address check: GNT_STORE_BIND=0.0.0.0 (required for Railway's
     // private network to reach the service at all) with no
     // GNT_STORE_ALLOW_NON_LOOPBACK ever set, because that flag didn't exist
-    // before item 16 shipped. Railway's own store service has no public
+    // before this gate was rewritten to key off public ingress instead of
+    // bind address. Railway's own store service has no public
     // domain or TCP proxy attached, so neither RAILWAY_PUBLIC_DOMAIN nor
     // RAILWAY_TCP_PROXY_DOMAIN is set either.
     const authMode = resolveNetworkExposure({

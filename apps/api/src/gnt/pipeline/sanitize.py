@@ -1,11 +1,13 @@
-"""Global Rule 2 (b): strip or escape anything that looks like tool-call
-syntax or system-prompt markers, before storage — a pure function, no LLM
-call, so it's cheap to run on every captured string and trivially testable.
+"""Strips or escapes anything that looks like tool-call syntax or
+system-prompt markers, before storage — a pure function, no LLM call, so
+it's cheap to run on every captured string and trivially testable.
 
 This is one layer of defense, not the whole story: extraction/serving
 prompts still wrap captured text in delimited data blocks and tell the
-model it's data, never instructions (Global Rule 2a) — this function
-narrows the specific vectors that survive even inside such a wrapper: a
+model it's data, never instructions — untrusted external content must
+never be interpreted as instructions to the model, which is the core
+defense against prompt injection here — this function narrows the
+specific vectors that survive even inside such a wrapper: a
 sequence that closes the wrapper early, a fake tool_use/tool_result JSON
 blob, a special-token-style marker, or a plain-English instruction
 override. It does not try to be a general injection classifier.
@@ -33,8 +35,8 @@ _INJECTION_PHRASES = re.compile(
     r"|new\s+instructions\s*:"
     r"|system\s+prompt\s*:"
     r"|act\s+as\s+(?:the\s+|a\s+)?system"
-    # Non-English coverage is deliberately narrow (fix-plan-v2 item 17): just
-    # the highest-value "ignore previous instructions" variant in Spanish and
+    # Non-English coverage is deliberately narrow: just the highest-value
+    # "ignore previous instructions" variant in Spanish and
     # Chinese, the two next-largest languages after English in this product's
     # traffic — not full per-language parity with the English list above. The
     # universal delimited-wrapper convention is the real defense; this only

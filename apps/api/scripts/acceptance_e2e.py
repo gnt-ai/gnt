@@ -1,4 +1,4 @@
-"""P0 acceptance gate (gnt.ai fix plan v2, item 3): runs the entire product
+"""P0 acceptance gate: runs the entire product
 loop against real production infrastructure and fails loud if any step
 doesn't behave exactly like a real customer's would.
 
@@ -7,7 +7,7 @@ GitHub rules repo -> a real merge -> the GitHub webhook flips the rule to
 approved -> a real MCP protocol client (not a direct function call) queries
 the published endpoint and gets the approved rule back.
 
-v3 fix-plan Tier 0 audit (2026-07-18) found this script still called
+A 2026-07-18 audit found this script still called
 POST /v1/capture and polled for extracted "knowledge units" -- that
 endpoint doesn't exist anywhere in the current router set (grep
 apps/api/src/gnt/routers confirms it). The capture/extraction pipeline it
@@ -42,8 +42,8 @@ real `gh pr merge`; the MCP call uses the actual `mcp` SDK client against
 the real published URL. This is deliberately NOT run in CI on every push
 (it opens a real PR and needs a real admin-scoped API key + GitHub PAT it
 can't safely hold as a CI secret) -- run it by hand after any change that
-touches the rules/github-connect/webhook/MCP path, or per fix-plan item 5
-once a CI wiring for it is scoped separately.
+touches the rules/github-connect/webhook/MCP path, or wire it into CI
+once that work is scoped separately.
 
 Requires four env vars, none of which this script can provision itself:
 

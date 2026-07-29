@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ShieldAlert } from "lucide-react";
 import { authClient, useSession } from "@/lib/auth-client";
 
-// fix-plan-v3 item 0.3's enforcement compromise: 2FA is "required" for
+// Deliberate enforcement compromise: 2FA is "required" for
 // owner/admin, but nothing here hard-blocks org creation or a brand-new
 // owner's first sign-in -- the instant an org exists its owner obviously
 // hasn't enabled 2FA yet, so a hard block would lock out the one person

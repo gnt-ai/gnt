@@ -1,4 +1,4 @@
-// mbox parsing (connector sprint T3.4): splits a Google Takeout mail
+// mbox parsing: splits a Google Takeout mail
 // export into individual RFC 5322 messages and parses each one's headers
 // and MIME body. Hand-written rather than a dependency (e.g. mailparser)
 // -- mbox is a well-documented, bounded text format (a boundary-line

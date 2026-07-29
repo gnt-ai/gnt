@@ -1,10 +1,10 @@
-// Docs-directory walker (fix-plan-v3 2.1): walks a user-pointed directory
+// Docs-directory walker: walks a user-pointed directory
 // recursively for markdown/text files, skipping node_modules/.git/hidden
 // dirs. `gnt prebrain --docs <path>` is the caller; if the path is missing
 // or isn't a directory, this returns no chunks rather than throwing -- the
 // command layer decides what to print about that, this stays a pure walker.
 //
-// (sprint T3.1) This is also the walker a customer points at a locally
+// This is also the walker a customer points at a locally
 // synced Dropbox folder -- Dropbox's desktop client syncs to plain files on
 // disk, so `--docs <path>` already works against one; the two things below
 // make it work well against one specifically.

@@ -1,4 +1,4 @@
-"""Coverage-gap tracking for fix-plan-v2 item 8 (gap-aware answers). A
+"""Coverage-gap tracking for gap-aware answers. A
 "gap" is a serving-path signal that no approved rule covers a query:
 
 - search_rules: zero hits after the same similarity threshold search_rules
@@ -91,7 +91,7 @@ async def list_top_gaps(session: AsyncSession, org_id: str, limit: int = 20) -> 
 async def count_gaps_between(session: AsyncSession, org_id: str, start: date, end: date) -> int:
     """How many gap rows (raw hits, not deduped like list_top_gaps above)
     this org logged between `start` and `end`, both inclusive whole days.
-    Backs fix-plan-v2 item 10's "coverage growth" number: the weekly digest
+    Backs the "coverage growth" number shown in the weekly digest: it
     (workers/tasks_digest.py) calls this for the current and prior 7-day
     windows the same way roi_metrics.summary_for_window does for
     roi_counters, so "gaps are shrinking" is a real week-over-week

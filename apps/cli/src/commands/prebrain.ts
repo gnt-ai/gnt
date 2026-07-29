@@ -1,4 +1,4 @@
-// gnt prebrain (fix-plan-v3 2.1-2.4): the front half of the cold-start fix --
+// gnt prebrain: the front half of the cold-start fix --
 // a brand-new org has an empty rulebook and no fast way to fill it. This
 // command walks whichever local sources the caller points it at, runs a
 // short company-profile pass, extracts candidate rules from what it found
@@ -75,7 +75,7 @@ import { bold, dim, fail, muted, success, text } from "../theme.js";
 export interface PrebrainOptions {
   docs?: string;
   notion?: string;
-  // Gmail export walker (connector sprint T3.4): --gmail points at a
+  // Gmail export walker: --gmail points at a
   // single Google Takeout mail export (.mbox), same "one flag, one path"
   // shape as --notion's export .zip. The scope-control flags below exist
   // because a Takeout export can be a whole mailbox's lifetime history --
@@ -88,7 +88,7 @@ export interface PrebrainOptions {
   // Comma-separated bare addresses or bare domains, same convention as
   // --monday-boards below.
   gmailFrom?: string;
-  // Outlook export walker (connector sprint T3.5): --outlook points at
+  // Outlook export walker: --outlook points at
   // either a directory of .eml files or a single mbox-shaped file -- see
   // outlook-export.ts's own doc comment for why both are supported and
   // what Outlook's export flow actually produces. Same scope-control
@@ -98,7 +98,7 @@ export interface PrebrainOptions {
   outlookSince?: string;
   outlookUntil?: string;
   outlookFrom?: string;
-  // Meeting-notes export walker (connector sprint T3.3): --meeting-notes
+  // Meeting-notes export walker: --meeting-notes
   // points at a directory or a single file of Otter/Fireflies/Fathom
   // transcript exports -- VTT/SRT cue files and plain-text transcripts,
   // auto-detected per file (see meeting-notes-export.ts's own doc comment
@@ -130,7 +130,7 @@ export interface PrebrainOptions {
   // connectors are attempted, never which of their own content a
   // connector is allowed to read. See resolveInputs's own handling below.
   all?: boolean;
-  // MCP-in walkers (fix-plan-v3 3.4): both opt-in booleans, never run
+  // MCP-in walkers: both opt-in booleans, never run
   // just because a token happens to be configured -- see collectChunks's
   // own comment for why. Token options fall back to a locally stored
   // `gnt connect notion-mcp`/`monday-mcp` credential, then an env var,
@@ -144,7 +144,7 @@ export interface PrebrainOptions {
   // see mcp-monday.ts's own doc comment for why this walker never
   // discovers boards on its own.
   mondayBoards?: string;
-  // Linear MCP-in walker (connector sprint T2.3) -- same opt-in-boolean
+  // Linear MCP-in walker -- same opt-in-boolean
   // shape as mcpNotion/mcpMonday above, see mcp-linear.ts's own doc
   // comment for the read-only guarantee and auth model.
   mcpLinear?: boolean;
@@ -154,7 +154,7 @@ export interface PrebrainOptions {
   // --monday-boards above.
   linearTeams?: string;
   linearProjects?: string;
-  // Jira MCP-in walker (connector sprint T2.4) -- same opt-in-boolean shape
+  // Jira MCP-in walker -- same opt-in-boolean shape
   // as mcpLinear above, see mcp-jira.ts's own doc comment for the
   // read-only guarantee and auth model. Unlike Linear, this one also needs
   // --jira-cloud-id: Atlassian's MCP server is multi-site, so every call
@@ -173,7 +173,7 @@ export interface PrebrainOptions {
   // as --monday-boards above, see mcp-sentry.ts's own doc comment.
   sentryOrg?: string;
   sentryProjects?: string;
-  // Granola (connector sprint T2.1) -- same opt-in-boolean-plus-scope-ids
+  // Granola -- same opt-in-boolean-plus-scope-ids
   // shape as --mcp-monday/--monday-boards above; see mcp-granola.ts's own
   // doc comment for why this walker never discovers folders on its own.
   // Deliberately no --granola-mcp-token-equivalent field here: Granola's
@@ -182,7 +182,7 @@ export interface PrebrainOptions {
   // own "Honest limit" section.
   mcpGranola?: boolean;
   granolaFolders?: string;
-  // Zoom MCP-in walker (connector sprint T2.2) -- same opt-in-boolean-plus-
+  // Zoom MCP-in walker -- same opt-in-boolean-plus-
   // scope shape as --mcp-sentry/--sentry-org above; see mcp-zoom.ts's own
   // doc comment for the read-only guarantee, the host+date-range allowlist,
   // and the auth model (a hosted remote MCP server, a user OAuth access
@@ -203,7 +203,7 @@ export interface PrebrainOptions {
   // "yyyy-mm-dd" parameter.
   zoomFrom?: string;
   zoomTo?: string;
-  // Figma comments walker (connector sprint T2.7 v2): opt-in boolean, same
+  // Figma comments walker: opt-in boolean, same
   // "never run just because a token happens to be configured" reasoning as
   // --mcp-notion/--mcp-monday above -- direct against Figma's own REST
   // API though, not an MCP-in walker (see prebrain/figma-comments.ts's own
@@ -217,7 +217,7 @@ export interface PrebrainOptions {
   // boards: there is no read here that could safely list a customer's
   // files.
   figmaFiles?: string;
-  // Datadog notebooks walker (connector sprint T2.6): opt-in boolean, same
+  // Datadog notebooks walker: opt-in boolean, same
   // "never run just because a credential happens to be configured"
   // reasoning as --mcp-notion/--figma-comments above -- direct against
   // Datadog's own REST API, not an MCP-in walker (see
@@ -234,7 +234,7 @@ export interface PrebrainOptions {
   // document for not auto-discovering: this walker never lists a
   // customer's notebooks as part of a run.
   datadogNotebookIds?: string;
-  // Airtable connector (connector sprint T4.4): opt-in boolean, same
+  // Airtable connector: opt-in boolean, same
   // "never run just because a credential happens to be configured"
   // reasoning as --mcp-notion/--figma-comments/--datadog-notebooks above --
   // direct against Airtable's own REST API, not an MCP-in walker (see
@@ -249,7 +249,7 @@ export interface PrebrainOptions {
   // prebrain/airtable.ts's walkAirtable doc comment).
   airtable?: boolean;
   airtableToken?: string;
-  // GitLab threads walker (connector sprint T4.1): opt-in boolean, same
+  // GitLab threads walker: opt-in boolean, same
   // "never run just because a token happens to be configured" reasoning as
   // --figma-comments/--datadog-notebooks above -- direct against GitLab's
   // own REST API, not an MCP-in walker (see prebrain/gitlab-threads.ts's
@@ -265,12 +265,12 @@ export interface PrebrainOptions {
   // --figma-files document for not auto-discovering: this walker never
   // lists a customer's projects or groups, only the projects named here.
   gitlabProjects?: string;
-  // HubSpot notes walker (connector sprint T2.8): opt-in boolean, same
+  // HubSpot notes walker: opt-in boolean, same
   // "never run just because a credential happens to be configured"
   // reasoning as --mcp-notion/--figma-comments/--datadog-notebooks above --
   // direct against HubSpot's own REST CRM API, not an MCP-in walker (see
   // prebrain/hubspot-notes.ts's own doc comment for why). This is the
-  // sprint's own declared highest-leak-risk connector: it never reads
+  // highest-leak-risk connector in this set: it never reads
   // contact records, company records, or a deal's own fields, only a
   // note's own text, scoped to --hubspot-pipelines and/or --hubspot-teams
   // -- at least one is required, neither auto-discovers anything.
@@ -407,8 +407,8 @@ const WALKER_ORDER: PrebrainWalker[] = [
   "airtable",
 ];
 
-// Plan's own recommended batch size (fix-plan-v3 2.4): "recommend 5-8
-// rules per PR grouped by topic". MAX_BATCH_SIZE is enforced (a topic
+// Batch size target: 5-8 rules per PR grouped by topic, small enough for a
+// human to actually review in one sitting. MAX_BATCH_SIZE is enforced (a topic
 // bucket bigger than this splits into more than one PR); MIN_BATCH_SIZE
 // is a target, not a floor -- see groupByTopic's own comment for why a
 // small, topic-pure batch is preferred over padding it with unrelated
@@ -617,10 +617,9 @@ function resolveOutlookFilterOptions(
 }
 
 // Live MCP sources never run just because a token happens to be
-// configured -- gated on their own boolean flag exactly like the plan's
-// own scope note requires ("err toward opt-in ... rather than silently
-// attempting a live connection on every gnt prebrain run"), unlike
-// --docs/--notion which run whenever a path is passed. A connection or
+// configured -- gated on their own boolean flag, erring toward opt-in
+// rather than silently attempting a live connection on every gnt prebrain
+// run, unlike --docs/--notion which run whenever a path is passed. A connection or
 // auth failure here is reported and that source is skipped, never fatal
 // to the rest of the run -- repo-scan/docs-dir/notion-export (and the
 // other MCP walkers) still complete normally, same graceful-degradation
@@ -955,8 +954,8 @@ function summarize(chunks: PrebrainChunk[]): string[] {
 
 // Runs every chunk through the privacy gate before any of it reaches
 // extraction -- this is the actual first real caller of the gate in this
-// codebase (fix-plan-v3 1.1/1.2 built it, nothing called it until this
-// command). Replaces each chunk's `text` with the gate's maskedText
+// codebase; the gate itself existed already, but nothing invoked it until
+// this command wired it in. Replaces each chunk's `text` with the gate's maskedText
 // wholesale, not just for the model prompt: extraction's own excerptOf
 // builds each rule's source-citation excerpt straight off chunk.text (see
 // extraction/index.ts's toExtractedRule), and that excerpt ends up
@@ -978,8 +977,8 @@ function chunkSourceKey(chunk: PrebrainChunk): string {
     : `${chunk.sourcePath}:${chunk.startLine}-${chunk.endLine}`;
 }
 
-// Groups extracted rules into review-sized batches (fix-plan-v3 2.4:
-// "recommend 5-8 rules per PR grouped by topic"). Heuristic: a rule's
+// Groups extracted rules into review-sized batches (target: 5-8 rules per
+// PR grouped by topic). Heuristic: a rule's
 // "dominant tag" is the first tag extraction gave it (tags are the only
 // topic signal extraction produces, and the first one is whichever the
 // model surfaced first for that rule -- treated as its primary topic
@@ -1294,7 +1293,7 @@ export async function runPrebrain(
     // is deterministic pattern matching + NER + the amounts heuristic, not
     // the full three-layer gate the marketing copy describes. Surfacing
     // that on every run beats a reader finding out by reading source.
-    console.log(dim("  (contextual pass: not yet active -- deterministic + NER + amounts only, see fix-plan-v3 2.3)"));
+    console.log(dim("  (contextual pass: not yet active -- deterministic + NER + amounts only)"));
     const gatedChunks = await gateChunks(chunks);
 
     console.log(muted(`Extracting candidate rules (${mode} mode)...`));

@@ -1,5 +1,5 @@
-"""compute_rule_staleness / compute_staleness_for_org / write_staleness_rows
-(fix-plan-v2 item 9 — the nightly staleness cron). write_staleness_rows is
+"""compute_rule_staleness / compute_staleness_for_org / write_staleness_rows,
+the nightly staleness cron. write_staleness_rows is
 tested directly against db_session (same shape test_compile_skill_pack.py
 uses for compile_skill_pack — a session-taking function a fixture already
 controls). compute_staleness_for_org and compute_rule_staleness open their
@@ -13,8 +13,10 @@ underneath it) monkeypatch gnt.workers.tasks_staleness.get_sessionmaker
 onto a session factory bound to TEST_DATABASE_URL, the same pattern
 conftest.py's db_session fixture already uses for the MCP server module.
 
-The refresh-or-deprecate sweep (fix-plan-v3 3.2) gets its own section
-below, mirroring test_tasks_contradictions.py's split: sweep_staleness_
+The refresh-or-deprecate sweep — a follow-up to the staleness cron above
+that actively refreshes or deprecates stale rules instead of just flagging
+them — gets its own section below, mirroring test_tasks_contradictions.py's
+split: sweep_staleness_
 refresh_for_org is exercised for real against a test Postgres + the real
 store subprocess, with the GitHub client mocked at its call boundary
 (same mocking shape that file uses for judge_conflict/create_issue).
@@ -337,9 +339,10 @@ async def _cleanup_org(org_id: str) -> None:
         async with session_factory() as session:
             await scope_to_org(session, org_id)
             await session.execute(delete(RuleStaleness).where(RuleStaleness.org_id == org_id))
-            # fix-plan-v3 3.2 additions — a test that seeds a GithubConnection
-            # and/or a StalenessRefreshProposal row must clear both before the
-            # org row itself can be deleted (both FK to orgs.id).
+            # The refresh-or-deprecate sweep added rows that FK to orgs.id —
+            # a test that seeds a GithubConnection and/or a
+            # StalenessRefreshProposal row must clear both before the org
+            # row itself can be deleted.
             await session.execute(
                 delete(StalenessRefreshProposal).where(StalenessRefreshProposal.org_id == org_id)
             )
@@ -434,7 +437,7 @@ async def test_compute_rule_staleness_processes_each_org_in_its_own_scope(
         await _cleanup_org(org_b)
 
 
-# --- sweep_staleness_refresh_for_org: fix-plan-v3 3.2 -------------------
+# --- sweep_staleness_refresh_for_org: the refresh-or-deprecate sweep ----
 
 
 _QUALIFYING_CITATION = [

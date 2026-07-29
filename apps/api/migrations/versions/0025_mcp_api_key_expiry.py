@@ -1,4 +1,4 @@
-"""fix-plan-v3 item C2 -- key expiry and rotation. Adds expires_at to
+"""Key expiry and rotation. Adds expires_at to
 mcp_api_keys, shared by both key_type values (cli and mcp) since they've
 always lived in this one table (migration 0017's docstring). Nullable, no
 backfill: every row that exists before this migration lands keeps

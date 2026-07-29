@@ -27,11 +27,11 @@ spaCy over the alternatives considered:
     for what it's uniquely good at (name/org/place NER), is the leaner
     choice.
   - A regex/heuristic-only approach (matching the CLI's "lightweight over
-    statistical" philosophy) was considered per this task's own framing,
-    but rejected: capitalized-word-sequence heuristics have far worse
-    recall on person/org/place names than even a small trained model, and
-    recall is the direction that matters most here -- per the plan's own
-    "under-masking is a leak, over-masking is a nuisance" framing, a
+    statistical" philosophy) was considered, but rejected:
+    capitalized-word-sequence heuristics have far worse recall on
+    person/org/place names than even a small trained model, and recall
+    is the direction that matters most here -- under-masking is a real
+    data leak, while over-masking is only a readability nuisance, so a
     heuristic that reliably under-masks names is the wrong tradeoff for a
     layer whose entire job is names.
   - `sm` vs `md` vs `lg`: `sm` (~15MB installed) was tried first and
@@ -75,7 +75,8 @@ does for compromise's possessive-splitting quirk:
     identifying on its own, and is the customer's own public vendor/
     infra choice far more often than a third party's), so trading that
     narrow miss for reliably not mangling ordinary policy prose is the
-    right call per the plan's own "over-masking breaks rules" framing.
+    right call: an over-masked rule is unreadable, and unreadable rules
+    don't get followed.
     See test_privacy_gate_ner.py's own tests for both directions of this
     tradeoff, asserted explicitly rather than left undocumented.
 

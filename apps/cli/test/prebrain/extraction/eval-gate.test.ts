@@ -1,4 +1,4 @@
-// CI gate for fix-plan-v3 4.1 -- extraction quality regression.
+// CI gate for extraction quality regression.
 //
 // Unlike test/privacy-gate/eval-gate.test.ts (which runs its real,
 // 100%-local gate on every `bun test`, for free), extraction quality can

@@ -1,8 +1,8 @@
-// Shared transcript-chunking heuristic (connector sprint T2.1): a Chunker
+// Shared transcript-chunking heuristic: a Chunker
 // (see mcp-framework/types.ts) built for meeting-transcript-shaped text --
 // speaker turns, not markdown paragraphs. Granola is the first connector
-// that needs it; Zoom (T2.2) and the VTT/plain-text meeting-export walkers
-// (T3.3) are built to reuse this module directly rather than each growing
+// that needs it; the Zoom adapter and the VTT/plain-text meeting-export
+// walkers are built to reuse this module directly rather than each growing
 // their own copy, so changes here are shared, not adapter-local.
 //
 // -- Why chunk.ts's own chunkText doesn't fit a transcript --

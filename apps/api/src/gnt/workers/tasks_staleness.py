@@ -1,6 +1,6 @@
-"""Nightly per-rule staleness computation (fix-plan-v2 item 9 — staleness
-surfaced at serving time). See gnt.staleness for the decay math this
-reuses (resurrected from the retired decay_confidence job) and its own
+"""Nightly per-rule staleness computation, surfaced at serving time. See
+gnt.staleness for the decay math this reuses (resurrected from the
+retired decay_confidence job) and its own
 docstring for why it's one flat lambda instead of the old per-type table.
 
 This establishes the enumerate-orgs-then-scope-each pattern any other
@@ -25,9 +25,9 @@ BYPASSRLS (too broad a hammer for routine per-org application writes) or
 silently no-ops under RLS. Looping per-org through a normal scoped
 session avoids both failure modes.
 
-fix-plan-v3 3.2 (staleness-sweep half) extends this from purely passive
-flagging to acting on staleness where there's something concrete to act
-on. "Where available" is narrow on purpose: most rules have nothing
+This also extends staleness from purely passive flagging to acting on it
+where there's something concrete to act on. "Where available" is narrow
+on purpose: most rules have nothing
 re-checkable — starter-pack rules, webhook-ingested rules, and hand-typed
 rules all lack a pointer back to a specific file in the customer's own
 repo. Only `gnt prebrain`-extracted rules carry source_citations
@@ -137,7 +137,7 @@ async def compute_staleness_for_org(org_id: str) -> None:
     compile_skills/compile_skill_pack use so the write half stays
     testable against a session a test fixture already controls.
 
-    fix-plan-v3 3.2 — once this org's freshness snapshot is written, hands
+    Once this org's freshness snapshot is written, hands
     off the rules it just flagged is_stale to sweep_staleness_refresh_for_org
     (a completely separate session/scope of its own — see that function's
     docstring for why), which is where the "act on it" half of this task
@@ -215,7 +215,7 @@ async def write_staleness_rows(session: AsyncSession, org_id: str, rows: list[di
         await session.execute(stmt)
 
 
-# --- fix-plan-v3 3.2: act on staleness where there's something concrete
+# --- Act on staleness where there's something concrete
 # to act on ------------------------------------------------------------
 
 
@@ -225,7 +225,7 @@ def _first_qualifying_citation(rule: dict[str, Any]) -> dict[str, Any] | None:
     module's own docstring on why only repo-scan/docs-dir citations with a
     sourcePath qualify. A rule with no qualifying citation (starter-pack,
     webhook-ingested, hand-typed, or notion-export-only) gets no action
-    here, exactly today's pre-3.2 behavior."""
+    here, the same as before this refresh/deprecate sweep existed."""
     for citation in rule.get("sourceCitations") or []:
         if not isinstance(citation, dict):
             continue
@@ -263,7 +263,7 @@ def _refresh_note(source_path: str, walker: str, excerpt: str, current_content: 
     truncated = current_content if len(current_content) <= 2000 else current_content[:2000] + "…"
     return (
         "**Staleness sweep flag — source may have changed.** Appended automatically by "
-        "gnt's nightly staleness sweep (fix-plan-v3 3.2) — a human needs to review this. "
+        "gnt's nightly staleness sweep — a human needs to review this. "
         "This edit doesn't rewrite the rule's substance; it only appends this note so the "
         "source drift is visible before anyone merges.\n\n"
         f"**Source:** `{source_path}` (walker: `{walker}`)\n\n"
@@ -277,7 +277,7 @@ def _refresh_note(source_path: str, walker: str, excerpt: str, current_content: 
 def _deprecate_note(source_path: str, walker: str) -> str:
     return (
         "**Staleness sweep flag — source no longer exists.** Appended automatically by "
-        "gnt's nightly staleness sweep (fix-plan-v3 3.2) — a human needs to review this. "
+        "gnt's nightly staleness sweep — a human needs to review this. "
         "This edit doesn't rewrite the rule's substance; it only appends this note.\n\n"
         f"**Source:** `{source_path}` (walker: `{walker}`) — file not found at this path anymore.\n\n"
         "Review whether this rule still holds without its original source and either "
@@ -293,7 +293,7 @@ def _pr_title(reason: str, rule_title: str) -> str:
 
 def _pr_body(note: str) -> str:
     return (
-        "Opened automatically by gnt's nightly staleness sweep (fix-plan-v3 3.2) — a human "
+        "Opened automatically by gnt's nightly staleness sweep — a human "
         "needs to review this. Nothing about this PR changes the rule's status on its own; "
         "merging it only ever approves this new draft version, the same as merging any other "
         "proposed rule.\n\n" + note
@@ -309,8 +309,8 @@ async def sweep_staleness_refresh_for_org(org_id: str, stale_rules: list[dict[st
     itself.
 
     An org with no connected GitHub repo has nowhere to open a PR, so it's
-    skipped outright — not an error, exactly today's (pre-3.2) behavior
-    for every org without one."""
+    skipped outright — not an error, the same behavior as before this
+    refresh/deprecate sweep existed, for every org without one."""
     if not stale_rules:
         return
 

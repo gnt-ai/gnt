@@ -1,4 +1,4 @@
-// mail-chunk.ts (connector sprint T3.4): turns parsed mail messages into
+// mail-chunk.ts: turns parsed mail messages into
 // PrebrainChunks, grouped by reconstructed thread rather than one chunk
 // per isolated message -- a lone reply ("approved, go ahead") means
 // nothing to extraction without the thread it's replying to; the thread
@@ -12,7 +12,7 @@
 // MAX_CHUNK_CHARS size cap are still reused from chunk.ts, since neither
 // of those is paragraph-shaped logic.
 //
-// T3.5 (Outlook export walker, .eml/mbox) reuses this module as-is:
+// The Outlook export walker (.eml/mbox) reuses this module as-is:
 // everything below consumes ParsedMailMessage, which mbox.ts produces for
 // both the Gmail and Outlook walkers (see outlook-export.ts) -- nothing
 // here is mbox-specific.

@@ -1,4 +1,4 @@
-// `gnt connect zoom-mcp` (connector sprint T2.2): stores a Zoom user OAuth
+// `gnt connect zoom-mcp`: stores a Zoom user OAuth
 // access token locally for `gnt prebrain --mcp-zoom` to use. Same
 // runConnectFlow shape as connect-linear-mcp.ts/connect-sentry-mcp.ts: the
 // token is validated with one real read against Zoom's own MCP server (the

@@ -1,4 +1,4 @@
-"""Dedup log for fix-plan-v2 item 13 (continuous contradiction sweeps).
+"""Dedup log for the continuous contradiction sweeps.
 One row per (org_id, rule_slug_a, rule_slug_b) pair the nightly sweep
 (workers/tasks_contradictions.py) has already filed a GitHub issue for —
 checked before judge_conflict runs on the same pair again, and before a
@@ -72,7 +72,7 @@ async def record_finding(
     pair — a row with no real filed issue behind it would silently
     suppress re-filing forever with nothing for a human to ever see.
 
-    pr_number/pr_url (fix-plan-v3 3.2) record the sweep's proposed-
+    pr_number/pr_url record the sweep's proposed-
     resolution PR alongside the issue, when opening one succeeded — both
     optional, since that PR is a best-effort addition on top of the issue,
     not a second thing that has to succeed before this pair counts as

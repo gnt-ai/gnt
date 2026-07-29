@@ -19,6 +19,23 @@
 743fdd76a32bc97ddb0203874c9d98fe12b2fe65:.github/workflows/ci.yml:generic-api-key:198
 743fdd76a32bc97ddb0203874c9d98fe12b2fe65:.github/workflows/ci.yml:generic-api-key:201
 
+# Same six findings as above, but publish-sync.sh's own pre-commit staging
+# scan runs gitleaks with --no-git (nothing's committed yet at that point,
+# so there's no history to scan), which fingerprints as bare
+# path:rule:line -- no commit-sha prefix. The sha-prefixed entries above
+# are for the public repo's own post-commit security.yml CI; these
+# unprefixed ones are what let a sync actually get past the staging check
+# in the first place. Line numbers drift whenever ci.yml changes upstream
+# of these env vars -- re-baseline by re-running the staging scan and
+# copying its reported fingerprints here if a future sync refuses on these
+# same six again.
+.github/workflows/ci.yml:generic-api-key:220
+.github/workflows/ci.yml:generic-api-key:225
+.github/workflows/ci.yml:generic-api-key:233
+.github/workflows/ci.yml:generic-api-key:234
+.github/workflows/ci.yml:generic-api-key:245
+.github/workflows/ci.yml:generic-api-key:248
+
 # apps/api/eval/rule_retrieval_at_scale/corpus/{tier_1k,tier_10k}/{queries.jsonl,rule_ids.json}:
 # synthetic benchmark fixtures for the rule-retrieval-at-scale eval --
 # machine-generated fake rule slugs like "hr-compensation_band-0009858" and

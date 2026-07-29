@@ -1,4 +1,4 @@
-// `gnt connect linear-mcp` (connector sprint T2.3, OAuth sprint T14): stores
+// `gnt connect linear-mcp`: stores
 // a Linear OAuth access token locally for `gnt prebrain --mcp-linear` to
 // use. Built on the connector framework's shared runOAuthConnectFlow
 // (mcp-framework/connect.ts) -- one browser click via the RFC 8252

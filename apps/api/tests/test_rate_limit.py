@@ -96,8 +96,8 @@ async def test_enforce_cli_key_rate_limit_fails_closed_when_redis_unreachable(un
 async def test_enforce_webhook_ingest_ip_rate_limit_fails_closed_when_redis_unreachable(
     unreachable_redis,
 ):
-    """v3 fix-plan Tier 0 (C9b) — same fail-closed guarantee for the new
-    per-IP limiter on routers/webhooks.py's ingest endpoint. Real
+    """Same fail-closed guarantee for the per-IP limiter on
+    routers/webhooks.py's ingest endpoint. Real
     request-blocking behavior (limit reached, different IPs stay
     independent) is proven end to end in test_webhooks.py against a real
     FastAPI app; this one is specifically about the Redis-outage path,

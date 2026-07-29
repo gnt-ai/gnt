@@ -1,6 +1,6 @@
 // Tests the docs-directory walker against a real on-disk fixture tree:
 // happy path across .md/.mdx/.txt, a missing directory, skipping
-// node_modules/.git/hidden-dir/non-markdown noise, and (sprint T3.1) the
+// node_modules/.git/hidden-dir/non-markdown noise, and the
 // Dropbox-sync-specific quirks: .dropbox.cache never walked, conflicted
 // copies recognized and excluded.
 import { afterEach, beforeEach, expect, test } from "bun:test";

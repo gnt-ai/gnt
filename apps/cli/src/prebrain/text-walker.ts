@@ -5,11 +5,10 @@
 // user-pointed directory directly).
 //
 // collectFiles itself (just the directory-tree/extension-filter part, not
-// the chunk-per-file part below it) is also exported for outlook-export.ts
-// (connector sprint T3.5), which needs the same tree walk to find .eml
-// files but reads/parses them as mail messages, not chunkText's paragraph
-// blocks -- reusing the file-discovery half here instead of writing a
-// second directory walker.
+// the chunk-per-file part below it) is also exported for outlook-export.ts,
+// which needs the same tree walk to find .eml files but reads/parses them
+// as mail messages, not chunkText's paragraph blocks -- reusing the
+// file-discovery half here instead of writing a second directory walker.
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";
 import { classifyDecisionProse, chunkText } from "./chunk.js";

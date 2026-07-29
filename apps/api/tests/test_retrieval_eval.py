@@ -1,4 +1,4 @@
-"""CI gate for fix-plan-v2 item 12 — rule-retrieval quality regression.
+"""CI gate for rule-retrieval quality regression.
 
 Runs all 81 query cases in apps/api/eval/rule_retrieval/queries.jsonl
 against a freshly seeded, real apps/store instance (real PGLite engine,
@@ -48,7 +48,7 @@ def _load_baseline() -> dict:
 
 
 def test_eval_corpus_covers_all_four_query_families():
-    """Cheap sanity check independent of the store subprocess — item 12
+    """Cheap sanity check independent of the store subprocess — the eval
     requires >= 50 cases spanning exact-name, paraphrase, keyword-only,
     and multi-rule. Catches a corpus edit that silently drops a family or
     shrinks below the floor, without needing to boot the store."""

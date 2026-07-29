@@ -1,4 +1,4 @@
-// Live-monday.com adapter (fix-plan-v3 3.4): reads items and their
+// Live-monday.com adapter: reads items and their
 // comments (monday.com calls a comment an "update") from customer-chosen
 // boards through monday's own official MCP server -- item name/fields
 // become a rule's title-shaped source content, an update's body becomes

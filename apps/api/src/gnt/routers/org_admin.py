@@ -1,4 +1,4 @@
-"""fix-plan-v3 tier 0 item 0.3 (C4) — org offboarding: an admin-only,
+"""Org offboarding: an admin-only,
 confirmation-gated flow that exports an org's data and then permanently
 deletes every org-scoped row in Postgres plus the org's rules mirror in
 apps/store.

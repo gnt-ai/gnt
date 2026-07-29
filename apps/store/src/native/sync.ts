@@ -60,7 +60,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { promisify } from "node:util";
-import { safeLoad } from "js-yaml";
+import { load } from "js-yaml";
 import { upsertRulePageRow, type EmbedFn, type PgSql } from "./store.ts";
 import { toVectorLiteral } from "./search.ts";
 
@@ -181,7 +181,7 @@ function parseRuleFile(content: string): ParsedRuleFile | null {
   const body = afterOpen.slice(closeIdx + FENCE_CLOSE.length);
   let loaded: unknown;
   try {
-    loaded = safeLoad(yamlBlock);
+    loaded = load(yamlBlock);
   } catch {
     return null;
   }

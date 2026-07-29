@@ -76,8 +76,8 @@ test("cloud mode: builds a fully-shaped ExtractedRule with provenance attached f
   expect(rule.body).toBe("Refunds over $50 require manager approval before processing.");
   expect(rule.confidence).toBe(0.85);
   expect(rule.tags).toEqual(["refunds", "approvals"]);
-  // "README.md:42-58" -- exactly what fix-plan-v3 2.3 asks for so task
-  // 2.4 can pass it straight through as CreateRuleRequest.source.
+  // "README.md:42-58" -- the citation format the downstream pipeline
+  // expects so it can pass it straight through as CreateRuleRequest.source.
   expect(rule.source).toBe("README.md:42-58");
   expect(rule.sourceCitations).toHaveLength(1);
   expect(rule.sourceCitations[0]).toMatchObject({

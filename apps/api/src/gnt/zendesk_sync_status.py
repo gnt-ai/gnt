@@ -1,5 +1,5 @@
-"""Read/write helpers for the two Zendesk-sync-owned tables (connector
-sprint T4.2, workers/tasks_zendesk.py):
+"""Read/write helpers for the two Zendesk-sync-owned tables
+(workers/tasks_zendesk.py):
 
 zendesk_processed_items — dedup log gating which macro/internal-note/
 article content gets sent to the content_extraction_model at all. Same

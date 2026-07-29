@@ -1,6 +1,6 @@
-"""fix-plan-v3 1.2 (ported for 3.0): layer 1 deliberately never touches
-bare dollar amounts or percentages -- see the "does not mask a plain
-dollar amount" and "does not mask a plain percentage" cases in
+"""Layer 1 deliberately never touches bare dollar amounts or percentages
+-- see the "does not mask a plain dollar amount" and "does not mask a
+plain percentage" cases in
 test_privacy_gate_deterministic.py -- because a huge fraction of them are
 policy thresholds ("orders over $50 ship free", "discounts over 15% need
 sign-off") and masking those would make an extracted rule useless. But
@@ -28,10 +28,10 @@ immediately around it for a "this belongs to someone specific" signal:
      pronoun ("their", "his", "her").
 A figure with neither signal nearby is left alone -- the default, matching
 layer 1's existing bias toward not touching bare thresholds, and the more
-important direction to get right per the plan's own framing (over-masking
-breaks extracted rules; under-masking is the narrower, second-order risk
-here since a genuinely personal figure with zero nearby entity reference
-is rare in practice).
+important direction to get right: over-masking breaks extracted rules,
+while under-masking is the narrower, second-order risk here, since a
+genuinely personal figure with zero nearby entity reference is rare in
+practice.
 
 -- Known false-positive failure mode (accepted, not fixed) --
 
@@ -48,9 +48,9 @@ in the *same sentence* -- even one that has nothing to do with the figure
     statement Jane happens to be the one saying, not Jane's own $50. But
     her masked placeholder sits well within the adjacency window of the
     figure. Masked.
-Both are deliberate over-masking, not bugs: per the plan's own framing,
-under-masking a real personal figure (a leak) is worse than an unnecessary
-[AMOUNT_n] in a draft rule (a nuisance). See
+Both are deliberate over-masking, not bugs: under-masking a real personal
+figure (a leak) is worse than an unnecessary [AMOUNT_n] in a draft rule (a
+nuisance). See
 test_privacy_gate_amounts.py's own "adversarial" cases, which assert this
 gap exists rather than silently hiding it -- same discipline the CLI
 suite's amounts.test.ts and its layer-3 no-op eval corpus both use for

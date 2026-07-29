@@ -108,7 +108,7 @@ async def zendesk_sync_status(
     org: OrgContext = Depends(get_current_org),
     session: AsyncSession = Depends(get_session),
 ):
-    """Sync-status health surface (connector sprint T4.2) -- last
+    """Sync-status health surface -- last
     successful sync, last error, and this run's item/candidate counts.
     `gnt status` shows connector health for CLI-local connectors already;
     this is the server-side equivalent's own surface, a plain GET a future

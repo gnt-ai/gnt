@@ -1,4 +1,4 @@
-// Live-HubSpot notes client (connector sprint T2.8): reads a customer-
+// Live-HubSpot notes client: reads a customer-
 // scoped set of HubSpot Note engagements -- the note's own written text,
 // nothing else -- as decision-prose candidates. Direct against HubSpot's
 // own REST CRM API, not an MCP adapter: see "Why this isn't an MCP-in

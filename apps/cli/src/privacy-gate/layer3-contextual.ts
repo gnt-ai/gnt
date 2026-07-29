@@ -6,14 +6,13 @@ import type { LayerResult } from "./types.js";
 // rather than matching a pattern or a name lexicon.
 //
 // Picking the actual local model/runtime (Ollama-compatible or otherwise)
-// is an explicit founder decision called out in fix-plan-v3 section 2.3,
-// not this task's to make. This layer is therefore a clean interface and
+// is an explicit founder decision, not this task's to make. This layer is therefore a clean interface and
 // integration point with a documented no-op implementation: it returns
 // the input text unchanged and reports zero hits. Layers 1 and 2 still run
 // and mask everything they find; this layer just doesn't add anything on
 // top of them yet.
 //
-// TODO(fix-plan-v3 2.3): replace this body with a real call into the local
+// TODO: replace this body with a real call into the local
 // model runtime once that's built. The signature is meant to stay stable
 // across that change -- `text` is whatever layers 1-2 already masked,
 // `existingPlaceholders` is the placeholder -> real-value side of the

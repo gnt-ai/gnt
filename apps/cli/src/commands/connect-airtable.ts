@@ -1,5 +1,5 @@
-// `gnt connect airtable` (connector sprint T4.4): the one connector in this
-// sprint whose connect flow doubles as its safety mechanism. Every other
+// `gnt connect airtable`: the one connector here whose connect flow
+// doubles as its safety mechanism. Every other
 // token-based connector here (see ../prebrain/figma-comments.ts,
 // ../prebrain/datadog-notebooks.ts) declares which fields are safe to read
 // once, in its own source, because the vendor object it reads has a fixed

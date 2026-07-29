@@ -4,24 +4,22 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from gnt.db.models import OnboardingEvent
 from gnt.db.rls import scope_to_org
 
-# fix-plan-v2 item 6 — first-session success instrumentation. Item 10
-# (future ROI metering) builds on the same onboarding_events rows, so this
-# stays a single reusable entry point rather than each call site writing
-# its own insert.
+# First-session success instrumentation. ROI metering (gnt.roi_summary)
+# builds on the same onboarding_events rows, so this stays a single
+# reusable entry point rather than each call site writing its own insert.
 _KNOWN_EVENT_TYPES = {
     "slack_connected",
     "github_connected",
     "rule_proposed",
     "rule_approved",
-    # connector sprint T4.2 — Zendesk's own connect flow (routers/zendesk.py).
+    # Zendesk's own connect flow (routers/zendesk.py).
     "zendesk_connected",
-    # connector sprint T4.3 — Intercom's own connect flow (routers/intercom.py).
+    # Intercom's own connect flow (routers/intercom.py).
     "intercom_connected",
 }
 
-# fix-plan-v3 2.6 — the plan's own founder-set target for "org reaches N
-# approved rules in first session" (not contested: N=5, as the plan itself
-# proposed). rules_approved is a lifetime-cumulative count per org, not a
+# The founder-set target for "org reaches N approved rules in first
+# session" (N=5). rules_approved is a lifetime-cumulative count per org, not a
 # count scoped to a login session — this codebase has no session table
 # onboarding_events could join against. In practice that's not a problem:
 # every org starts at zero rule_approved events the moment it's created,

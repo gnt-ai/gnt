@@ -1,10 +1,10 @@
 // Shared types for the privacy gate. See ./index.ts for the entry point
-// and fix-plan-v3 section 1.1 for the layer spec this implements.
+// and the layer pipeline this implements.
 
 // One placeholder family per entity kind, numbered per distinct value
 // within that kind ([EMAIL_1], [EMAIL_2], ...). Kept as a union rather than
 // a bare string so a typo in a layer file (e.g. "EMIAL") is a compile error,
-// not a silent mismatch with the redaction report task (1.3) reads later.
+// not a silent mismatch with what the redaction report reads later.
 export type PlaceholderKind =
   | "PERSON"
   | "EMAIL"
@@ -18,15 +18,15 @@ export type PlaceholderKind =
   | "AMOUNT";
 
 // Which layer found a given hit. Recorded per-hit so the redaction report
-// (task 1.3) can show "masked by layer 2 (NER)" without re-running
-// detection. "amounts" is the policy-vs-personal classification pass from
-// fix-plan-v3 1.2 (see layer2b-amounts.ts) -- it runs after "ner" and
+// can show "masked by layer 2 (NER)" without re-running
+// detection. "amounts" is the policy-vs-personal classification pass (see
+// layer2b-amounts.ts) -- it runs after "ner" and
 // before "contextual", so it's named for its position in the pipeline
 // rather than folded into either neighboring layer's name.
 export type GateLayer = "deterministic" | "ner" | "amounts" | "contextual";
 
 // A single detector hit, kept around after masking so a later pass (the
-// redaction report in 1.3) can render "what was masked, by which layer"
+// redaction report) can render "what was masked, by which layer"
 // without re-deriving it from the mapping alone.
 export interface DetectionHit {
   placeholder: string; // e.g. "[EMAIL_1]"
@@ -37,7 +37,7 @@ export interface DetectionHit {
   end: number; // exclusive
 }
 
-// Bidirectional lookup so 1.3's detokenization step can go real -> placeholder
+// Bidirectional lookup so the detokenization step can go real -> placeholder
 // (to check "did we already mask this exact value") or placeholder -> real
 // (to substitute real values back in after cloud refinement) without
 // re-deriving one direction from the other every call.

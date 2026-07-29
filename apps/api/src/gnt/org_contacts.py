@@ -1,5 +1,5 @@
-"""Who to email for an org — fix-plan-v2 item 10's weekly digest needs a
-real contact address, and nothing in this codebase's own Alembic-managed
+"""Who to email for an org — the weekly digest (gnt.email,
+workers/tasks_digest.py) needs a real contact address, and nothing in this codebase's own Alembic-managed
 tables has one: Org (db/models.py) is Better Auth org identity mirrored
 lazily (db/org.py's ensure_org), with no email column of its own.
 

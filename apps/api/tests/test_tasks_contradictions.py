@@ -1,5 +1,6 @@
 """sweep_contradictions / sweep_contradictions_for_org / sample_candidate_pairs
-(fix-plan-v2 item 13 — continuous contradiction sweeps). Mirrors
+— the background job that continuously scans each org's approved rules for
+pairs that contradict each other. Mirrors
 test_tasks_staleness.py's split: pure sampling logic (_same_tag_pairs,
 sample_candidate_pairs) gets direct unit coverage with no DB or network,
 while sweep_contradictions_for_org/sweep_contradictions are exercised for
@@ -148,12 +149,14 @@ async def _test_db_sessionmaker(monkeypatch):
     engine = create_async_engine(TEST_DATABASE_URL)
     session_factory = async_sessionmaker(engine, expire_on_commit=False)
     monkeypatch.setattr(tasks_contradictions, "get_sessionmaker", lambda: session_factory)
-    # C9a — every sweep test below is exercising the sampling/budget/
-    # dedup logic, not the LLM spend quota (that has its own dedicated
-    # coverage in tests/test_llm_quota.py), so stub the gate out here
-    # rather than in each test individually. test_sweep_stops_early_when_
-    # llm_quota_is_exhausted below overrides check_llm_quota specifically
-    # to prove the wiring.
+    # Every sweep test below is exercising the sampling/budget/dedup
+    # logic, not the per-org LLM spend quota gate (the budget check that
+    # runs before each real judge_conflict call) — that gate has its own
+    # dedicated coverage in tests/test_llm_quota.py, so stub it to always
+    # allow here rather than in each test individually.
+    # test_sweep_stops_early_when_llm_quota_is_exhausted below overrides
+    # check_llm_quota specifically to prove the sweep actually wires into
+    # it.
     async def _ok(org_id, **kwargs):
         return True
 
@@ -208,7 +211,7 @@ async def _cleanup_org(org_id: str) -> None:
                 ContradictionFinding.__table__.delete().where(ContradictionFinding.org_id == org_id)
             )
             await session.execute(GithubConnection.__table__.delete().where(GithubConnection.org_id == org_id))
-            # fix-plan-v3 3.2 — the sweep's own proposed-resolution PR now
+            # The sweep's own proposed-resolution PR now
             # logs a "rule_proposed" onboarding event (routers/rules.py's
             # propose_rule_for_org, reused verbatim by the sweep) for any
             # test that actually gets that far; orgs.id's FK from
@@ -246,7 +249,7 @@ async def _approved_rule(
         "supersededBy": None,
         "previousVersionId": None,
         "approvedBy": "admin_a",
-        # Overridable (fix-plan-v3 3.2) — _order_by_approval picks which of
+        # Overridable — _order_by_approval picks which of
         # a contradicting pair gets amended by approvedAt, so tests
         # exercising that pick need two rules seeded with two different
         # timestamps, not both defaulting to the same one.
@@ -273,7 +276,9 @@ def _mock_judge(monkeypatch):
 
     def _judge_conflict(existing_title, existing_body, new_title, new_body):
         # judge_conflict returns (verdict, input_tokens, output_tokens) —
-        # see its own docstring on why (C9a's cost tracking).
+        # see its own docstring on why: those token counts feed the
+        # per-org LLM spend quota's usage tracking, so every real call
+        # site has to report them back after judging a pair.
         return RuleMergeVerdict(relation=verdicts["relation"], explanation=verdicts["explanation"]), 100, 25
 
     monkeypatch.setattr("gnt.workers.tasks_contradictions.judge_conflict", _judge_conflict)
@@ -294,7 +299,7 @@ def _mock_create_issue(monkeypatch):
 
 @pytest.fixture
 def _mock_propose_pr(monkeypatch):
-    """fix-plan-v3 3.2 — the proposed-resolution PR the sweep now opens
+    """The proposed-resolution PR the sweep now opens
     alongside the issue rides through routers/rules.py's propose_rule_for_org
     (reused verbatim, not reimplemented here — see workers/
     tasks_contradictions.py's module docstring), which is what actually
@@ -368,7 +373,7 @@ async def test_sweep_files_an_issue_for_a_contradicting_pair(
 async def test_sweep_opens_a_proposed_resolution_pr_with_a_genuinely_amended_body(
     _test_db_sessionmaker, org_a, _mock_judge, _mock_create_issue, _mock_propose_pr
 ):
-    """fix-plan-v3 3.2 — a confirmed contradiction gets a real PR proposing
+    """A confirmed contradiction gets a real PR proposing
     one concrete resolution, not just the bare issue report. Asserts on
     the actual rendered file content routers/rules.py's propose_rule_for_org
     writes via put_file, not just "a PR opened": the older rule's own body
@@ -478,7 +483,7 @@ async def test_sweep_never_files_twice_for_the_same_pair(
         # A second run of the same night's (or a later night's) sweep
         # over an unresolved finding must not spend another judge_conflict
         # call, open a second issue, or propose a second resolution PR for
-        # the identical pair (fix-plan-v3 3.2) — has_been_filed's dedup
+        # the identical pair — has_been_filed's dedup
         # gate short-circuits _process_pair before either GitHub call ever
         # runs again.
         await sweep_contradictions_for_org(org_a)
@@ -542,11 +547,13 @@ async def test_sweep_respects_the_comparisons_per_org_budget(
 async def test_sweep_stops_early_when_llm_quota_is_exhausted(
     _test_db_sessionmaker, org_a, _mock_create_issue, monkeypatch
 ):
-    """C9a — the per-org sweep checks check_llm_quota before every
-    judge_conflict call, same quiet-break shape as the existing
-    comparisons/issues budget checks right above it in the loop. Once the
-    quota's gone, the loop stops immediately: no further judge_conflict
-    calls, no issues filed from pairs that were still queued."""
+    """The per-org sweep checks check_llm_quota (the per-org LLM spend
+    quota gate, which caps how much a plan can spend on real judge calls)
+    before every judge_conflict call, same quiet-break shape as the
+    existing comparisons/issues budget checks right above it in the loop.
+    Once the quota's gone, the loop stops immediately: no further
+    judge_conflict calls, no issues filed from pairs that were still
+    queued."""
     comparisons_made = {"count": 0}
 
     def _counting_judge(existing_title, existing_body, new_title, new_body):
@@ -578,7 +585,7 @@ async def test_sweep_contradictions_processes_each_org_in_its_own_scope(
     """The cron entrypoint's own tenant-isolation guarantee, same shape
     test_tasks_staleness.py proves for compute_rule_staleness: org B's
     rules must never end up compared against org A's, or vice versa. Also
-    covers fix-plan-v3 3.2's own tenant-isolation surface: the
+    covers the proposed-resolution flow's own tenant-isolation surface: the
     proposed-resolution PR/draft each org's sweep opens must stay scoped
     to that org's own repo and rules, never leak into the other org."""
     get_cron_engine.cache_clear()
@@ -621,7 +628,7 @@ async def test_sweep_contradictions_processes_each_org_in_its_own_scope(
 async def test_sweep_one_failed_resolution_pr_does_not_block_the_rest_of_the_batch(
     _test_db_sessionmaker, org_a, _mock_judge, _mock_create_issue, _mock_propose_pr, monkeypatch
 ):
-    """fix-plan-v3 3.2 — _propose_resolution's own best-effort discipline,
+    """_propose_resolution's own best-effort discipline,
     one level inside _process_pair's existing "one bad candidate never
     derails the rest of the run" guarantee (see both functions'
     docstrings). Every proposed-resolution PR attempt in this run fails
@@ -660,7 +667,7 @@ async def test_sweep_one_failed_resolution_pr_does_not_block_the_rest_of_the_bat
 
 
 def test_module_never_imports_or_calls_anything_that_writes_a_rules_status():
-    """Hard constraint of fix-plan-v2 item 13: the sweep only ever files a
+    """Hard constraint on the sweep: it only ever files a
     finding for a human, it must never change a rule's status itself.
     Checked against the module's actual imports and call sites via ast,
     not a plain substring scan of the source (which would also flag this

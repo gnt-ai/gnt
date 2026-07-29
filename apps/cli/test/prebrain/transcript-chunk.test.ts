@@ -1,6 +1,6 @@
-// Tests for the shared transcript chunker (connector sprint T2.1). These
-// are independent of any adapter -- Granola, Zoom (T2.2), and the meeting-
-// export walkers (T3.3) all depend on this module's correctness, so it
+// Tests for the shared transcript chunker. These
+// are independent of any adapter -- Granola, Zoom, and the meeting-
+// export walkers all depend on this module's correctness, so it
 // gets its own test file rather than being checked only indirectly through
 // mcp-granola.test.ts.
 import { expect, test } from "bun:test";

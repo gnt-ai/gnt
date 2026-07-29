@@ -57,7 +57,7 @@ mcp = FastMCP(
     ),
 )
 
-# --- Execution plan Phase 2 — the rules serving surface ---------------
+# --- The rules serving surface -----------------------------------------
 
 
 def _log_mcp_call(
@@ -72,11 +72,12 @@ def _log_mcp_call(
 
     `extra` carries tool-specific fields on the same line and mechanism —
     check_action uses it for the verdict, the ids it cited, and whether any
-    rules were retrieved at all, which is exactly what fix-plan item 10 (ROI
-    metering) aggregates per org later. No parallel logging system.
+    rules were retrieved at all, which is exactly what the ROI metering
+    behind the weekly digest aggregates per org later. No parallel logging
+    system.
 
     This stream stays print-to-stdout, usage-data-shaped — it's not where
-    fix-plan item 8's coverage gaps get persisted. A "which queries has this
+    coverage gaps get persisted. A "which queries has this
     org asked with no coverage" list needs GROUP BY/COUNT, which a log
     stream can't serve without a shipping pipeline this codebase doesn't
     have; see gap_tracking.py's rule_gaps table (Postgres) for that, and
@@ -101,7 +102,7 @@ def _log_mcp_call(
 
 
 async def _log_gap(tool: str, org_id: str, query_text: str) -> None:
-    """Best-effort coverage-gap logging (fix-plan-v2 item 8) — mirrors
+    """Best-effort coverage-gap logging — mirrors
     _log_mcp_call's own must-never-break-the-call discipline. gap_tracking.
     log_gap already swallows its own failures once it has a session; this
     also guards session/connection setup itself, since a DB hiccup here
@@ -119,8 +120,8 @@ async def _log_gap(tool: str, org_id: str, query_text: str) -> None:
 
 
 async def _bump_roi(org_id: str, counters: dict[str, int]) -> None:
-    """Best-effort ROI counter increment (fix-plan-v2 item 10 — ROI
-    metering and the weekly number) — same must-never-break-the-call
+    """Best-effort ROI counter increment, feeding the ROI metering behind
+    the weekly digest — same must-never-break-the-call
     discipline and own-session shape as _log_gap right above: opens its
     own session (these MCP tool functions have no FastAPI request-scoped
     session to reuse) and swallows every failure, since a DB hiccup here
@@ -183,7 +184,7 @@ def _serialize_rule_for_mcp(rule: dict) -> dict:
         "title": rule["title"],
         "body": rule["body"],
         "confidence": rule["confidence"],
-        # fix-plan-v2 item 18 — confidence is a model-assigned score set
+        # Confidence is a model-assigned score set
         # once at creation time (routers/rules.py's CreateRuleRequest),
         # never independently checked against reality. Labeled explicitly,
         # same convention as freshness's own "estimate" field below,
@@ -197,12 +198,12 @@ def _serialize_rule_for_mcp(rule: dict) -> dict:
             "approved_at": rule["approvedAt"],
             "sources": rule["sourceCitations"],
         },
-        # fix-plan-v2 item 9 — computed live off approvedAt/lastValidatedAt
-        # (never a value read back from the nightly rule_staleness snapshot),
-        # so this is always exactly as current as the rule itself, not up to
-        # a day behind. Every field here is explicitly an estimate (item 18)
-        # — decay_lambda is an admitted first-pass guess, never presented as
-        # a verified fact.
+        # Computed live off approvedAt/lastValidatedAt (never a value read
+        # back from the nightly rule_staleness snapshot), so this is always
+        # exactly as current as the rule itself, not up to a day behind.
+        # Every field here is explicitly an estimate (see confidence_estimate
+        # above) — decay_lambda is an admitted first-pass guess, never
+        # presented as a verified fact.
         "freshness": rule_freshness(rule),
     }
     if "similarity" in rule:
@@ -247,7 +248,7 @@ async def search_rules(query: str, tags: list[str] | None = None, limit: int = 1
 
     _log_mcp_call("search_rules", org_id, start, hits)
     if hits:
-        # fix-plan-v2 item 10 — "rules served" counts individual rule
+        # "rules served" counts individual rule
         # objects actually handed back to a calling agent, not MCP calls
         # made, so a 3-hit search counts as 3 served, same as three
         # separate get_rule calls would.
@@ -291,7 +292,7 @@ async def get_rule(rule_id: str | None = None, id: str | None = None) -> dict:
         raise RuntimeError("no approved rule with that id")
 
     result = _serialize_rule_for_mcp(rule)
-    # fix-plan-v2 item 10 — only a real rule handed back counts as
+    # Only a real rule handed back counts as
     # "served"; this branch is the sole path that reaches here (the
     # invalid-id and not-found/not-approved cases above both raise
     # instead), so this only runs on the actual hit.
@@ -354,10 +355,10 @@ async def check_action(
     if result["verdict"] == "needs_human" and result.get("no_coverage"):
         await _log_gap("check_action", org_id, description)
 
-    # fix-plan-v2 item 10 — actions_checked counts every completed check
-    # (evaluate_action returned normally, whatever the verdict); the two
-    # verdicts the plan specifically asks to meter — blocked and
-    # needs_human — each get their own additional counter on top of that,
+    # actions_checked counts every completed check
+    # (evaluate_action returned normally, whatever the verdict); blocked and
+    # needs_human — the two verdicts worth metering separately —
+    # each get their own additional counter on top of that,
     # bumped together in one upsert (see roi_metrics.bump_roi_counters).
     # 'allowed' has no counter of its own: recoverable later as
     # actions_checked minus the other two, if that split ever matters.

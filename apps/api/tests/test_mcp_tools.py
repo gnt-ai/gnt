@@ -8,7 +8,8 @@ cross-org isolation, tag filtering, and the sliding-window rate limit,
 against the REAL apps/store server (see conftest.py's session-scoped
 _store_server fixture) with a fake, deterministic (but non-semantic)
 embedding — same discipline apps/store's own bun:test suite applies
-(Global Rule 6 — no real embedding API calls from a test loop).
+(no test in this suite is allowed to make a real embedding API call;
+everything that would need one is stubbed).
 
 search_rules/get_rule read real approved rules from apps/store's
 git-native engine via store_client.py, not a local Postgres table — see
@@ -37,9 +38,9 @@ from gnt.store_client import put_rule
 
 @pytest.fixture(autouse=True)
 def _no_llm_quota_gate(monkeypatch):
-    """C9a wires a real Postgres-backed LLM spend quota gate into
-    evaluate_action (gnt.llm_quota), and the plan's monthly check_action
-    cap (gnt.plan_limits) is the same shape — both have their own
+    """evaluate_action wires a real Postgres-backed LLM spend quota gate
+    (gnt.llm_quota), and the plan's monthly check_action cap
+    (gnt.plan_limits) is the same shape — both have their own
     dedicated coverage (tests/test_llm_quota.py, tests/test_plan_limits.py).
     None of these check_action tests are testing either gate (they're
     testing MCP-tool wiring, tenant isolation, gap/ROI bumping), so stub
@@ -110,15 +111,15 @@ async def seeded_org(monkeypatch):
     # (cosine similarity's actual floor) guarantees the fake vector arm
     # never excludes anything by relevance.
     #
-    # gnt-fix-plan-v2 item 11: search() runs the vendored engine's hybrid
-    # retrieval now, which has a real keyword/BM25 arm on top of vector --
-    # with no embedding provider configured in this test process (Global
-    # Rule 6), hybridSearch runs keyword-only, and Postgres full-text
-    # search genuinely filters by term overlap regardless of this
-    # threshold. Below, queries are chosen to lexically match the rules
-    # each test expects back (a real BM25 arm doesn't have a permissive
-    # floor the way the old fakeEmbed vector arm did) -- status/tag
-    # filtering is still what's actually under test.
+    # search() runs the vendored engine's hybrid retrieval, which has a
+    # real keyword/BM25 arm on top of vector search -- with no embedding
+    # provider configured in this test process, hybridSearch runs
+    # keyword-only, and Postgres full-text search genuinely filters by
+    # term overlap regardless of this threshold. Below, queries are
+    # chosen to lexically match the rules each test expects back (a real
+    # BM25 arm doesn't have a permissive floor the way the old fakeEmbed
+    # vector arm did) -- status/tag filtering is still what's actually
+    # under test.
     no_threshold_settings = real_get_settings().model_copy(
         update={"search_rules_similarity_threshold": -1.0}
     )
@@ -211,10 +212,10 @@ async def test_search_rules_includes_provenance_footer(seeded_org):
 
 
 async def test_search_rules_includes_freshness_estimate(seeded_org):
-    """fix-plan-v2 item 9 — every rule response carries an age/freshness
-    estimate, explicitly labeled as such (item 18), computed live off the
-    rule's own approvedAt rather than a value read back from a nightly
-    snapshot that could be stale itself."""
+    """Every rule response carries an age/freshness estimate, explicitly
+    labeled as an estimate (same as confidence_estimate below), computed
+    live off the rule's own approvedAt rather than a value read back from
+    a nightly snapshot that could be stale itself."""
     tokens = _set_context(seeded_org["org_id"])
     try:
         hits = await mcp_server.search_rules(query="refund")
@@ -230,9 +231,9 @@ async def test_search_rules_includes_freshness_estimate(seeded_org):
 
 
 async def test_search_rules_labels_confidence_as_an_estimate(seeded_org):
-    """fix-plan-v2 item 18 — confidence is a model-assigned score set once
-    at creation time, never independently verified; every rule response
-    says so explicitly, same convention as freshness's own estimate flag."""
+    """confidence is a model-assigned score set once at creation time,
+    never independently verified; every rule response says so explicitly,
+    same convention as freshness's own estimate flag."""
     tokens = _set_context(seeded_org["org_id"])
     try:
         hits = await mcp_server.search_rules(query="refund")
@@ -415,7 +416,7 @@ async def test_check_action_missing_description_and_action_raises():
 async def test_check_action_grounded_verdict_through_real_retrieval(seeded_org, monkeypatch):
     """check_action retrieves through the same real, org-scoped store path as
     search_rules, then grounds the verdict in what came back. The LLM judge is
-    stubbed (Global Rule 6 — no real model calls in the test loop) but the
+    stubbed (this suite never makes a real model call) but the
     retrieval and the grounding gate are exercised for real: the stub cites a
     rule this org actually retrieved, so the verdict flips off the needs_human
     default to blocked."""
@@ -432,7 +433,8 @@ async def test_check_action_grounded_verdict_through_real_retrieval(seeded_org, 
     def _stub_judge(description, context, rules):
         # Ground the verdict in a rule that was actually retrieved for this org.
         # judge_action returns (judgment, input_tokens, output_tokens) — see
-        # its own docstring on why (C9a's cost tracking).
+        # its own docstring on why (the token counts feed the LLM spend
+        # quota gate's cost tracking).
         first_id = rules[0]["slug"].removeprefix("rules/")
         return CheckActionJudgment(verdict="blocked", cited_rule_ids=[first_id], reason="stub"), 100, 20
 
@@ -441,10 +443,10 @@ async def test_check_action_grounded_verdict_through_real_retrieval(seeded_org, 
     tokens = _set_context(seeded_org["org_id"])
     try:
         # "refund window" lexically matches the seeded "Refund window" rule.
-        # item 11: retrieval is hybrid now, and its keyword arm ANDs query
-        # terms while the fake test embedding has no semantic arm — so a
-        # description like "issue a refund" retrieves nothing (no rule
-        # contains "issue"). See seeded_org's comment. The stubbed judge, not
+        # Retrieval is hybrid, and its keyword arm ANDs query terms while
+        # the fake test embedding has no semantic arm — so a description
+        # like "issue a refund" retrieves nothing (no rule contains
+        # "issue"). See seeded_org's comment. The stubbed judge, not
         # the query wording, is what drives the verdict under test.
         result = await mcp_server.check_action(description="refund window")
     finally:
@@ -497,8 +499,8 @@ async def _gap_rows(db_session, org_id: str) -> list[RuleGap]:
 
 
 async def test_search_rules_zero_hits_logs_gap(db_session):
-    """fix-plan-v2 item 8: a search_rules call that comes back empty is
-    exactly gap_tracking.py's search_rules gap definition. This org has no
+    """A search_rules call that comes back empty is exactly
+    gap_tracking.py's search_rules gap definition. This org has no
     rules at all in the store, so zero hits is guaranteed regardless of the
     similarity threshold."""
     org_id = f"__mcp_test_{uuid.uuid4().hex[:8]}__"
@@ -581,10 +583,11 @@ async def test_check_action_ambiguous_needs_human_does_not_log_gap(seeded_org, d
 
     tokens = _set_context(org_id)
     try:
-        # "refund window" retrieves the seeded rule (item 11 hybrid keyword
-        # arm needs a lexical match — see seeded_org's comment); the stubbed
-        # judge returns an ungrounded needs_human regardless, which is the
-        # rules_retrieved>0-but-not-a-coverage-gap branch this test exercises.
+        # "refund window" retrieves the seeded rule (hybrid retrieval's
+        # keyword arm needs a lexical match — see seeded_org's comment);
+        # the stubbed judge returns an ungrounded needs_human regardless,
+        # which is the rules_retrieved>0-but-not-a-coverage-gap branch
+        # this test exercises.
         result = await mcp_server.check_action(description="refund window")
     finally:
         _reset_context(tokens)
@@ -594,7 +597,7 @@ async def test_check_action_ambiguous_needs_human_does_not_log_gap(seeded_org, d
     assert result["no_coverage"] is False
 
 
-# --- fix-plan-v2 item 10: roi_counters bumped on the same hot-path calls ---
+# --- roi_counters bumped on the same hot-path calls ---
 
 
 async def _roi_row(db_session, org_id: str) -> RoiCounter | None:
@@ -613,7 +616,7 @@ async def _roi_row(db_session, org_id: str) -> RoiCounter | None:
 async def test_search_rules_with_hits_bumps_rules_served(seeded_org, db_session):
     """rules_served counts individual rule objects served, not calls made —
     the counter should reflect however many rules actually came back, not a
-    flat 1 per call. (item 11: hybrid retrieval's keyword arm ANDs terms, so
+    flat 1 per call. (Hybrid retrieval's keyword arm ANDs terms, so
     "refund" now matches only the seeded "Refund window" rule, not "Shipping
     window" too; the assertion binds to len(hits) either way.)"""
     org_id = seeded_org["org_id"]
@@ -700,7 +703,7 @@ async def test_check_action_blocked_bumps_actions_checked_and_blocked(seeded_org
     tokens = _set_context(org_id)
     try:
         # "refund window" lexically matches the seeded "Refund window" rule so
-        # hybrid retrieval's keyword arm returns it (item 11 — see seeded_org's
+        # hybrid retrieval's keyword arm returns it (see seeded_org's
         # comment); the stubbed judge drives the blocked verdict under test.
         result = await mcp_server.check_action(description="refund window")
     finally:

@@ -33,7 +33,7 @@ from gnt.config import get_settings
 # session. Empty string is Sentry's own documented way to disable the SDK
 # (same effect as dsn=None) — the real DSN lives only in apps/api/.env for
 # local dev/production; tests must never silently report to that live
-# project (Global Rule 6).
+# project.
 os.environ["SENTRY_DSN"] = ""
 
 
@@ -310,7 +310,7 @@ async def db_session(monkeypatch) -> AsyncIterator[AsyncSession]:
 
     Also patches gnt.mcp_server.server's, gnt.mcp_server.auth's,
     gnt.llm_quota's, and gnt.plan_limits's get_sessionmaker so MCP tool
-    functions, McpAuthMiddleware, the C9a LLM spend quota gate, and the
+    functions, McpAuthMiddleware, the per-org LLM spend quota gate, and the
     plan's monthly check_action cap (all four open their own session
     directly, not through a FastAPI dependency override) participate in
     this same transaction — otherwise they'd open a genuinely separate

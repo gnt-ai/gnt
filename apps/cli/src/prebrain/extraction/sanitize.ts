@@ -43,8 +43,8 @@ const INJECTION_PHRASES = new RegExp(
     "|new\\s+instructions\\s*:" +
     "|system\\s+prompt\\s*:" +
     "|act\\s+as\\s+(?:the\\s+|a\\s+)?system" +
-    // Non-English coverage is deliberately narrow (fix-plan-v2 item 17,
-    // ported verbatim from sanitize.py): just the highest-value "ignore
+    // Non-English coverage is deliberately narrow (ported verbatim from
+    // sanitize.py): just the highest-value "ignore
     // previous instructions" variant in Spanish and Chinese, the two
     // next-largest languages after English in this product's traffic --
     // not full per-language parity with the English list above. The

@@ -1,4 +1,4 @@
-// Gmail export walker (connector sprint T3.4): the interim Gmail path --
+// Gmail export walker: the interim Gmail path --
 // walks a Google Takeout mail export (.mbox) with zero Google OAuth
 // approval, ahead of the real Gmail OAuth connector (out of scope here,
 // blocked on Google's own app-review process). See mbox.ts for the

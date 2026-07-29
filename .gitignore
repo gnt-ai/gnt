@@ -25,7 +25,6 @@ venv/
 .env
 .env.local
 .env.*.local
-!.env.example
 
 # OS
 .DS_Store
@@ -47,6 +46,7 @@ apps/api/*.db
 .hallmark/
 .mcp.json
 .env*
+!**/.env.example
 # apps/store's bun:test-only override — blanks ZEROENTROPY_API_KEY so
 # `bun test` never inherits the real key from apps/store/.env (Global
 # Rule 6, no real paid provider calls from a test loop). No secret in it.

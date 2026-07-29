@@ -1,11 +1,11 @@
-"""fix-plan-v3 tier 0 item 0.3 (C4) — org offboarding.
+"""Org offboarding.
 
 Two halves, both org-scoped:
 
 - export_org_data: a real, downloadable snapshot of what an org is about
   to lose — rules with their full audit history (from apps/store, the
-  actual system of record for rules since the Phase 4 migration — see
-  db/models.py's Rule docstring), plus every other org-scoped signal that
+  actual system of record for rules — see db/models.py's Rule
+  docstring), plus every other org-scoped signal that
   has real analytical/historical value (gaps, staleness snapshots,
   calibration events, contradiction findings, ROI counters, onboarding
   events). Deliberately excludes anything secret — key/token hashes,
@@ -21,11 +21,12 @@ Two halves, both org-scoped:
   authoritative set as of this writing — confirmed by grepping
   `org_id: Mapped` across db/models.py, not carried over from memory.
   Deliberately includes the legacy `rules`/`rule_audit_log` tables even
-  though nothing writes to them anymore post-Phase-4 (see Rule's
-  docstring) and `ingest_events` even though its only writers were
-  retired: pre-migration orgs can have real historical rows sitting in
-  either, and leaving them behind after "offboarding" would be exactly
-  the kind of data-leak-after-deletion this item exists to prevent.
+  though nothing writes to them anymore now that apps/store is the
+  system of record (see Rule's docstring) and `ingest_events` even
+  though its only writers were retired: pre-migration orgs can have
+  real historical rows sitting in either, and leaving them behind after
+  "offboarding" would be exactly the kind of data-leak-after-deletion
+  this function exists to prevent.
 
 Both halves call scope_to_org themselves (defense-in-depth, same
 discipline as gap_tracking.py/contradiction_findings.py) even though
@@ -40,10 +41,10 @@ definition), so the explicit filter is the ONLY tenant boundary they
 have.
 
 The org's own `orgs` row is deliberately NOT deleted here — it isn't
-enumerated in the plan's own list ("rules mirror, gaps, ROI counters,
-findings, keys, and logs"), and dropping it would reset trial_ends_at on
-next ensure_org, which is a founder call (free-trial-reset surface) well
-outside this item's scope.
+part of what this offboarding flow deletes ("rules mirror, gaps, ROI
+counters, findings, keys, and logs"), and dropping it would reset
+trial_ends_at on next ensure_org, which is a founder call (free-trial-
+reset surface) well outside what org offboarding should touch.
 """
 
 from datetime import datetime, timezone
@@ -249,9 +250,9 @@ async def export_org_data(session: AsyncSession, org_id: str) -> dict[str, Any]:
 
 async def delete_org_postgres_data(session: AsyncSession, org_id: str) -> dict[str, int]:
     """Hard-deletes every org-scoped Postgres row for org_id. Returns a
-    {table_name: rows_deleted} map so callers (and this item's own tests)
-    can verify every table was actually touched, not just trust the first
-    one and assume the rest followed.
+    {table_name: rows_deleted} map so callers (and this function's own
+    tests) can verify every table was actually touched, not just trust
+    the first one and assume the rest followed.
 
     Deletion order matters for exactly two FK edges, both handled
     explicitly below: skill_files -> skill_packs (no ON DELETE CASCADE at

@@ -101,15 +101,14 @@ class Settings(BaseSettings):
     # compromised session or a scripted abuse loop.
     cli_key_rate_limit_per_hour: int = 10
 
-    # fix-plan-v3 item C2 — key expiry and rotation. Applied to newly
+    # Key expiry and rotation. Applied to newly
     # minted CLI keys only (create_cli_key), not MCP keys (create_mcp_key
     # leaves expires_at null) — see settings.py's create_mcp_key comment
-    # for why the plan's "for new CLI keys" default doesn't extend there.
-    # 90 days is the plan's own recommended default, confirmed by the
-    # founder.
+    # for why this "new CLI keys" default doesn't extend there.
+    # 90 days is the founder-confirmed default.
     cli_key_default_ttl_days: int = 90
 
-    # fix-plan-v2 item 14 — generic webhook ingestion (routers/webhooks.py).
+    # Generic webhook ingestion (routers/webhooks.py) rate limit.
     # This one's a real abuse vector, not just cost: unlike cli_key_rate_
     # limit_per_hour above (gated on a live session), a webhook token sits
     # in a Zapier/monday/HubSpot config and gets called by a third-party
@@ -118,7 +117,7 @@ class Settings(BaseSettings):
     # generous for real comment-stream volume while still bounding a loop.
     webhook_ingest_rate_limit_per_hour: int = 100
 
-    # v3 fix-plan Tier 0 audit finding: create_mcp_key had no rate limit at
+    # create_mcp_key had no rate limit at
     # all, unlike its cli-key sibling above. Same abuse-backstop reasoning
     # as cli_key_rate_limit_per_hour (minting a key is cheap, this bounds a
     # scripted loop rather than cost) — higher ceiling than that one since
@@ -126,7 +125,7 @@ class Settings(BaseSettings):
     # up, not just per human login.
     mcp_key_rate_limit_per_hour: int = 30
 
-    # v3 fix-plan Tier 0 (C9b) — per-IP backstop on the webhook ingest
+    # Per-IP backstop on the webhook ingest
     # endpoint, on top of webhook_ingest_rate_limit_per_hour above. That
     # limit is keyed per org (resolved from the token), so it does nothing
     # for a caller who doesn't have a valid token yet — e.g. a script
@@ -141,7 +140,7 @@ class Settings(BaseSettings):
     # against a single flooding/brute-forcing source, not a primary throttle.
     webhook_ingest_ip_rate_limit_per_hour: int = 1000
 
-    # v3 fix-plan Tier 0 (C9b) — "capture/storage ceilings". With the old
+    # Storage ceiling on unreviewed draft rules. With the old
     # capture pipeline retired, unbounded draft-rule creation is the closest
     # live equivalent: both POST /v1/rules and the webhook ingest endpoint
     # write status="draft" rules through create_draft_rule with nothing
@@ -154,11 +153,10 @@ class Settings(BaseSettings):
     # if a legitimate org ever approaches it faster than it can review.
     max_draft_rules_per_org: int = 500
 
-    # fix-plan-v3 2.4 — batch-propose (routers/rules.py) opens one PR for
-    # several rules at once. The plan's own recommended batch size is 5-8
-    # rules per PR grouped by topic (gnt prebrain's own grouping heuristic
-    # targets that range) — this is a server-side ceiling above that
-    # target, not the target itself, so a legitimately larger topic group
+    # batch-propose (routers/rules.py) opens one PR for several rules at
+    # once. gnt prebrain's own grouping heuristic targets
+    # 5-8 rules per PR grouped by topic — this is a server-side ceiling
+    # above that target, not the target itself, so a legitimately larger topic group
     # doesn't get rejected while still bounding a single PR (and a single
     # branch's worth of put_file calls) from growing unbounded.
     max_rules_per_batch_propose: int = 20
@@ -188,7 +186,7 @@ class Settings(BaseSettings):
     # on job id, so several merges close together collapse into one compile.
     compile_debounce_seconds: int = 600
 
-    # v3 fix-plan Tier 0 (C9b) — worker concurrency cap (workers/worker.py's
+    # Worker concurrency cap (workers/worker.py's
     # WorkerSettings.max_jobs). Previously unset, which left arq's own
     # library default (10) as the effective cap rather than a deliberate
     # choice — a burst of enqueued jobs (the nightly cron jobs plus however
@@ -216,7 +214,7 @@ class Settings(BaseSettings):
     # generation. Same tier as rule_merge_model above.
     check_action_model: str = "claude-haiku-4-5"
 
-    # Nightly contradiction sweep (fix-plan-v2 item 13 — workers/
+    # Nightly contradiction sweep (workers/
     # tasks_contradictions.py). Two separate budgets, not one, because a
     # judge_conflict call and a filed GitHub issue cost different things:
     # comparisons is the per-org cap on rule_merge_model calls the sweep
@@ -232,7 +230,7 @@ class Settings(BaseSettings):
     contradiction_sweep_max_comparisons_per_org: int = 20
     contradiction_sweep_max_issues_per_org: int = 5
 
-    # C9a (fix-plan-v3 Tier 0 prerequisite 0.1) — per-org monthly LLM
+    # Per-org monthly LLM
     # spend quota, and the global aggregate circuit breaker cap. See
     # gnt.llm_quota for enforcement/recording and the three call sites it
     # gates (action_check, rule_conflict, the nightly contradiction
@@ -243,9 +241,8 @@ class Settings(BaseSettings):
     # (~$1/$5 per MTok), so a handful of orgs kicking the tires
     # comfortably fits inside these numbers without either cap tripping
     # on legitimate use. The 50/80/100 percent alert checkpoints
-    # themselves are NOT a separate setting — they're the plan's own
-    # explicit numbers (fix-plan-v3 item 0.1: "founder alerts at
-    # 50/80/100 percent"), not this codebase's judgment call, so
+    # themselves are NOT a separate setting — they're fixed founder-set
+    # thresholds, not this codebase's judgment call, so
     # there's nothing to tune per-deploy; see gnt.llm_quota's
     # _ALERT_THRESHOLDS.
     llm_monthly_quota_per_org_usd: float = Field(default=5.0, ge=0)
@@ -292,7 +289,7 @@ class Settings(BaseSettings):
     github_app_private_key: str | None = None
     github_app_webhook_secret: str | None = None
 
-    # Zendesk connector (connector sprint T4.2) — continuous server-side
+    # Zendesk connector — continuous server-side
     # sync, not a CLI-local one-shot (founder decision, 2026-07-18, see
     # workers/tasks_zendesk.py's module docstring). Self-serve API token a
     # customer generates in their own Zendesk admin, no OAuth app review.
@@ -312,7 +309,7 @@ class Settings(BaseSettings):
     # entire macro library and ticket history in one pass.
     zendesk_sweep_max_items_per_org: int = 50
 
-    # Notion connector (OAuth sprint T14 dashboard track) — a real OAuth
+    # Notion connector — a real OAuth
     # app, unlike Slack's, needs no vendor-side app review to acquire:
     # notion_client_id/secret came from Notion's own dynamic client
     # registration endpoint (mcp.notion.com/register, RFC 7591 — the same
@@ -328,7 +325,7 @@ class Settings(BaseSettings):
     notion_state_secret: str
     notion_token_encryption_key: str
 
-    # Linear connector (OAuth sprint T14 dashboard track) — reuses the same
+    # Linear connector — reuses the same
     # "gnt CLI" OAuth app already registered at linear.app/settings/api/
     # applications for the CLI's own loopback-redirect flow
     # (connect-linear-mcp.ts), with this API's redirect_uri added as a
@@ -341,8 +338,8 @@ class Settings(BaseSettings):
     linear_state_secret: str
     linear_token_encryption_key: str
 
-    # Intercom connector (connector sprint T4.3) — continuous server-side
-    # sync, same architecture as Zendesk's (T4.2, see
+    # Intercom connector — continuous server-side
+    # sync, same architecture as Zendesk's (see
     # workers/tasks_intercom.py's module docstring). Self-serve Personal
     # Access Token a customer generates in their own workspace's Developer
     # Hub, no OAuth app review. Own dedicated encryption key, same
@@ -371,7 +368,7 @@ class Settings(BaseSettings):
     # docstring for why that module is deliberately connector-agnostic.
     content_extraction_model: str = "claude-haiku-4-5"
 
-    # Execution plan Phase 2 — MCP serving layer over the rules table.
+    # MCP serving layer over the rules table.
     search_rules_similarity_threshold: float = 0.4
     search_rules_result_limit: int = 10
     # Per-key, not per-org — an org with several keys (e.g. one per
@@ -380,7 +377,7 @@ class Settings(BaseSettings):
     mcp_rate_limit_per_key: int = 100
     mcp_rate_limit_window_seconds: int = 3600
 
-    # Migration Phase 4 — apps/store is the internal API in front of the
+    # apps/store is the internal API in front of the
     # engine-backed seam. store_internal_api_secret authenticates every
     # call to it (a different secret from approval_signing_secret, which
     # authorizes specifically an approved-status write — see
@@ -391,7 +388,7 @@ class Settings(BaseSettings):
     approval_signing_secret: str
     store_http_timeout_seconds: float = 10.0
 
-    # M6 hardening — error monitoring. Optional: unset (the default) means
+    # Error monitoring. Optional: unset (the default) means
     # sentry_sdk.init(dsn=None) below, which is a documented no-op — local
     # dev and CI never need this configured. No traces_sample_rate is set
     # deliberately (performance tracing stays off, not needed yet), and
@@ -419,7 +416,7 @@ class Settings(BaseSettings):
     stripe_price_id_pro: str | None = None
     billing_trial_days: int = Field(default=14, ge=0)
 
-    # Weekly digest email (fix-plan-v2 item 10 — workers/tasks_digest.py,
+    # Weekly digest email (workers/tasks_digest.py,
     # gnt/email.py). Same Resend account apps/web/lib/email.ts already uses
     # for Better Auth's login OTP/invite emails, but a separate pair of
     # settings here — apps/web reads these two straight from process.env on
@@ -428,15 +425,15 @@ class Settings(BaseSettings):
     # Optional, same "unset = the integration just isn't live yet" pattern
     # as stripe_secret_key above: gnt.email.is_email_configured() gates on
     # this, and the digest cron job logs clearly and skips sending rather
-    # than crashing when it's absent — the rest of item 10 (the ROI
-    # aggregation itself, `gnt status`) works with zero email capability.
+    # than crashing when it's absent — the ROI aggregation itself
+    # (`gnt status`) works with zero email capability.
     resend_api_key: str | None = None
     # Mirrors email.ts's FROM_EMAIL fallback exactly — gntai.dev is verified
     # in Resend (DKIM/SPF/DMARC records live), a real sending address.
     resend_from_email: str = "gnt.ai <notifications@gntai.dev>"
 
-    # The one published, customer-facing MCP endpoint (gnt.ai fix plan v2,
-    # item 4/5) — every place that shows this URL to a customer (CLI output,
+    # The one published, customer-facing MCP endpoint —
+    # every place that shows this URL to a customer (CLI output,
     # docs, README) derives it from here instead of hand-building the string,
     # so there's exactly one thing that can drift.
     @property

@@ -1,5 +1,5 @@
-"""roi_counters / roi_metrics.py (fix-plan-v2 item 10 — ROI metering and
-the weekly number). Covers: bump_roi_counters upserts and genuinely
+"""roi_counters / roi_metrics.py (ROI metering and the weekly number).
+Covers: bump_roi_counters upserts and genuinely
 increments (not overwrites) an existing day's row, bumping several
 counters in one call only touches those columns, an unknown counter name
 is swallowed the same best-effort way gap_tracking.log_gap swallows an

@@ -38,8 +38,8 @@ function writeSecretFile(path: string, contents: string): void {
   chmodSync(path, 0o600);
 }
 
-// The customer's own auth token for a live MCP-in source (fix-plan-v3
-// 3.4, e.g. `gnt connect notion-mcp`) -- a fundamentally different secret
+// The customer's own auth token for a live MCP-in source (e.g.
+// `gnt connect notion-mcp`) -- a fundamentally different secret
 // from api_key/credentials.json above: that file's contents authenticate
 // this CLI to gnt's own API, this one authenticates this CLI directly to
 // a third party (Notion, monday.com) and gnt's servers never see it. Kept

@@ -1,9 +1,9 @@
-// Meeting-notes export walker (connector sprint T3.3): reads local
+// Meeting-notes export walker: reads local
 // meeting-transcript exports from Otter.ai, Fireflies.ai, and Fathom --
 // timestamped-caption files and plain-text transcripts -- and feeds them
 // through the shared transcript chunker (transcript-chunk.ts, built for
-// T2.1/Granola specifically so this task could reuse it rather than build
-// a second speaker-turn/decision-moment chunker). Same "interim local-path
+// the Granola adapter specifically so this walker could reuse it rather
+// than build a second speaker-turn/decision-moment chunker). Same "interim local-path
 // walker, not a live connector" framing as gmail-export.ts/outlook-
 // export.ts, and the closest precedent for how this file wires into
 // commands/prebrain.ts and types.ts. Local-only, same as every walker in

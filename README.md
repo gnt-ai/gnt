@@ -1,129 +1,204 @@
 <div align="center">
 
-# gnt.ai
-
-gnt turns what your team knows into rules an AI agent has to check before it acts. Every rule
-goes live through a real, human-approved pull request, not a dashboard click.
+<a href="https://gntai.dev">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="apps/web/public/brand/wordmark-dark-bg.svg">
+  <img src="apps/web/public/brand/wordmark.svg" alt="gnt" width="220">
+</picture>
+</a>
 
 [![License](https://img.shields.io/badge/license-FSL--1.1--Apache--2.0-blue)](LICENSE) [![npm](https://img.shields.io/npm/v/@gnt-ai/cli)](https://www.npmjs.com/package/@gnt-ai/cli) [![CI](https://github.com/gnt-ai/gnt/actions/workflows/ci.yml/badge.svg)](https://github.com/gnt-ai/gnt/actions/workflows/ci.yml)
 
 </div>
 
-Most teams find gnt after an agent already did something expensive, or wrong, or just
-embarrassing, and nobody could say which rule should have caught it. gnt is what you set up
-before that happens, not after.
+Run the setup below once and every agent your team runs has a **git-native rulebook** it has to check over **MCP** before it acts, approved the same way your code already is: a **merged pull request**.
+
+- Rules live in your repo as files and ship through normal PRs, not a dashboard click.
+- Agents call `check_action` over MCP before anything risky (a refund, a delete, a message to a customer) and get back an allow/block/escalate verdict.
+- Every rule traces back to the git file and the PR that approved it, so "why did the agent do that" always has a paper trail.
+
+> Prefer not to run any of this yourself? The hosted version at [gntai.dev](https://gntai.dev) does the same thing without you standing up a Postgres instance.
 
 ![A real terminal session of gnt prebrain scanning a repo, opening a PR, and getting merged](.github/assets/quickstart.png)
 
-## The 90-second loop
+*gnt prebrain scanning a repo, opening a PR, and getting it merged. A real terminal session, not a mockup.*
 
-1. Someone on your team writes a rule (`gnt review`, or the web UI): "never refund over $500
-   without a manager," "always CC legal on contract changes," whatever your org actually does.
-2. gnt opens a real pull request against your own GitHub repo with that rule as a markdown file.
-3. A human reviews and merges it. That merge is the approval. There's no separate "publish"
-   step and no way for a rule to go live without a person merging a PR.
-4. Any MCP-capable agent queries gnt live before acting, and gets back the merged, current rule:
-   cited, versioned, and auditable back to the PR that approved it.
-
-Not RAG. The point isn't better retrieval over a pile of docs. It's structured, validated,
-cited rules that a human signed off on before an agent can rely on them.
-
-## Quickstart: hosted
-
-```
-npm install -g @gnt-ai/cli
-gnt login              # opens your browser once, stores an API key locally
-gnt connect github      # connect the repo your rules PRs open against
-gnt connect slack       # optional, connect a Slack workspace
-gnt review              # review in-review rules, propose PRs or reject
-```
-
-Everything after `gnt login` runs from your terminal. The only browser tabs you'll see again
-are one-off OAuth consent screens for connecting a new app, not a dashboard you live in. Give
-your agent the MCP URL from `gnt keys create` and it can start querying rules.
-
-## Quickstart: self-host
-
-Everything below runs on your own infrastructure with your own API keys. Nothing calls
-gnt.ai's hosted service.
+## Get started (30 seconds)
 
 ```bash
-git clone https://github.com/gnt-ai/gnt
-cd gnt
-./setup.sh
+npm install -g @gnt-ai/cli
+gnt login
+gnt connect github
+gnt prebrain
+# merge the opened PR on GitHub. that merge is the approval
 ```
 
-`setup.sh` copies both `.env` files, generates every secret it safely can (Fernet keys, the
-shared secrets `apps/api` and `apps/store` use to talk to each other), then asks for the three
-keys nothing can generate for you: Anthropic, Groq, ZeroEntropy, before building, migrating,
-and booting the stack. Skip any of the three and it still comes up. You just add them before
-relying on it (the script tells you exactly which ones are still placeholders when it finishes).
-
-The API comes up on `http://localhost:8000`, with the MCP server mounted at
-`http://localhost:8000/mcp`. It runs Postgres (pgvector), Redis, the store (rules storage +
-approval gate), the API, and the background worker. apps/web (the marketing
-site) isn't part of it, since self-hosting gnt means running the API and MCP server, not the
-public website.
-
-**Full walkthrough, env var reference, first-login/GitHub-connect steps, upgrade notes, and
-troubleshooting: [`docs/self-hosting/README.md`](docs/self-hosting/README.md)**. Verified end
-to end against a real `docker compose build/run/up`, including one real boot bug it found and
-fixed along the way. Read it before your first real deploy, or if you'd rather run each step by
-hand instead of `setup.sh`. `apps/api/DEPLOY.md` covers the
-production-hardening step after that (the compose file connects everything as a single Postgres
-superuser for a fast local start. DEPLOY.md documents the restricted-role setup, `gnt_app`/
-`gnt_cron`/`gnt_admin` with row-level security, an actual production deployment should run
-instead).
-
-## What the license allows
-
-FSL-1.1-Apache-2.0 (see `LICENSE`). In plain words:
-
-- Read and audit every line, including the privacy/approval gate.
-- Self-host on your own infrastructure with your own keys, for your own internal use.
-- Modify it however you want.
-- Contribute changes back, see `CONTRIBUTING.md` (DCO sign-off, no CLA).
-- Two years after this repo goes public, the whole thing converts to Apache-2.0 and every
-  restriction below disappears.
-
-What it doesn't allow, until that conversion: running a competing hosted version of gnt as a
-commercial product or service. See `NOTICE` for the separate trademark rule: a fork's public
-service needs its own name, not "gnt" or the gnt.ai logo.
-
-## Architecture
+That merge lands a rule file in your connected repo, shaped like this:
 
 ```
-apps/web     Next.js marketing site + docs (no dashboard, the terminal is the product surface)
-apps/api     FastAPI backend: git-native rules + GitHub webhook, skill-pack compiler, MCP
-             server, Slack/Zendesk/Intercom/Notion/Linear connectors
-apps/cli     gnt CLI, published as @gnt-ai/cli. login, connect, review (opens PRs), pull,
-             status, keys. Fully terminal after login
-apps/store   Rules storage and the approval gate: the internal HTTP API apps/api talks to for
-             everything past the git-native rules seam (Postgres + pgvector, hybrid search)
+your-repo/
+└── rules/
+    ├── refund-approval-threshold.md
+    └── contract-legal-cc.md
 ```
 
-Each app has its own README with setup/run instructions.
+Each file is plain markdown with YAML frontmatter:
 
-- **Stack**: Next.js 16 + Tailwind + Better Auth (web), FastAPI + Python 3.12 + SQLAlchemy 2.0
-  async + Alembic + ARQ (api), Postgres + pgvector with row-level security, Claude for the
-  rule-conflict check, ZeroEntropy for embeddings/reranking.
-- **MCP**: the official Python SDK, mounted at `/mcp` inside the API. It's the one published,
-  agent-facing surface.
+```markdown
+---
+title: Never refund over $500 without a manager
+status: approved
+confidence: 0.91
+owner_id: finance-team
+source_citations: [...]
+source: slack
+tags: [refunds, finance]
+last_validated_at: 2026-07-20
+version: 1
+superseded_by: null
+approved_by: jane@company.com
+approved_at: 2026-07-21T14:03:00Z
+created_at: 2026-07-18T09:12:00Z
+pr_number: 142
+pr_url: https://github.com/your-org/your-repo/pull/142
+---
 
-## Development
+Refunds over $500 need manager sign-off before they go out...
+```
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md) for dev setup, lint/test commands, and how to open a PR.
+## See it in action
 
-## Links
+There's no captured transcript to show yet (see the gap noted at the bottom of this README).
+Here's the actual response shape a `check_action` call returns, straight from the tool's
+contract:
 
-- Self-host: `docs/self-hosting/README.md` for the full walkthrough, plus `apps/api/DEPLOY.md`
-  for production hardening
-- Security: `SECURITY.md`
-- Code of conduct: `CODE_OF_CONDUCT.md`
-- Questions or bugs: open a GitHub issue
+```json
+{
+  "verdict": "blocked",
+  "reason": "Refund exceeds the $500 threshold without manager sign-off (rules/refund-approval-threshold.md)",
+  "cited_rules": [
+    { "id": "refund-approval-threshold", "title": "Never refund over $500 without a manager" }
+  ],
+  "rules_retrieved": 3
+}
+```
+
+`verdict` is one of `allowed`, `blocked`, or `needs_human`. `needs_human` is the fail-closed
+default: no approved rule covers the action, retrieval failed, or the check couldn't complete.
+It never guesses.
+
+## What it does
+
+One MCP endpoint, five tools:
+
+| Tool | What it does |
+| --- | --- |
+| `check_action` | Checks a described action against your approved rules before an agent takes it. Returns `allowed`, `blocked`, or `needs_human` with cited rules and a one-line reason. |
+| `search_rules` | Semantic search over your org's approved rules, optionally filtered by tag. An empty list means no approved rule covers the query. |
+| `get_rule` | Fetches one approved rule by id, with its provenance (who approved it, when, what it was cited from). |
+| `list_skill_packs` | Lists every compiled skill pack version for your org, newest first. |
+| `get_skill_pack` | Fetches a compiled skill pack's manifest and file list by id. |
+
+## Prerequisites
+
+| Requirement | Check | Get it |
+| --- | --- | --- |
+| Node >=22.13 | `node --version` | [nodejs.org](https://nodejs.org) |
+
+## Install
+
+| Method | Command |
+| --- | --- |
+| curl | `curl -fsSL gntai.dev/install.sh \| sh` |
+| npm | `npm install -g @gnt-ai/cli` |
+
+> gnt needs Node >=22.13. If the CLI fails to start with a version error, update Node first and confirm with `node --version`.
+
+## Common commands
+
+```bash
+gnt login                # sign in, store an API key locally
+gnt connect github       # connect the repo your rules PRs open against
+gnt prebrain             # scan sources, extract candidate rules, open PRs
+gnt review               # review rules awaiting approval
+gnt status               # show brain status
+gnt pull                 # download the latest skill pack
+gnt gaps                 # list uncovered queries with no approved rule
+```
+
+## Config
+
+| Variable | Default | What it controls |
+| --- | --- | --- |
+| `GNT_API_URL` | `https://api.gntai.dev` | API endpoint the CLI and MCP calls hit |
+| `GNT_WEB_URL` | `https://gntai.dev` | Web app used for `gnt login`'s browser step |
+| `GNT_CONFIG_DIR` | `~/.gnt` | Where `credentials.json` and local config live |
+
+## Privacy
+
+- No analytics or telemetry dependency in the CLI or the web app.
+- `gnt prebrain`'s default extraction mode is cloud, not on-device: your source text goes straight to Anthropic's API (or Vercel AI Gateway with zero-data-retention, if you configure it), never to gnt's own servers. Fully on-device extraction needs `--mode local` against a local Ollama daemon.
+- The extracted rule candidates still get sent to gnt's API to open the PR. Raw source text stays off gnt's servers in cloud mode; the resulting rule text doesn't.
+- Rules live in your connected GitHub repo and in gnt's own database. The MCP tools read from gnt's store, not by cloning your repo on every call.
+- Self-hosting: `apps/api` only sends error data to Sentry if you set `SENTRY_DSN` yourself. Leave it unset and nothing goes out.
+
+## Team setup
+
+- **Who writes rules**: anyone with access to your connected repo, either through `gnt prebrain` (batch-extracted from real sources) or `gnt review` (hand-proposed).
+- **How approval works**: merging the PR is the approval. There's no separate publish step.
+- **What gets committed**: `rules/<rule-id>.md` files with the frontmatter shown above and a plain markdown body.
+
+## Troubleshooting
+
+> **Self-hosting: `gnt login`'s browser step needs `apps/web` running.** The base self-host compose stack doesn't start it by default. Run `apps/web` separately (its own `pnpm dev` or build) so `/cli-login` has somewhere to land, then retry `gnt login`.
+
+> **`ValueError: refusing to start: these settings still have their .env.example placeholder value...`** A `change-me-...` string is still sitting in `apps/api/.env`. The error names every offending field; generate a real value for each and retry.
+
+> **`store` fails to start with `GNT_STORE_INTERNAL_API_SECRET is not set`.** `apps/store/.env` wasn't filled in, or wasn't picked up. Confirm the file exists at that exact path, not still named `.env.example`.
+
+> **Every store-to-api call gets rejected with 401 or 403, even though both services are up.** `STORE_INTERNAL_API_SECRET` / `APPROVAL_SIGNING_SECRET` in `apps/api/.env` don't byte-for-byte match `GNT_STORE_INTERNAL_API_SECRET` / `GNT_APPROVAL_SIGNING_SECRET` in `apps/store/.env`. This fails closed by design. Regenerate both pairs so the two files agree.
+
+> **A rule fails to save with an embedding or rerank error.** `apps/store/.env` is missing `ZEROENTROPY_API_KEY`, or it's still empty. Get a real one from zeroentropy.dev.
+
+## Full command reference
+
+```
+gnt login
+gnt logout
+gnt connect <app>        github, slack, notion-mcp, monday-mcp, linear-mcp, jira-mcp,
+                          sentry-mcp, granola-mcp, zoom-mcp, figma, datadog,
+                          gitlab-threads, hubspot, airtable, openclaw, hermes
+gnt disconnect <app>
+gnt status
+gnt billing
+gnt review
+gnt pull
+gnt gaps
+gnt prebrain              scan local sources, extract candidate rules, open batched draft
+                           PRs (~60 flags for source paths and extraction mode, see
+                           `gnt prebrain --help`; --mode cloud|local, cloud is the default)
+gnt stale
+gnt keys list|create|revoke|rotate
+gnt webhook list|create|revoke
+gnt org show|rename|invite|remove
+```
+
+## Learn more
+
+- Self-hosting walkthrough: [`docs/self-hosting/README.md`](docs/self-hosting/README.md)
+- Production hardening after self-hosting: [`apps/api/DEPLOY.md`](apps/api/DEPLOY.md)
+- Security policy: [`SECURITY.md`](SECURITY.md)
 
 ## License
 
-Copyright © 2026 gnt.ai. Licensed under [FSL-1.1-Apache-2.0](LICENSE), source-available today,
-converts to Apache-2.0 two years after public release. See [`NOTICE`](NOTICE) for the trademark
-terms.
+Copyright © 2026 gnt.ai. Licensed under FSL-1.1-Apache-2.0, source-available today. See [`LICENSE`](LICENSE) for the terms and [`NOTICE`](NOTICE) for the trademark rule on forks: two years after this repo went public it converts to Apache-2.0 in full.
+
+## Contributing
+
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for dev setup and how to open a PR. Every commit needs a `Signed-off-by` trailer (`git commit -s`), the [Developer Certificate of Origin](https://developercertificate.org/) instead of a CLA. No separate form, just the flag.
+
+<div align="center">
+
+[![Discussions](https://img.shields.io/badge/discussions-github-blue)](https://github.com/gnt-ai/gnt/discussions) [![Issues](https://img.shields.io/github/issues/gnt-ai/gnt)](https://github.com/gnt-ai/gnt/issues) [![Code of conduct](https://img.shields.io/badge/code%20of%20conduct-CODE__OF__CONDUCT.md-lightgrey)](CODE_OF_CONDUCT.md)
+
+</div>

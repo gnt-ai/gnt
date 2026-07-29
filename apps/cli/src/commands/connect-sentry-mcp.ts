@@ -1,4 +1,4 @@
-// `gnt connect sentry-mcp` (connector sprint T2.5): stores a Sentry User
+// `gnt connect sentry-mcp`: stores a Sentry User
 // Auth Token locally for `gnt prebrain --mcp-sentry` to use. Unlike
 // connect-notion-mcp.ts/connect-monday-mcp.ts (written before the
 // connector framework's connect.ts existed), this one goes through

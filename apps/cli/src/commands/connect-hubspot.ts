@@ -1,4 +1,4 @@
-// `gnt connect hubspot` (connector sprint T2.8): stores a HubSpot private
+// `gnt connect hubspot`: stores a HubSpot private
 // app access token locally for `gnt prebrain --hubspot-notes` to use. Not
 // an MCP-in connector -- see ../prebrain/hubspot-notes.ts's own doc
 // comment for why -- so this doesn't go through mcp-framework's

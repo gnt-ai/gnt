@@ -1,4 +1,4 @@
-// Live-Datadog notebooks client (connector sprint T2.6): reads a
+// Live-Datadog notebooks client: reads a
 // customer-named Datadog notebook's own title and markdown prose -- nothing
 // else -- as decision-prose and incident-postmortem candidates. Direct
 // against Datadog's own REST API, not an MCP adapter: see "Why this isn't
@@ -66,8 +66,9 @@
 // as every other connector's token in this sprint.
 //
 // -- Notebooks and incident postmortems are the same object --
-// T2.6's scope note anticipated a fork ("if postmortems are tracked as a
-// distinct object type ... only add the second if it's still pure prose").
+// This connector's design anticipated needing a second, separate read path
+// for postmortems if Datadog tracked them as a distinct object type --
+// only worth adding if that object turned out to still be pure prose.
 // Datadog's own incident-management docs (docs.datadoghq.com/incident_response/
 // incident_management/post_incident/postmortems/) resolve this without a
 // fork: postmortem templates generate a Notebook directly -- Datadog

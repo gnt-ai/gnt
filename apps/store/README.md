@@ -12,7 +12,7 @@ Runs one server in local dev:
 
 This package is an internal service, not a customer-facing surface. It used to also
 run its own MCP server (`src/mcp/server.ts`, duplicating `search_rules`/`get_rule`
-and adding `log_decision`), but that's been removed (fix plan item 4, founder
+and adding `log_decision`), but that's been removed (founder
 decision) — `apps/api`'s own `mcp_server` is the one published MCP endpoint, and
 apps/store is just an internal service it talks to over this HTTP API.
 

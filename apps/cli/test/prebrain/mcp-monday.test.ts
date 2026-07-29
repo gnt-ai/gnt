@@ -10,7 +10,7 @@
 // half of the plan's "monday reads item updates/comments only" scope) and
 // assertCredentialsNeverLogged run against the real adapter rather than a
 // synthetic one -- the same convention mcp-linear.test.ts/mcp-sentry.test.ts/
-// mcp-granola.test.ts already establish for themselves (T2.9 verification).
+// mcp-granola.test.ts already establish for themselves.
 import { afterEach, beforeEach, expect, test } from "bun:test";
 import { MissingMondayMcpTokenError, mondayAdapter, walkMcpMonday } from "../../src/prebrain/mcp-monday.js";
 import type { McpToolClient } from "../../src/prebrain/mcp-connector.js";

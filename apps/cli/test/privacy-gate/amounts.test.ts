@@ -1,5 +1,5 @@
-// Layer 2b (policy-vs-personal amount classification, fix-plan-v3 1.2)
-// tests. Two sections: the classifier run directly via runAmountsLayer
+// Layer 2b (policy-vs-personal amount classification) tests. Two
+// sections: the classifier run directly via runAmountsLayer
 // (isolated from NER, so it's clear what the classifier itself does with
 // an already-placeholdered/possessive-marked input), then end-to-end
 // through applyPrivacyGate (so NER's actual output -- including its own

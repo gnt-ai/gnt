@@ -1,4 +1,4 @@
-// Tests the meeting-notes export walker (connector sprint T3.3) against
+// Tests the meeting-notes export walker against
 // realistic VTT, SRT, and plain-text fixtures. This file's own job is
 // parsing -- VTT/SRT cue merging and plain-text bracket/paren-timestamp
 // normalization -- not re-testing the shared transcript chunker's own

@@ -1,8 +1,8 @@
-# Rule-retrieval at scale (fix-plan-v2 item 11, scale re-open)
+# Rule-retrieval at scale (scale re-open)
 
 One-off **research** eval. Not wired into CI. Answers a single question the
-two prior item-11 investigations couldn't, because they topped out at 47
-rules:
+two prior hybrid-retrieval investigations couldn't, because they topped out
+at 47 rules:
 
 > Does plain vector-only search's accuracy meaningfully degrade as a single
 > enterprise customer's own rule corpus grows into the tens/hundreds of
@@ -64,11 +64,11 @@ this exercise. So this is a fresh, lighter-weight, in-process harness.
   scale, not production-accurate absolute accuracy.
 - **Reranker: `cross-encoder/ms-marco-MiniLM-L-6-v2`** (free, local) as a
   stand-in for the paid `zerank-2`. The production reranker arm has no free
-  replay seam (the item-11 branch commit says so outright — a cross-encoder
-  call can't be replayed from a committed fixture the way a query embedding
-  can), so the "with-reranker" arm is impossible to run for real under the
-  zero-paid constraint. A smaller cross-encoder still answers the
-  architectural question "does a rerank stage move the needle at scale."
+  replay seam — a cross-encoder call can't be replayed from a committed
+  fixture the way a query embedding can — so the "with-reranker" arm is
+  impossible to run for real under the zero-paid constraint. A smaller
+  cross-encoder still answers the architectural question "does a rerank
+  stage move the needle at scale."
 
 The isolated harness uses the free model's real 384-dim output. It does NOT
 pad/project to production's `vector(1280)` — that would distort cosine
@@ -208,7 +208,7 @@ numbers above come from it). One family is worth flagging on its own:
 every arm at every tier (n=60, small bounded gold sets against a limit-25
 window) — reranking clearly helps it here (0.100→0.783 hit@3 at 1M,
 vector-only vs hybrid+rerank), which is a **different** result from the
-original 47-rule item-11 finding (reranker actively hurt multi_rule there).
+original 47-rule finding (reranker actively hurt multi_rule there).
 That's not a direct contradiction — this eval uses bounded named-program
 clusters, a free stand-in reranker, and a completely different corpus design
 than the original "all X policies" multi_rule queries — but it means the

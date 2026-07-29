@@ -107,8 +107,8 @@ test("omits the ROI section, not the rest of the command, when /v1/roi/summary f
   expect(output).not.toContain("Coverage gaps");
 });
 
-// Airtable health line (connector sprint T4.4, T5's own "health line in
-// gnt status" requirement) -- a direct-REST connector, so this doesn't
+// Airtable health line: every connector is expected to show a health line
+// in `gnt status`. Airtable is a direct-REST connector, so this doesn't
 // come from mcpConnectorHealth() the way an MCP-in adapter's line would
 // (see status.ts's own comment on that call). Read straight from the
 // local token store, same as every other connector's line, so no fetch

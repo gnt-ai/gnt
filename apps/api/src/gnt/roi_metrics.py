@@ -1,21 +1,20 @@
-"""Per-org ROI counters for fix-plan-v2 item 10 (ROI metering and the
-weekly number — see the plan's own "painkiller acceptance gate": rules
-served, actions checked, blocked/needs_human counts have to be real
-numbers a customer can see, not stdout log lines with no query interface).
+"""Per-org ROI counters backing the weekly ROI number shown to customers:
+rules served, actions checked, blocked/needs_human counts have to be real
+numbers a customer can see, not stdout log lines with no query interface.
 
 _log_mcp_call (mcp_server/server.py) already prints every one of these
 signals to stdout, but that stream is documented as future pricing/usage
-data with no GROUP BY/COUNT/SUM interface — the exact same limitation
-gap_tracking.py's module docstring explains for why item 8 needed a real
-table instead of relying on that stream. roi_counters (migration 0023) is
-this item's equivalent: a minimal per-org, per-day counters table that
-search_rules/get_rule/check_action increment directly, best-effort, same
-non-blocking discipline as gap_tracking.log_gap.
+data with no GROUP BY/COUNT/SUM interface — the same limitation
+gap_tracking.py's module docstring explains for why gap tracking needed a
+real table instead of relying on that stream. roi_counters (migration
+0023) is the equivalent here: a minimal per-org, per-day counters table
+that search_rules/get_rule/check_action increment directly, best-effort,
+same non-blocking discipline as gap_tracking.log_gap.
 
 Deliberately NOT wired into `actions_checked` for search_rules/get_rule
 (only check_action calls those) and NOT tracking `allowed` verdicts
-separately from a bare actions_checked total — the plan asks specifically
-for "blocked/needs_human counts", and an allowed-vs-total distinction is
+separately from a bare actions_checked total — what customers care about
+is "blocked/needs_human counts", and an allowed-vs-total distinction is
 recoverable later (actions_checked - blocked - needs_human) without a
 fourth column if it turns out to matter.
 """
@@ -37,7 +36,7 @@ from gnt.db.rls import scope_to_org
 # MCP-serving call.
 _KNOWN_METRICS = {"rules_served", "actions_checked", "actions_blocked", "actions_needs_human"}
 
-# A week-over-week comparison (this plan's "coverage growth" ask) needs two
+# A week-over-week comparison ("is this number improving") needs two
 # non-overlapping 7-day windows, both anchored on the same "today".
 _WINDOW_DAYS = 7
 

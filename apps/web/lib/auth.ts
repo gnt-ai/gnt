@@ -85,7 +85,7 @@ export const auth = betterAuth({
       async sendVerificationOTP({ email, otp }) {
         await sendOtpEmail({ to: email, otp });
       },
-      // v3 fix-plan Tier 0 (C9b) — this plugin bakes in its own rate limit
+      // This plugin bakes in its own rate limit
       // on /email-otp/send-verification-otp (keyed by IP+path, same
       // mechanism as the top-level rateLimit block above — see Better
       // Auth's rate-limit docs). That's the real signup/sign-in abuse
@@ -211,7 +211,7 @@ export const auth = betterAuth({
         },
       },
     }),
-    // fix-plan-v3 item 0.3 — required for owner/admin (see the enrollment
+    // Required for owner/admin (see the enrollment
     // UI at app/(account)/settings/security/page.tsx and the sign-in gate at
     // app/verify-2fa/page.tsx for the rest of this feature).
     //

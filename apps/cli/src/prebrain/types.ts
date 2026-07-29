@@ -1,4 +1,4 @@
-// Shared types for prebrain (fix-plan-v3 section 2): the walkers here turn
+// Shared types for prebrain: the walkers here turn
 // a customer's own local sources into candidate decision-prose chunks.
 // This file is the contract 2.2 (company profile), 2.3 (extraction, which
 // runs every chunk through applyPrivacyGate before a model sees it -- see
@@ -11,7 +11,7 @@
 // walker file becomes a compile error, not a silent mismatch with whatever
 // filters 2.2+ add per source.
 //
-// "mcp-notion" / "mcp-monday" (fix-plan-v3 3.4): the live counterparts to
+// "mcp-notion" / "mcp-monday": the live counterparts to
 // notion-export -- same target content, read through the customer's own
 // Notion/monday.com MCP server instead of a static export. See
 // ../prebrain/mcp-notion.ts and mcp-monday.ts's own doc comments for the
@@ -19,13 +19,13 @@
 // every walker above, which is why commands/prebrain.ts gates them behind
 // their own flags instead of running them whenever a path is passed.
 //
-// "mcp-sentry" (connector sprint T2.5): same opt-in MCP-in shape, read
+// "mcp-sentry": same opt-in MCP-in shape, read
 // through the customer's own Sentry MCP server. Narrower than the other
 // two -- see mcp-sentry.ts's own doc comment for why only an issue's
 // title/status/permalink is read (search_issues), and why comments and
 // full issue details are not reachable through this adapter at all.
 //
-// "gmail-export" (connector sprint T3.4): the interim Gmail path -- reads
+// "gmail-export": the interim Gmail path -- reads
 // a Google Takeout mail export (.mbox) instead of a live OAuth connection,
 // which needs no vendor approval (the real Gmail OAuth connector is
 // blocked on Google's own app-review process, tracked separately). See
@@ -35,7 +35,7 @@
 // notion-export is behind --notion, not opt-in-boolean like the MCP-in
 // walkers above -- it's a local file path, not a live connection.
 //
-// "outlook-export" (connector sprint T3.5): the same interim-local-path
+// "outlook-export": the same interim-local-path
 // story for Outlook -- reads a directory of .eml files or a single
 // mbox-shaped file instead of a live Graph API connection. Reuses
 // mbox.ts's parseMailMessage/splitMboxMessages and mail-chunk.ts's
@@ -44,7 +44,7 @@
 // of scope. Gated behind --outlook, same "local file path" reasoning as
 // --gmail.
 //
-// "mcp-linear" (connector sprint T2.3): the third MCP-in adapter, same
+// "mcp-linear": the third MCP-in adapter, same
 // framework as mcp-notion/mcp-monday -- issue descriptions and comments,
 // plus project documents, read through a customer's own Linear API key.
 // See ../prebrain/mcp-linear.ts's own doc comment for the read-only
@@ -52,7 +52,7 @@
 // local stdio bridge rather than a spawned local server the way Notion and
 // monday's adapters do.
 //
-// "mcp-jira" (connector sprint T2.4): built after mcp-linear.ts to reuse
+// "mcp-jira": built after mcp-linear.ts to reuse
 // its "no dedicated comment-thread chunker" call -- issue summaries,
 // descriptions, and comments, read through a customer's own Atlassian API
 // token, scoped to the projects and Atlassian site (cloud id) given. See
@@ -62,17 +62,17 @@
 // Atlassian Document Format handling Jira's rich-text fields need that
 // Linear's plain-string fields don't.
 //
-// "mcp-granola" (connector sprint T2.1): reads meeting notes and verbatim
+// "mcp-granola": reads meeting notes and verbatim
 // transcripts from a customer's own Granola folders through Granola's
 // official MCP server -- see ../prebrain/mcp-granola.ts's own doc comment
 // for the read-only guarantee, the folder-scoped allowlist, and the
 // honest limit on Granola's OAuth-only auth model. Chunked with
 // ../prebrain/transcript-chunk.ts's speaker-turn/decision-moment chunker,
-// which Zoom (T2.2) and the meeting-export walkers (T3.3) are built to
+// which the Zoom adapter and the meeting-export walkers are built to
 // reuse rather than duplicate. Opt-in like the other MCP-in walkers, never
 // run without --mcp-granola.
 //
-// "figma-comments" (connector sprint T2.7 v2): reads comment threads on
+// "figma-comments": reads comment threads on
 // customer-chosen Figma files direct against Figma's own REST API -- not
 // an MCP-in walker like mcp-notion/mcp-monday/mcp-linear above, no MCP
 // transport or mcp-framework machinery is involved at all. See
@@ -80,7 +80,7 @@
 // and hand-kept field discipline. Opt-in like the MCP-in walkers, gated
 // behind --figma-comments plus a required --figma-files scope.
 //
-// "mcp-zoom" (connector sprint T2.2): reads recording transcripts from
+// "mcp-zoom": reads recording transcripts from
 // customer-chosen Zoom hosts, scoped to a date range, through Zoom's own
 // official MCP server -- see ../prebrain/mcp-zoom.ts's own doc comment for
 // the read-only guarantee, the host+date-range allowlist, and the auth
@@ -92,7 +92,7 @@
 // mcp-granola.ts) is reused unchanged. Opt-in like the other MCP-in
 // walkers, never run without --mcp-zoom.
 //
-// "datadog-notebooks" (connector sprint T2.6): reads customer-named
+// "datadog-notebooks": reads customer-named
 // Datadog notebooks -- title plus markdown cell text only -- direct
 // against Datadog's own REST API, the same "no mcp-framework machinery at
 // all" shape as figma-comments above (Datadog does have an official MCP
@@ -104,7 +104,7 @@
 // Incidents API are never read. Opt-in, gated behind --datadog-notebooks
 // plus a required --datadog-notebook-ids scope.
 //
-// "hubspot-notes" (connector sprint T2.8): reads HubSpot Note engagements
+// "hubspot-notes": reads HubSpot Note engagements
 // -- a note's own written text only -- scoped to deals within an
 // allowlisted pipeline ("deal notes") and/or notes owned by an allowlisted
 // team's members ("engagement notes"), direct against HubSpot's own REST
@@ -123,7 +123,7 @@
 // silently dropped. Opt-in, gated behind --hubspot-notes plus at least one
 // of --hubspot-pipelines / --hubspot-teams.
 //
-// "meeting-notes-export" (connector sprint T3.3): reads local meeting-
+// "meeting-notes-export": reads local meeting-
 // transcript exports from Otter.ai, Fireflies.ai, and Fathom -- a
 // directory or a single file, VTT/SRT cue files and plain-text transcripts
 // both auto-detected per file rather than needing a per-tool flag. See
@@ -136,7 +136,7 @@
 // unchanged. Gated behind --meeting-notes, same "local file path" shape as
 // --gmail/--outlook, not opt-in-boolean like the MCP-in walkers above.
 //
-// "gitlab-threads" (connector sprint T4.1): reads merge request discussion
+// "gitlab-threads": reads merge request discussion
 // threads and issue discussion threads on customer-chosen GitLab projects
 // direct against GitLab's own REST API -- not an MCP-in walker like
 // mcp-linear/mcp-jira above, no MCP transport or mcp-framework machinery is
@@ -149,7 +149,7 @@
 // Opt-in like the other direct-REST walkers, gated behind --gitlab-threads
 // plus a required --gitlab-projects scope.
 //
-// "airtable" (connector sprint T4.4): reads customer-picked prose fields
+// "airtable": reads customer-picked prose fields
 // out of a customer's own Airtable base, direct against Airtable's
 // Metadata and Records REST API -- not an MCP-in walker, no mcp-framework
 // machinery involved (see ../prebrain/airtable.ts's own doc comment). The

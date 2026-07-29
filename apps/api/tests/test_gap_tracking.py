@@ -1,4 +1,5 @@
-"""rule_gaps / gap_tracking.py (fix-plan-v2 item 8 — gap-aware answers).
+"""rule_gaps / gap_tracking.py (gap-aware answers: when nothing governs a
+question, that gets recorded as a real gap instead of silently succeeding).
 Covers: log_gap writes a real row and is genuinely best-effort (a failure
 never raises out to the caller), RLS actually isolates one org's gaps from
 another's at the database level (mirrors test_onboarding_metrics.py's
@@ -123,7 +124,7 @@ async def test_get_gaps_endpoint_is_scoped_to_current_org(db_session, test_app_f
     assert body[0]["query"] == "org a's uncovered query"
 
 
-# --- fix-plan-v2 item 10: count_gaps_between (the digest's "coverage growth" number) ---
+# --- count_gaps_between (the digest's "coverage growth" number) ---
 
 
 async def _seed_gap_at(session, org_id: str, created_at) -> None:

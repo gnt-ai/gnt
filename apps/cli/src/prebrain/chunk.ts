@@ -1,7 +1,6 @@
 // Shared chunking heuristic used by every walker in this directory --
-// splits a file's raw text into candidate decision-prose chunks
-// (fix-plan-v3 section 2's own wording), never a whole-file blob and never
-// mid-sentence.
+// splits a file's raw text into candidate decision-prose chunks,
+// never a whole-file blob and never mid-sentence.
 //
 // One pass, two rules, both operating on blank-line-delimited blocks:
 //   1. a markdown heading (`#`..`######`) always starts a new chunk --
@@ -118,7 +117,7 @@ const DECISION_SIGNAL_WORDS = [
   "before merging",
   "before shipping",
   "if ",
-  // Added for the connector sprint's transcript chunker (transcript-chunk.ts):
+  // Added for the transcript chunker (transcript-chunk.ts):
   // the words above are tuned for policy-document prose ("must", "shall",
   // "required"), but a decision made out loud in a meeting usually reads
   // more like an announcement than a policy statement -- "we're going to

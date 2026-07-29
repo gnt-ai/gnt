@@ -1,8 +1,8 @@
-"""The server-side privacy gate (fix-plan-v3 3.0) -- the Tier 3 blocking
-prerequisite. Every ingestion path that receives third-party content
+"""The server-side privacy gate -- a mandatory blocking step, not an
+optional pass. Every ingestion path that receives third-party content
 without a human on this device deliberately choosing to expose that exact
-text to gnt (today: routers/webhooks.py's ingest_webhook; the plan's
-future Slack-thread watchers and MCP-in connectors will be the same shape)
+text to gnt (today: routers/webhooks.py's ingest_webhook; future
+Slack-thread watchers and MCP-in connectors will be the same shape)
 must run that content's title/body/source through this before it's stored,
 per the founder decision recorded in this task's PR description.
 
@@ -30,9 +30,9 @@ and gnt's server is the only thing that ever touches this content, masked
 or not. If this module masked before storage and then kept a mapping to
 unmask later, that mapping would have to live somewhere -- and if it lives
 on gnt's server, gnt's server still effectively holds the raw data (split
-into two recoverable pieces), which does not honestly satisfy the plan's
-own "no code path sends raw source text to gnt servers" definition of
-done.
+into two recoverable pieces), which does not honestly satisfy this
+design's own "no code path sends raw source text to gnt servers"
+requirement.
 
 So: masking here is PERMANENT. There is no detokenize step in this
 package, and it must never grow one for this ingestion path -- do not port

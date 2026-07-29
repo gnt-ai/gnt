@@ -1,10 +1,10 @@
-"""gnt/email.py (fix-plan-v2 item 10's Resend-backed sending, Python side).
+"""gnt/email.py (Resend-backed sending, Python side).
 Covers: is_email_configured/send_email's graceful-absence behavior when
 RESEND_API_KEY isn't set (no network call at all, a clear log line, no
-raise), a real send path (mocked httpx, not a real Resend call — Global
-Rule 6), a failed Resend response degrading the same way, and
-render_weekly_digest's plain-text content shape (real numbers, the
-deltas, no invented urgency)."""
+raise), a real send path (mocked httpx, not a real Resend call — tests
+must never spend a real paid-API request), a failed Resend response
+degrading the same way, and render_weekly_digest's plain-text content
+shape (real numbers, the deltas, no invented urgency)."""
 
 import httpx
 import pytest
@@ -32,8 +32,8 @@ def configured(monkeypatch):
 
 class _FakeAsyncClient:
     """Stands in for httpx.AsyncClient — records every POST and returns a
-    pre-baked response, so no real Resend call is ever made (Global Rule
-    6 — no real paid-API calls from a test loop)."""
+    pre-baked response, so no real Resend call is ever made (tests must
+    never spend a real paid-API request)."""
 
     def __init__(self, calls: list, response: httpx.Response | Exception):
         self._calls = calls

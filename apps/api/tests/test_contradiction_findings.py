@@ -1,5 +1,5 @@
-"""contradiction_findings.py / ContradictionFinding (fix-plan-v2 item 13 —
-continuous contradiction sweeps). Covers canonical_pair's order
+"""contradiction_findings.py / ContradictionFinding (continuous
+contradiction sweeps). Covers canonical_pair's order
 independence, has_been_filed's dedup gate, record_finding's write and
 best-effort failure handling, and RLS isolation — mirroring
 test_calibration.py's own coverage shape for the same append-only,

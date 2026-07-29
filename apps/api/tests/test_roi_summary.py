@@ -1,7 +1,7 @@
-"""gnt.roi_summary.build_roi_summary and GET /v1/roi/summary (fix-plan-v2
-item 10 — the one aggregation both the weekly digest and `gnt status`
-read from, see roi_summary.py's own module docstring for why there's
-exactly one definition of "this week vs. last week" rather than two)."""
+"""gnt.roi_summary.build_roi_summary and GET /v1/roi/summary — the one
+aggregation both the weekly digest and `gnt status` read from, see
+roi_summary.py's own module docstring for why there's exactly one
+definition of "this week vs. last week" rather than two."""
 
 from datetime import date, datetime, time, timedelta, timezone
 

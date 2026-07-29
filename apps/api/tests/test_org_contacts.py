@@ -1,5 +1,5 @@
-"""org_contacts.get_digest_recipients (fix-plan-v2 item 10 — who to email
-for an org). This codebase's test database is migrated only through
+"""org_contacts.get_digest_recipients (who to email for an org). This
+codebase's test database is migrated only through
 Alembic (`alembic upgrade head` — see conftest.py's _migrated_test_db
 fixture); Better Auth's own "member"/"user" tables are created by a
 separate Node-side migration tool (`pnpm exec auth migrate`) this test

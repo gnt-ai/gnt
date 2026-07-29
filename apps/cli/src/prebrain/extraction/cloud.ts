@@ -31,9 +31,9 @@ const MAX_TOKENS = 4096;
 // BYO-key resolution for cloud mode: an explicit apiKey option always
 // wins; otherwise this falls back to ANTHROPIC_API_KEY, the standard env
 // var convention the @anthropic-ai/sdk client itself understands. This
-// is the one function fix-plan-v3 2.3 calls out as the extension point
+// is the one function meant to be the extension point
 // for a second, later key source (a gnt-issued key, minted and billed
-// server-side, per that task's own scope note) -- adding that becomes a
+// server-side) -- adding that becomes a
 // change to this function alone, not to extractRules or either mode's
 // call site.
 export function resolveCloudApiKey(options: Pick<ExtractionOptions, "apiKey">): string | undefined {
@@ -78,7 +78,7 @@ export class MissingCloudApiKeyError extends Error {
 // Cloud extraction: calls Anthropic's Messages API directly from this
 // CLI process, running on the customer's device -- see index.ts's
 // module comment for why that "directly" is a hard architecture
-// constraint (fix-plan-v3 constraint 2), not an implementation detail.
+// constraint, not an implementation detail.
 // This function only ever receives the model name, a prompt built from
 // already-gate-passed, already-sanitized chunk text, and an API key that
 // came from the caller's own machine (an env var or an explicit option)

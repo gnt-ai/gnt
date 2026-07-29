@@ -1,4 +1,4 @@
-// html-to-text (connector sprint T3.4): a small, hand-written HTML-to-text
+// html-to-text: a small, hand-written HTML-to-text
 // converter for email bodies -- not a general-purpose HTML renderer, so
 // no new dependency for it (same "bounded, well-documented target" call
 // mbox.ts's own doc comment makes). Scope: drop non-content elements

@@ -73,7 +73,7 @@ class McpApiKey(Base):
     created_at: Mapped[datetime] = _timestamp()
     last_used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    # fix-plan-v3 item C2 — key expiry and rotation. Nullable: null means
+    # Key expiry and rotation. Nullable: null means
     # "never expires", not "unset by migration error" — every row that
     # existed before migration 0025 stays valid indefinitely rather than
     # getting retroactively expired on deploy. create_cli_key sets this to
@@ -97,7 +97,7 @@ class McpApiKey(Base):
 
 
 class WebhookToken(Base):
-    """fix-plan-v2 item 14 — generic webhook ingestion. A deliberately
+    """Generic webhook ingestion. A deliberately
     separate table from McpApiKey rather than a third key_type: this
     credential can only ever create draft rules (routers/webhooks.py's one
     endpoint), nothing else McpApiKey-authenticated callers can do, and it
@@ -246,8 +246,8 @@ class GithubConnection(Base):
 
 
 class Rule(Base):
-    """The unified rules model (gnt.ai execution plan Phase 1) — replaces
-    the split between DecisionRule (structured condition/action) and
+    """The unified rules model — replaces the split between
+    DecisionRule (structured condition/action) and
     KnowledgeUnit (flat facts/policies) with one reviewed, cited,
     versioned unit. Built alongside the old tables, not on top of them;
     nothing here reads or writes DecisionRule/KnowledgeUnit.
@@ -317,9 +317,9 @@ class OnboardingEvent(Base):
     are untouched, nothing writes new ones). Deliberately minimal: this is
     not a general analytics/events table, just enough to answer "how close
     is this org to a working setup" (routers/brain.py's
-    /v1/onboarding/status) and, later, to meter ROI off the same rows
-    (fix-plan-v2 item 10) — counting event_type over time per org already
-    gets most of the way there without a schema change."""
+    /v1/onboarding/status) and, later, to meter ROI off the same rows —
+    counting event_type over time per org already gets most of the way
+    there without a schema change."""
 
     __tablename__ = "onboarding_events"
 
@@ -332,9 +332,9 @@ class OnboardingEvent(Base):
 
 
 class RuleGap(Base):
-    """Append-only coverage-gap log (fix-plan-v2 item 8 — gap-aware answers).
-    One row per MCP call that surfaced a "no approved rule covers this"
-    signal on the serving path: a search_rules call with zero hits after
+    """Append-only coverage-gap log powering gap-aware answers. One row
+    per MCP call that surfaced a "no approved rule covers this" signal on
+    the serving path: a search_rules call with zero hits after
     the similarity threshold, or a check_action call whose needs_human
     verdict was specifically the no-coverage branch (action_check.py's
     `no_coverage` field — not the "rules retrieved but ambiguous" branch,
@@ -365,17 +365,18 @@ class RuleGap(Base):
 
 
 class RuleStaleness(Base):
-    """Nightly staleness snapshot per approved rule (fix-plan-v2 item 9 —
-    see gnt.staleness for the decay math, workers/tasks_staleness.py for
-    the cron job that writes this table). Approved rules themselves live
-    in apps/store's git-native engine, not here (see this file's own Rule
-    docstring above — that model predates the Phase 4 store migration and
-    nothing reads or writes it anymore); this table is Postgres-side
-    because that's what `gnt stale` needs to query cheaply ("which rules
-    are due for re-validation" is a WHERE/ORDER BY, same reasoning as
-    RuleGap above) and what fix-plan-v2 item 18's calibration-data
-    collection needs a history of, which a number recomputed fresh on
-    every request and thrown away wouldn't give it.
+    """Nightly staleness snapshot per approved rule — see gnt.staleness for
+    the decay math, workers/tasks_staleness.py for the cron job that
+    writes this table. Approved rules themselves live in apps/store's
+    git-native engine, not here (see this file's own Rule docstring above
+    — that model predates the Phase 4 store migration and nothing reads
+    or writes it anymore); this table is Postgres-side because that's
+    what `gnt stale` needs to query cheaply ("which rules are due for
+    re-validation" is a WHERE/ORDER BY, same reasoning as RuleGap above)
+    and because the calibration-signal collection pipeline (see
+    CalibrationEvent below) needs a history of staleness snapshots over
+    time, which a number recomputed fresh on every request and thrown
+    away wouldn't give it.
 
     One row per (org_id, rule_slug), upserted nightly — a full snapshot
     of that org's currently-approved rules, not an append-only log; a
@@ -404,9 +405,10 @@ class RuleStaleness(Base):
 
 
 class CalibrationEvent(Base):
-    """Append-only calibration-signal log (fix-plan-v2 item 18 — label
-    confidence/decay as uncalibrated, and start collecting calibration
-    data). Confidence scores and decay lambdas are admitted first-pass
+    """Append-only calibration-signal log. Labels confidence/decay as
+    uncalibrated for now, and starts collecting the calibration data a
+    future pass would need to fix that. Confidence scores and decay
+    lambdas are admitted first-pass
     guesses (see mcp_server/server.py's confidence_estimate field and
     gnt.staleness's module docstring); this table is what a future
     calibration pass would read to check whether those guesses are any
@@ -428,8 +430,8 @@ class CalibrationEvent(Base):
       (org_id, rule_slug, pr_number) — a human merged past the flag.
       detail is copied from the conflict_flagged row it matched.
     - revalidation_outcome: written by deprecate_rule/edit_rule when the
-      rule being acted on was already flagged stale by item 9's last
-      nightly compute_rule_staleness run. age_days is that run's
+      rule being acted on was already flagged stale by the last nightly
+      compute_rule_staleness run (see RuleStaleness above). age_days is that run's
       snapshot age, detail is {"action": "deprecated"|"edited"}.
     """
 
@@ -452,10 +454,10 @@ class CalibrationEvent(Base):
 
 
 class ContradictionFinding(Base):
-    """Dedup log for fix-plan-v2 item 13 (continuous contradiction sweeps
-    — see workers/tasks_contradictions.py for the nightly cron job that
+    """Dedup log for the continuous contradiction sweep — see
+    workers/tasks_contradictions.py for the nightly cron job that
     writes this table, gnt.contradiction_findings for the read/write
-    helpers). One row per (org_id, rule_slug_a, rule_slug_b) pair the
+    helpers. One row per (org_id, rule_slug_a, rule_slug_b) pair the
     sweep has already filed a GitHub issue for — checked before
     judge_conflict runs on that pair again, and before a second issue
     gets opened for the same contradiction, so an unresolved finding
@@ -492,7 +494,7 @@ class ContradictionFinding(Base):
     relation: Mapped[str] = mapped_column()
     issue_number: Mapped[int] = mapped_column()
     issue_url: Mapped[str] = mapped_column()
-    # fix-plan-v3 3.2 — the proposed-resolution PR the sweep opens
+    # The proposed-resolution PR the sweep opens
     # alongside the issue above (a new draft amendment of whichever of the
     # pair's two rules the sweep picked to defer, pushed through the
     # normal submit -> propose lifecycle — see
@@ -514,7 +516,7 @@ class ContradictionFinding(Base):
 
 
 class StalenessRefreshProposal(Base):
-    """Dedup log for fix-plan-v3 3.2's staleness-sweep half (see
+    """Dedup log for the staleness sweep's refresh/deprecate half (see
     workers/tasks_staleness.py for the nightly job that writes this
     table, gnt.staleness_refresh for the read/write helpers). One row per
     (org_id, rule_slug, reason, content_fingerprint) the sweep has
@@ -571,8 +573,8 @@ class StalenessRefreshProposal(Base):
 
 
 class RoiCounter(Base):
-    """Per-org daily usage counters (fix-plan-v2 item 10 — ROI metering and
-    the weekly number — see gnt.roi_metrics for the read/write helpers).
+    """Per-org daily usage counters, for ROI metering and the weekly
+    number (see gnt.roi_metrics for the read/write helpers).
 
     One row per (org_id, day), upserted throughout the day by the MCP
     serving path (mcp_server/server.py's search_rules/get_rule/check_action)
@@ -584,8 +586,9 @@ class RoiCounter(Base):
     is what the weekly digest and `gnt status` actually sum.
 
     Daily granularity, not one running total per org, so "this week vs.
-    last week" (the plan's "coverage growth" ask) is a plain SUM over two
-    trailing 7-day windows — no separate weekly-snapshot mechanism needed."""
+    last week" (the coverage-growth number shown in the weekly digest) is
+    a plain SUM over two trailing 7-day windows — no separate
+    weekly-snapshot mechanism needed."""
 
     __tablename__ = "roi_counters"
 
@@ -604,10 +607,10 @@ class RoiCounter(Base):
 
 
 class LlmUsage(Base):
-    """Per-org monthly LLM spend tracking (fix-plan-v3 Tier 0 prerequisite
-    0.1 / "C9a" — check_action made every agent decision an LLM call on
-    the bill, and ingestion multiplies that exposure, so this has to exist
-    and be enforced before any of that ships further). See gnt.llm_quota
+    """Per-org monthly LLM spend tracking. check_action made every agent
+    decision an LLM call on the bill, and ingestion multiplies that
+    exposure, so a spend quota has to exist and be enforced before any of
+    that ships further. See gnt.llm_quota
     for the read/enforce/record helpers and the three call sites it gates:
     action_check.py's judge_action, pipeline/rule_conflict.py's
     judge_conflict (both propose_rule and the nightly contradiction sweep
@@ -618,8 +621,8 @@ class LlmUsage(Base):
     table sits on the same hot paths (check_action, propose_rule, the
     nightly sweep), so it gets the same cheap-increment discipline.
     Monthly, not daily like roi_counters, because a spend QUOTA is
-    inherently a monthly-aggregate concept (the plan's own wording), not
-    a week-over-week trend line — no window-comparison read path needed.
+    inherently a monthly-aggregate concept, not a week-over-week trend
+    line — no window-comparison read path needed.
 
     Cost is stored in micros (millionths of a dollar, integer) rather than
     a float/Numeric dollar amount — a running total built out of many
@@ -685,7 +688,7 @@ class ZendeskConnection(Base):
 
 class ZendeskSyncState(Base):
     """One row per org, upserted after every nightly sync run (success OR
-    failure) by workers/tasks_zendesk.py — the connector-sprint T4.2
+    failure) by workers/tasks_zendesk.py — the Zendesk connector's
     sync-status health surface. Deliberately a full-snapshot upsert, not an
     append-only log like ContradictionFinding/StalenessRefreshProposal:
     "last successful sync, last error" is a current-state question (what
@@ -852,7 +855,7 @@ class LinearConnection(Base):
 
 class IntercomSyncState(Base):
     """One row per org, upserted after every nightly sync run (success OR
-    failure) by workers/tasks_intercom.py — the connector-sprint T4.3
+    failure) by workers/tasks_intercom.py — the Intercom connector's
     sync-status health surface. Same "current state, not a log" shape as
     ZendeskSyncState — see that model's own docstring for the full
     reasoning (it applies here unchanged).
@@ -909,8 +912,8 @@ class IntercomProcessedItem(Base):
 
 class LlmUsageGlobal(Base):
     """Global (cross-org) running total for the same month — the aggregate
-    circuit-breaker side of C9a, distinct from LlmUsage's per-org quota
-    above. No org_id column at all: this is deliberately NOT tenant data,
+    circuit-breaker on total LLM spend, distinct from LlmUsage's per-org
+    quota above. No org_id column at all: this is deliberately NOT tenant data,
     so (unlike LlmUsage) there's no per-org RLS policy that could apply to
     it in the first place. Same "no RLS" outcome as migration 0024's
     webhook_tokens, for the opposite reason: that table has no RLS because

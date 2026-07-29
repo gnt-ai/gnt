@@ -1,5 +1,5 @@
-"""contradiction_findings.pr_number / pr_url — fix-plan-v3 3.2 (proposed-
-resolution PRs). The nightly contradiction sweep now opens a real PR
+"""contradiction_findings.pr_number / pr_url — tracks proposed-resolution
+PRs. The nightly contradiction sweep now opens a real PR
 amending one of the two contradicting rules to defer to the other,
 alongside the GitHub issue it already filed (see workers/
 tasks_contradictions.py). Both nullable: the issue is always filed before a

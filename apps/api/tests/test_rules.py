@@ -533,7 +533,7 @@ async def test_injection_payload_is_sanitized_before_storage(admin_a, org_a):
 
 
 async def test_draft_rule_has_no_freshness(admin_a):
-    """fix-plan-v2 item 9 — a rule that's never been approved has no
+    """A rule that's never been approved has no
     approvedAt/lastValidatedAt to measure age from, so freshness is None
     rather than a nonsensical estimate."""
     async with admin_a as client:
@@ -624,7 +624,7 @@ async def _calibration_events(db_session, org_id: str) -> list[CalibrationEvent]
 
 
 async def test_create_rule_labels_confidence_as_an_estimate(admin_a):
-    """fix-plan-v2 item 18 — confidence is a model-assigned score, never
+    """Confidence is a model-assigned score, never
     independently verified; every rule response says so explicitly."""
     async with admin_a as client:
         r = await client.post("/v1/rules", json={"title": "Refund window", "body": "Refunds within 30 days."})
@@ -792,10 +792,10 @@ async def test_edit_logs_revalidation_outcome_for_the_current_stale_rule_not_the
     assert revalidated[0].detail == {"action": "edited"}
 
 
-# -- v3 fix-plan Tier 0 (C9b): per-org draft-rule ceiling ("capture/storage
-# ceilings" -- the closest live equivalent to the retired capture
-# pipeline's old storage limits, now that unbounded draft-rule creation is
-# the open-ended thing left). Fresh uuid-suffixed org clients throughout,
+# -- Per-org draft-rule ceiling ("capture/storage ceilings") -- the
+# closest live equivalent to the retired capture pipeline's old storage
+# limits, now that unbounded draft-rule creation is the open-ended thing
+# left. Fresh uuid-suffixed org clients throughout,
 # not the module-level admin_a/org_a fixtures -- earlier tests in this file
 # already leave draft rules behind under org_a's fixed id, which would make
 # a ceiling this low flaky depending on run order (same reasoning
@@ -854,9 +854,9 @@ async def test_draft_rule_ceiling_is_scoped_per_org(test_app_factory, monkeypatc
         assert still_works.status_code == 201
 
 
-# -- fix-plan-v3 2.4: POST /v1/rules/batch-propose -- one PR for several
-# rules at once, the founder-decided real batching this task builds
-# instead of pacing individual propose_rule calls. -------------------------
+# -- POST /v1/rules/batch-propose: lets several proposed rules land in
+# one PR instead of pacing individual propose_rule calls one PR at a
+# time. -------------------------------------------------------------------
 
 
 def _mock_batch_propose_github(monkeypatch, *, pr_number: int = 30, calls: dict | None = None):

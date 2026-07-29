@@ -1,5 +1,5 @@
-"""roi_counters — per-org daily usage counters for fix-plan-v2 item 10 (ROI
-metering and the weekly number). See gnt.roi_metrics for the read/write
+"""roi_counters — per-org daily usage counters for ROI metering and the
+weekly number. See gnt.roi_metrics for the read/write
 helpers and mcp_server/server.py for the hot-path call sites that
 increment this (search_rules, get_rule, check_action).
 
