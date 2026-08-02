@@ -90,6 +90,7 @@ beforeEach(() => {
   // Keep the error-path test from terminating Bun itself.
   process.exit = ((code?: number | string) => {
     exitCalls.push(Number(code));
+    throw new Error("test process exit");
   }) as unknown as typeof process.exit;
 });
 
@@ -160,7 +161,7 @@ test("creates an unnamed webhook token with name set to null", async () => {
   await createWebhookToken();
 
   expect(fetchCalls).toHaveLength(1);
-  expect(fetchCalls[0].input).toContain("/v1/settings/webhook-tokens");
+  expect(new URL(fetchCalls[0].input).pathname).toBe("/v1/settings/webhook-tokens");
   expect(fetchCalls[0].init?.method).toBe("POST");
   expect(fetchCalls[0].init?.body).toBe('{"name":null}');
 });
@@ -180,7 +181,7 @@ test("revokes the requested webhook token", async () => {
 
   await revokeWebhookToken("some-id");
 
-  expect(fetchCalls[0].input).toContain(
+  expect(new URL(fetchCalls[0].input).pathname).toBe(
     "/v1/settings/webhook-tokens/some-id/revoke",
   );
   expect(fetchCalls[0].init?.method).toBe("POST");
@@ -188,10 +189,9 @@ test("revokes the requested webhook token", async () => {
 });
 
 test("prints an error and exits when the API response is not ok", async () => {
-  // Use a JSON body because the mocked process.exit returns to the function.
   mockFetch({}, 500);
 
-  await createWebhookToken();
+  await expect(createWebhookToken()).rejects.toThrow("test process exit");
 
   expect(errorOutput()).toContain("Failed to create webhook token (500).");
   expect(exitCalls).toEqual([1]);
