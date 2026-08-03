@@ -48,6 +48,12 @@ even if they touch the same file. A PR that fixes a bug and also refactors the f
 it is two PRs. This isn't bureaucracy: a scoped PR is fast to review and safe to revert on its
 own; a bundled one makes both changes hostage to whichever part is slower to land.
 
+**User-facing changes get a changelog entry.** If your PR changes something a customer or
+contributor would notice (CLI behavior, API responses, docs that ship with a release), add a
+short bullet under `## [Unreleased]` in [`CHANGELOG.md`](CHANGELOG.md) in the same PR. Don't
+invent detail for pre-changelog versions — just keep the Unreleased section current going
+forward.
+
 **Show it actually works, not just that it compiles.** State how a reviewer can confirm your
 change does what you say, in the PR description:
 
