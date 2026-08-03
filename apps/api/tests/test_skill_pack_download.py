@@ -46,14 +46,16 @@ async def test_latest_skill_pack_returns_404_when_org_has_no_pack(
 
 
 async def test_latest_skill_pack_serves_highest_version_as_zip(db_session, test_app_factory):
+    # v2 inserted before v1 on purpose -- proves the route picks the
+    # highest SkillPack.version, not whichever pack was written last.
     org_id = _org_id()
-    await _insert_pack(db_session, org_id, 1, {"old.txt": "old"})
     await _insert_pack(
         db_session,
         org_id,
         2,
         {"SKILL.md": "latest skill", "rules/refund.md": "refund rule"},
     )
+    await _insert_pack(db_session, org_id, 1, {"old.txt": "old"})
     await scope_to_org(db_session, org_id)
 
     async with make_org_client(
@@ -66,7 +68,9 @@ async def test_latest_skill_pack_serves_highest_version_as_zip(db_session, test_
         "attachment; filename=gnt-pack-v2.zip"
     )
     with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
-        assert archive.namelist() == ["SKILL.md", "rules/refund.md"]
+        # sorted() -- the route's SkillFile query has no ORDER BY, so zip
+        # entry order isn't guaranteed.
+        assert sorted(archive.namelist()) == ["SKILL.md", "rules/refund.md"]
         assert archive.read("SKILL.md") == b"latest skill"
         assert archive.read("rules/refund.md") == b"refund rule"
 
@@ -75,16 +79,28 @@ async def test_latest_skill_pack_does_not_leak_files_between_orgs(db_session, te
     org_a = _org_id()
     org_b = _org_id()
     await _insert_pack(db_session, org_a, 1, {"a.txt": "org A"})
-    await _insert_pack(db_session, org_b, 1, {"b.txt": "org B"})
-    await scope_to_org(db_session, org_a)
+    await _insert_pack(db_session, org_b, 2, {"b.txt": "org B"})
 
+    await scope_to_org(db_session, org_a)
     async with make_org_client(
         test_app_factory, org_a, routers=[skill_packs_router.router]
-    ) as client:
-        response = await client.get("/v1/skill-packs/latest.zip")
+    ) as client_a:
+        response_a = await client_a.get("/v1/skill-packs/latest.zip")
 
-    assert response.status_code == 200
-    with zipfile.ZipFile(io.BytesIO(response.content)) as archive:
-        assert archive.namelist() == ["a.txt"]
-        assert archive.read("a.txt") == b"org A"
-        assert "b.txt" not in archive.namelist()
+    assert response_a.status_code == 200
+    assert response_a.headers["content-disposition"] == "attachment; filename=gnt-pack-v1.zip"
+    with zipfile.ZipFile(io.BytesIO(response_a.content)) as archive_a:
+        assert archive_a.namelist() == ["a.txt"]
+        assert archive_a.read("a.txt") == b"org A"
+
+    await scope_to_org(db_session, org_b)
+    async with make_org_client(
+        test_app_factory, org_b, routers=[skill_packs_router.router]
+    ) as client_b:
+        response_b = await client_b.get("/v1/skill-packs/latest.zip")
+
+    assert response_b.status_code == 200
+    assert response_b.headers["content-disposition"] == "attachment; filename=gnt-pack-v2.zip"
+    with zipfile.ZipFile(io.BytesIO(response_b.content)) as archive_b:
+        assert archive_b.namelist() == ["b.txt"]
+        assert archive_b.read("b.txt") == b"org B"
