@@ -2129,6 +2129,7 @@ packages:
 
   '@zuplo/mcp@0.0.32':
     resolution: {integrity: sha512-rpLTpwL+g1sXtylu2gZwCTXdNIV2L0LPOcCdwogpP5hdyp/JMLSAVtd7H5fs5Wt2cq3jTm6nn7ZZvsBAECdl3A==}
+    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
 
   accepts@2.0.0:
     resolution: {integrity: sha512-5cvg6CtKwfgdmVqY1WIiXKc3Q1bkRqGLi+2W/6ao+6Y7gu/RCwRuAhGEzh5B4KlszSuTLgZYuqFqo5bImjNKng==}
