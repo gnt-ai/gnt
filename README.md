@@ -33,6 +33,11 @@ gnt prebrain
 # merge the opened PR on GitHub. that merge is the approval
 ```
 
+![gnt connect's interactive picker, and what gnt prebrain's draft-PR output looks like](.github/assets/cli-demo.gif)
+
+*The `gnt connect` picker — j/k to navigate, shows what's already connected, disconnect right
+from the CLI. (The `gnt prebrain` output shown is illustrative, not a captured run.)*
+
 That merge lands a rule file in your connected repo, shaped like this:
 
 ```

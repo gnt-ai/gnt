@@ -3,6 +3,8 @@
 gnt.ai from your terminal. Connect the apps your team already uses, propose rules as pull
 requests against your own repo, query the brain — no dashboard required.
 
+![gnt connect's interactive picker, and what gnt prebrain's draft-PR output looks like](https://raw.githubusercontent.com/gnt-ai/gnt/main/.github/assets/cli-demo.gif)
+
 ## Install
 
 ```
