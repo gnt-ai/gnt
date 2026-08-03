@@ -25,7 +25,7 @@ function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
   return fetch(url, { ...init, signal: controller.signal }).finally(() => clearTimeout(timer));
 }
 
-async function fetchPending(key: string): Promise<Rule[]> {
+export async function fetchPending(key: string): Promise<Rule[]> {
   let res: Response;
   try {
     res = await fetchWithTimeout(`${API_URL}/v1/rules?status=in_review`, {
@@ -47,7 +47,7 @@ interface ActionResult {
   prUrl?: string;
 }
 
-function describeErrorDetail(detail: unknown, status: number): string {
+export function describeErrorDetail(detail: unknown, status: number): string {
   if (typeof detail === "string" && detail) return detail;
   // FastAPI's own generic validation-error responses put a list of issue
   // objects in `detail`, not a string — stringify rather than letting a
@@ -56,7 +56,7 @@ function describeErrorDetail(detail: unknown, status: number): string {
   return `request failed (${status})`;
 }
 
-async function actOnRule(
+export async function actOnRule(
   key: string,
   id: string,
   action: "propose" | "reject",
@@ -83,7 +83,7 @@ async function actOnRule(
   return { error: null, prUrl };
 }
 
-function boxWidth(): number {
+export function boxWidth(): number {
   const columns = process.stdout.columns ?? 80;
   // MIN_BOX_WIDTH is a preferred floor, not an absolute one — on a
   // genuinely narrow terminal (e.g. 20 columns) preferring it anyway
