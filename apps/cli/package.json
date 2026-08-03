@@ -40,8 +40,8 @@
     "eval:extraction": "bun run eval/extraction/run.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.112.1",
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@anthropic-ai/sdk": "^0.115.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "chalk": "^5.6.2",
     "commander": "^15.0.0",
     "compromise": "^14.16.0",

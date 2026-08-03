@@ -10,8 +10,8 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "react": ">=19.2.0",
-    "react-dom": ">=19.2.0",
+    "react": ">=19.2.8",
+    "react-dom": ">=19.2.8",
     "zudoku": "0.82.5"
   },
   "devDependencies": {
