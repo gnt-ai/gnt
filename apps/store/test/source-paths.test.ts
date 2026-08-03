@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { createHash } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { cloneDirFor, normalizeSourceId } from "../src/core/source-paths.ts";
@@ -36,17 +35,18 @@ describe("normalizeSourceId", () => {
     }
   });
 
-  test("case-folds via hashing — mixed-case input still yields lowercase hex", () => {
-    const id = normalizeSourceId("OrgID_With_UPPER");
-    expect(id).toBe(id.toLowerCase());
-    expect(id).toMatch(/^org-[0-9a-f]{28}$/);
+  test("different casing of the same characters produces different source ids", () => {
+    // Hash is over the raw bytes — no case folding — so callers must not treat
+    // "Abc" and "abc" as interchangeable org ids.
+    expect(normalizeSourceId("Abc")).not.toBe(normalizeSourceId("abc"));
   });
 
-  test("matches the documented sha256 slice mapping", () => {
-    const orgId = "better-auth-style-id";
-    const expected =
-      "org-" + createHash("sha256").update(orgId).digest("hex").slice(0, 28);
-    expect(normalizeSourceId(orgId)).toBe(expected);
+  test("matches a hardcoded golden sha256 slice mapping", () => {
+    // Golden: printf '%s' 'better-auth-style-id' | shasum -a 256 | cut -c1-28
+    // Hardcoded so a hash/prefix/slice change fails independently of this file.
+    expect(normalizeSourceId("better-auth-style-id")).toBe(
+      "org-f261f82fd67403939b29e499e8fb",
+    );
   });
 });
 
