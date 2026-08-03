@@ -183,15 +183,35 @@ test("strips path components from a traversal-shaped Content-Disposition filenam
   expect(output()).toContain("Saved passwd (3B)");
 });
 
-test("falls back to gnt-pack.zip when Content-Disposition is missing or unsafe", async () => {
+test("falls back to gnt-pack.zip when Content-Disposition is missing", async () => {
   const body = new Uint8Array([4, 5]);
-  mockZipResponse({ body, contentDisposition: "attachment; filename=.." });
+  mockZipResponse({ body, contentDisposition: null });
 
   await pull();
 
   expect(existsSync(join(workDir, "gnt-pack.zip"))).toBe(true);
   expect(readFileSync(join(workDir, "gnt-pack.zip"))).toEqual(Buffer.from(body));
   expect(output()).toContain("Saved gnt-pack.zip (2B)");
+});
+
+test("falls back to gnt-pack.zip when Content-Disposition filename is '.'", async () => {
+  const body = new Uint8Array([6]);
+  mockZipResponse({ body, contentDisposition: "attachment; filename=." });
+
+  await pull();
+
+  expect(existsSync(join(workDir, "gnt-pack.zip"))).toBe(true);
+  expect(output()).toContain("Saved gnt-pack.zip (1B)");
+});
+
+test("falls back to gnt-pack.zip when Content-Disposition filename is '..'", async () => {
+  const body = new Uint8Array([7]);
+  mockZipResponse({ body, contentDisposition: "attachment; filename=.." });
+
+  await pull();
+
+  expect(existsSync(join(workDir, "gnt-pack.zip"))).toBe(true);
+  expect(output()).toContain("Saved gnt-pack.zip (1B)");
 });
 
 test("strips absolute path components from Content-Disposition before writing", async () => {
