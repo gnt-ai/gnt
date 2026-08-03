@@ -7,7 +7,7 @@
 </picture>
 </a>
 
-[![License](https://shieldcn.dev/github/license/gnt-ai/gnt.svg?variant=secondary)](LICENSE) [![npm](https://shieldcn.dev/npm/@gnt-ai/cli.svg?variant=secondary)](https://www.npmjs.com/package/@gnt-ai/cli) [![CI](https://github.com/gnt-ai/gnt/actions/workflows/ci.yml/badge.svg)](https://github.com/gnt-ai/gnt/actions/workflows/ci.yml)
+[![License](https://shieldcn.dev/github/license/gnt-ai/gnt.svg?variant=secondary)](LICENSE) [![npm](https://shieldcn.dev/npm/@gnt-ai/cli.svg?variant=secondary)](https://www.npmjs.com/package/@gnt-ai/cli) [![Release](https://shieldcn.dev/github/release/gnt-ai/gnt.svg?variant=secondary)](https://github.com/gnt-ai/gnt/releases/latest)
 
 </div>
 
