@@ -195,11 +195,38 @@ test("rotates a key and notes that the old id is now revoked", async () => {
   expect(output()).toContain("old-key-id is now revoked");
 });
 
-test("prints an error and exits when the API response is not ok", async () => {
+test("prints an error and exits when createKey gets a non-ok response", async () => {
   mockFetch({}, 500);
 
   await expect(createKey()).rejects.toThrow("test process exit");
 
   expect(errorOutput()).toContain("Failed to create key (500).");
+  expect(exitCalls).toEqual([1]);
+});
+
+test("prints an error and exits when listKeys gets a non-ok response", async () => {
+  mockFetch({}, 500);
+
+  await expect(listKeys()).rejects.toThrow("test process exit");
+
+  expect(errorOutput()).toContain("Failed to list keys (500).");
+  expect(exitCalls).toEqual([1]);
+});
+
+test("prints an error and exits when revokeKey gets a non-ok response", async () => {
+  mockFetch({}, 500);
+
+  await expect(revokeKey("some-id")).rejects.toThrow("test process exit");
+
+  expect(errorOutput()).toContain("Failed to revoke key (500).");
+  expect(exitCalls).toEqual([1]);
+});
+
+test("prints an error and exits when rotateKey gets a non-ok response", async () => {
+  mockFetch({}, 500);
+
+  await expect(rotateKey("some-id")).rejects.toThrow("test process exit");
+
+  expect(errorOutput()).toContain("Failed to rotate key (500).");
   expect(exitCalls).toEqual([1]);
 });
