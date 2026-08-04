@@ -1,7 +1,7 @@
 ---
 title: Connect
 sidebar_icon: plug
-description: Connect claude.ai, Claude Code, a raw MCP client, an OpenAI agent, or OpenClaw to gnt.
+description: Connect claude.ai, Claude Code, a raw MCP client, an OpenAI agent, OpenClaw, or Hermes to gnt.
 ---
 
 ## claude.ai connectors
@@ -76,3 +76,9 @@ that's what gets OpenClaw to actually call it before acting, not just have it on
   }
 }
 ```
+
+## Hermes Agent
+
+Nous Research's Hermes Agent reads MCP servers straight out of its own config file. Run
+`gnt connect hermes` to wire it up, or see the [Hermes Agent](/docs/hermes-agent) page for the full
+walkthrough, including the skill that gets Hermes to call `check_action` before it acts.
