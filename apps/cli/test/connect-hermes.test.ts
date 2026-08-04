@@ -95,6 +95,8 @@ function cleanHermesHome(): void {
 
 beforeEach(() => {
   originalFetch = globalThis.fetch;
+  // Reject by default so paths that shouldn't mint can't leak a real network call.
+  globalThis.fetch = mock(() => Promise.reject(new Error("Unexpected fetch"))) as unknown as typeof fetch;
   originalLog = console.log;
   originalError = console.error;
   originalExit = process.exit;
@@ -133,13 +135,23 @@ afterEach(() => {
   useReadlineMock = false;
   promptAnswers = [];
   cleanHermesHome();
-  rmSync(join(testConfigDir, "credentials.json"), { force: true });
+  rmSync(testConfigDir, { recursive: true, force: true });
 
   if (previousConfigDir === undefined) {
     delete process.env.GNT_CONFIG_DIR;
   } else {
     process.env.GNT_CONFIG_DIR = previousConfigDir;
   }
+});
+
+test("exits when not logged in, before touching the hermes home", async () => {
+  rmSync(join(testConfigDir, "credentials.json"), { force: true });
+
+  await expect(connectHermes()).rejects.toThrow("process.exit called");
+
+  expect(exitCalls).toEqual([1]);
+  expect(errorOutput()).toContain("Not logged in");
+  expect(existsSync(hermesDir)).toBe(false);
 });
 
 test("exits when ~/.hermes is missing, without creating anything under the fake home", async () => {
@@ -151,7 +163,6 @@ test("exits when ~/.hermes is missing, without creating anything under the fake 
   expect(existsSync(hermesDir)).toBe(false);
   expect(existsSync(join(fakeHome, ".hermes"))).toBe(false);
 });
-
 test("short-circuits when mcp_servers.gnt already exists, leaving the file and no .bak", async () => {
   mkdirSync(hermesDir, { recursive: true });
   const existing = ['mcp_servers:', '  gnt:', '    url: "https://example.com/mcp"', ""].join("\n");

@@ -134,6 +134,8 @@ function writeOpenclawConfig(value: unknown): void {
 
 beforeEach(() => {
   originalFetch = globalThis.fetch;
+  // Reject by default so paths that shouldn't mint can't leak a real network call.
+  globalThis.fetch = mock(() => Promise.reject(new Error("Unexpected fetch"))) as unknown as typeof fetch;
   originalLog = console.log;
   originalError = console.error;
   originalExit = process.exit;
@@ -170,7 +172,7 @@ afterEach(() => {
   useReadlineMock = false;
   promptAnswers = [];
   cleanOpenclawHome();
-  rmSync(join(testConfigDir, "credentials.json"), { force: true });
+  rmSync(testConfigDir, { recursive: true, force: true });
 
   if (previousConfigDir === undefined) {
     delete process.env.GNT_CONFIG_DIR;
@@ -221,6 +223,7 @@ test("existing gnt-brain entry reports already configured and does not write", a
 
 test("no local credentials: mintKey returns without prompting or fetch; falls through to existing-key ask", async () => {
   writeOpenclawConfig({ other: true });
+  const before = readFileSync(openclawConfigPath, "utf-8");
   rmSync(join(testConfigDir, "credentials.json"), { force: true });
   // Decline "already have a key?" then decline the final write confirm.
   // Both prompts go through readline (not console.log), so we assert on
@@ -233,7 +236,8 @@ test("no local credentials: mintKey returns without prompting or fetch; falls th
   expect(liveValidationCalls).toBe(0);
   expect(output()).toContain("Found an OpenClaw install");
   expect(output()).toContain("Nothing written");
-  expect(JSON.parse(readFileSync(openclawConfigPath, "utf-8"))).toEqual({ other: true });
+  // Raw bytes, not parsed equality — a rewrite of equivalent JSON would still fail.
+  expect(readFileSync(openclawConfigPath, "utf-8")).toBe(before);
 });
 
 test("happy path: mint + live validate + write merges gnt-brain and prints the minted success hint", async () => {
@@ -272,6 +276,7 @@ test("happy path: mint + live validate + write merges gnt-brain and prints the m
 
 test("live validation failure writes nothing and prints the manual block", async () => {
   writeOpenclawConfig({ mcp: { servers: {} } });
+  const before = readFileSync(openclawConfigPath, "utf-8");
   promptAnswers = ["y"];
   mockFetch({ key: "gnt_mcp_bad" });
   liveValidationShouldFail = true;
@@ -282,12 +287,12 @@ test("live validation failure writes nothing and prints the manual block", async
   expect(errorOutput()).toContain("Couldn't reach gnt's MCP endpoint");
   expect(output()).toContain("Nothing written");
   expect(output()).toContain("gnt-brain");
-  const written = JSON.parse(readFileSync(openclawConfigPath, "utf-8"));
-  expect(written).toEqual({ mcp: { servers: {} } });
+  expect(readFileSync(openclawConfigPath, "utf-8")).toBe(before);
 });
 
 test("final write declined prints Nothing written even after a successful mint and validate", async () => {
   writeOpenclawConfig({ mcp: { servers: {} } });
+  const before = readFileSync(openclawConfigPath, "utf-8");
   // mint confirm, final write decline
   promptAnswers = ["y", "n"];
   mockFetch({ key: "gnt_mcp_unused" });
@@ -297,5 +302,5 @@ test("final write declined prints Nothing written even after a successful mint a
   expect(liveValidationCalls).toBe(1);
   expect(output()).toContain("Connected to gnt's MCP endpoint");
   expect(output()).toContain("Nothing written");
-  expect(JSON.parse(readFileSync(openclawConfigPath, "utf-8"))).toEqual({ mcp: { servers: {} } });
+  expect(readFileSync(openclawConfigPath, "utf-8")).toBe(before);
 });
