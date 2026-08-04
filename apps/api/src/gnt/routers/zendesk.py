@@ -1,5 +1,7 @@
+import re
+
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, SecretStr
+from pydantic import BaseModel, SecretStr, field_validator
 from sqlalchemy import select
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,11 +17,24 @@ from gnt.zendesk_sync_status import get_sync_status
 
 router = APIRouter(prefix="/v1/settings/zendesk", tags=["zendesk"])
 
+_SUBDOMAIN_RE = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?", re.IGNORECASE)
+
 
 class ConnectZendeskRequest(BaseModel):
     subdomain: str
     agent_email: str
     api_token: SecretStr
+
+    @field_validator("subdomain")
+    @classmethod
+    def validate_subdomain(cls, value: str) -> str:
+        # Must be a bare DNS label -- no dots, slashes, or fragment/query
+        # characters -- so it can't redirect _base_url's host interpolation
+        # at an attacker-controlled host (e.g. cloud metadata via a value
+        # like "169.254.169.254/x#").
+        if not _SUBDOMAIN_RE.fullmatch(value.strip()):
+            raise ValueError("subdomain must be a valid Zendesk subdomain (letters, numbers, hyphens only)")
+        return value
 
 
 def _serialize(connection: ZendeskConnection) -> dict:

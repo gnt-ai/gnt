@@ -23,6 +23,7 @@ self-serve in the customer's own Zendesk admin (Admin Center -> Apps and
 integrations -> APIs -> Zendesk API), no OAuth app review needed.
 """
 
+import re
 from dataclasses import dataclass
 from html import unescape
 from html.parser import HTMLParser
@@ -31,6 +32,14 @@ import httpx
 
 _REQUEST_TIMEOUT_SECONDS = 15.0
 
+# A bare DNS label -- no dots, slashes, or fragment/query characters --
+# so a value like "169.254.169.254/x#" can never turn "subdomain" into
+# an attacker-controlled host once "_base_url" appends ".zendesk.com".
+# Enforced again here (routers/zendesk.py validates on write) because
+# the nightly sync worker reads "subdomain" back out of the database and
+# calls this client directly, bypassing the request-model validator.
+_SUBDOMAIN_RE = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?", re.IGNORECASE)
+
 
 class ZendeskClientError(Exception):
     """Raised for anything other than a clean 2xx from Zendesk's API --
@@ -38,6 +47,8 @@ class ZendeskClientError(Exception):
 
 
 def _base_url(subdomain: str) -> str:
+    if not _SUBDOMAIN_RE.fullmatch(subdomain):
+        raise ZendeskClientError(f"invalid Zendesk subdomain: {subdomain!r}")
     return f"https://{subdomain}.zendesk.com/api/v2"
 
 
