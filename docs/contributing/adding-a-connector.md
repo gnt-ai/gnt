@@ -249,6 +249,9 @@ automatically the way the CLI's `mcp-framework/registry.ts` works for walkers.
       extraction call.
 - [ ] Platform-admin's `connectors` dict in `routers/platform_admin.py` updated for the new
       connection model.
+- [ ] `apps/docs/pages/docs/sources.mdx` updated with a `<details>` block for the new connector,
+      matching the existing entries' shape: how it connects, what it reads, and what it explicitly
+      never reads — the same privacy boundary the declared `reads` enforce in code.
 - [ ] Tests: a declared-fields test proving undeclared/sensitive fields are unreachable (the
       framework harness for Shape 1, a hand-written test like
       `tests/test_zendesk_client.py` for Shape 2), plus whatever the router/adapter's own logic
