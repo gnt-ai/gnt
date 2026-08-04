@@ -45,6 +45,7 @@ minimumReleaseAgeExclude:
   - next@16.2.11
   - valibot@1.4.2
   - brace-expansion@5.0.9
+  - hono@4.12.34
 overrides:
   '@hono/node-server@<2.0.5': ^2.0.5
   # 5.0.8 (the prior pin here) turned out to only fix CVE-2026-14257's
@@ -73,3 +74,8 @@ overrides:
   sharp@<0.35.0: ^0.35.3
   fast-uri@<=3.1.3: ^3.1.4
   valibot@<=1.4.1: ^1.4.2
+  # ReDoS in Hono's CORS middleware via Access-Control-Request-Headers.
+  # Pulled in transitively via @modelcontextprotocol/sdk (apps/cli's MCP
+  # tooling) -- this is plain "hono", not the already-overridden
+  # "@hono/node-server".
+  hono@<4.12.34: ^4.12.34
