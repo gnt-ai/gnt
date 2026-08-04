@@ -6,6 +6,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const testConfigDir = mkdtempSync(join(tmpdir(), "gnt-connect-slack-test-"));
+const previousConfigDir = process.env.GNT_CONFIG_DIR;
 process.env.GNT_CONFIG_DIR = testConfigDir;
 
 let openShouldThrow = false;
@@ -18,6 +19,14 @@ mock.module("open", () => ({ default: openMock }));
 const { saveApiKey } = await import("../src/credentials.js");
 const { connectSlack } = await import("../src/commands/connect-slack.js");
 
+// Bun loads all test files into one process — don't leave our override set
+// for whatever file runs next.
+if (previousConfigDir === undefined) {
+  delete process.env.GNT_CONFIG_DIR;
+} else {
+  process.env.GNT_CONFIG_DIR = previousConfigDir;
+}
+
 const INSTALL_URL = "https://slack.com/oauth/v2/authorize?state=abc";
 
 let originalFetch: typeof fetch;
@@ -26,6 +35,7 @@ let originalError: typeof console.error;
 let originalExit: typeof process.exit;
 let originalWrite: typeof process.stdout.write;
 let originalDateNow: typeof Date.now;
+let originalSetTimeout: typeof setTimeout;
 let logs: string[];
 let errors: string[];
 let written: string[];
@@ -39,6 +49,7 @@ function stripAnsi(s: string): string {
 }
 
 beforeEach(() => {
+  process.env.GNT_CONFIG_DIR = testConfigDir;
   saveApiKey("gnt_live_test_key", "11111111-1111-1111-1111-111111111111");
   originalFetch = globalThis.fetch;
   originalLog = console.log;
@@ -46,12 +57,18 @@ beforeEach(() => {
   originalExit = process.exit;
   originalWrite = process.stdout.write;
   originalDateNow = Date.now;
+  originalSetTimeout = globalThis.setTimeout;
   logs = [];
   errors = [];
   written = [];
   exitCalls = [];
   openShouldThrow = false;
   openMock.mockClear();
+
+  // Collapse the 2s poll sleeps so two-poll paths don't burn ~4s each.
+  globalThis.setTimeout = ((handler: TimerHandler, _ms?: number, ...args: unknown[]) => {
+    return originalSetTimeout(handler as (...a: unknown[]) => void, 0, ...args);
+  }) as typeof setTimeout;
 
   console.log = mock((...args: unknown[]) => {
     logs.push(args.join(" "));
@@ -77,7 +94,14 @@ afterEach(() => {
   process.exit = originalExit;
   process.stdout.write = originalWrite;
   Date.now = originalDateNow;
+  globalThis.setTimeout = originalSetTimeout;
   rmSync(testConfigDir, { recursive: true, force: true });
+
+  if (previousConfigDir === undefined) {
+    delete process.env.GNT_CONFIG_DIR;
+  } else {
+    process.env.GNT_CONFIG_DIR = previousConfigDir;
+  }
 });
 
 test("exits non-zero when the install-url call fails", async () => {
@@ -126,6 +150,7 @@ test("falls back to a manual-open message when open() throws, then still polls t
 
   await connectSlack();
 
+  expect(openMock).toHaveBeenCalledWith(INSTALL_URL);
   expect(stripAnsi(logs.join("\n"))).toContain("Couldn't open a browser automatically");
   expect(stripAnsi(written.join(""))).toContain("Slack connected.");
   expect(exitCalls).toHaveLength(0);
@@ -133,8 +158,8 @@ test("falls back to a manual-open message when open() throws, then still polls t
 
 test("timeout path prints Still waiting and does not call process.exit", async () => {
   // Advance Date.now past the 5-minute deadline after the first poll so we
-  // don't literally wait out POLL_TIMEOUT_MS — one real POLL_INTERVAL_MS sleep
-  // is enough to enter the loop body once.
+  // don't literally wait out POLL_TIMEOUT_MS. setTimeout is already collapsed
+  // to 0ms in beforeEach.
   let now = 0;
   Date.now = () => now;
 
