@@ -186,6 +186,8 @@ gnt org show|rename|invite|remove
 - Self-hosting walkthrough, including the production-hardening path: [`docs/self-hosting/README.md`](docs/self-hosting/README.md)
 - Security policy: [`SECURITY.md`](SECURITY.md)
 
+Self-hosting is a first-class, fully supported path — Apache-2.0 from day one, run it on your own infra with your own keys, or use the hosted version at [gntai.dev](https://gntai.dev). The homepage FAQ and the self-hosting docs both describe this same path; there is no "not today" caveat.
+
 ## License
 
 Copyright © 2026 gnt.ai. Licensed under Apache-2.0 — see [`LICENSE`](LICENSE) for the terms and [`NOTICE`](NOTICE) for the trademark rule on forks.
