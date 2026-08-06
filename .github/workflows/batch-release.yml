@@ -11,10 +11,15 @@ name: Batch release (public contributions)
 # last release, credit everyone by PR (via --generate-notes) if something
 # did.
 #
-# Diffs from whichever release is most recent chronologically -- a real
-# cli-vX.Y.Z npm release (see publish-cli.yml in the private repo) or a
-# previous batch release, whichever happened last -- so a PR never gets
-# double-credited across both release tracks.
+# Diffs from whichever release tag is closest to main in actual git
+# history -- a real cli-vX.Y.Z npm release (see publish-cli.yml in the
+# private repo) or a previous batch release, whichever a smaller
+# `compare...main` ahead_by picks out -- so a PR never gets double-credited
+# across both release tracks. This has to be ahead_by, not release
+# publishedAt: a release's GitHub "published" timestamp reflects when the
+# release object itself was created, not when its tag lands in history, so
+# two releases can publish out of git order (as cli-v0.6.0 and v1.0.0 did)
+# and sorting by publishedAt alone would pick the wrong anchor.
 #
 # Tagged vX.Y.Z, sequential starting at v1.0.0 -- separate from the
 # cli-vX.Y.Z track, which has to mirror the real published npm version
@@ -45,19 +50,27 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          last_tag=$(gh release list --repo "${{ github.repository }}" --limit 100 --json tagName,publishedAt --jq 'sort_by(.publishedAt) | last | .tagName // empty')
-          if [ -z "$last_tag" ]; then
+          tags=$(gh release list --repo "${{ github.repository }}" --limit 100 --json tagName --jq '.[].tagName')
+          if [ -z "$tags" ]; then
             echo "No prior release found on this repo -- nothing to diff against, skipping."
             echo "should_release=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
+          last_tag=""
+          least_ahead=""
+          while IFS= read -r t; do
+            ahead=$(gh api "repos/${{ github.repository }}/compare/$t...main" --jq '.ahead_by')
+            if [ -z "$least_ahead" ] || [ "$ahead" -lt "$least_ahead" ]; then
+              least_ahead=$ahead
+              last_tag=$t
+            fi
+          done <<< "$tags"
           echo "last_tag=$last_tag" >> "$GITHUB_OUTPUT"
-          ahead=$(gh api "repos/${{ github.repository }}/compare/$last_tag...main" --jq '.ahead_by')
-          if [ "$ahead" -eq 0 ]; then
+          if [ "$least_ahead" -eq 0 ]; then
             echo "Nothing merged since $last_tag -- skipping this week."
             echo "should_release=false" >> "$GITHUB_OUTPUT"
           else
-            echo "$ahead commit(s) since $last_tag -- cutting a batch release."
+            echo "$least_ahead commit(s) since $last_tag -- cutting a batch release."
             echo "should_release=true" >> "$GITHUB_OUTPUT"
           fi
 
@@ -67,7 +80,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -euo pipefail
-          last_version=$(gh release list --repo "${{ github.repository }}" --limit 100 --json tagName --jq '[.[].tagName | select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))] | sort_by(split(".") | map(tonumber)) | last // empty')
+          last_version=$(gh release list --repo "${{ github.repository }}" --limit 100 --json tagName --jq '[.[].tagName | select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))] | sort_by(ltrimstr("v") | split(".") | map(tonumber)) | last // empty')
           if [ -z "$last_version" ]; then
             tag="v1.0.0"
           else
