@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
@@ -145,6 +145,60 @@ describe.skipIf(!reachable)("internal HTTP API", () => {
       ["-C", dir, "-c", "user.email=test@test.com", "-c", "user.name=test", "commit", "-q", "-m", "seed"],
     );
     return dir;
+  }
+
+  /**
+   * Mutate the *source* repo (the path passed as repoUrl), not the on-disk
+   * clone under cloneDirFor — sync always cloneOrPulls first, so editing
+   * only the clone gets overwritten by pull. Same helpers as
+   * native-store.test.ts's sync suite; used here for HTTP-layer coverage
+   * of nativeSync's incremental reconciliation (issue #45).
+   */
+  function writeRuleFile(dir: string, relPath: string, frontmatter: Record<string, unknown>, body: string): void {
+    const fullPath = join(dir, relPath);
+    mkdirSync(dirname(fullPath), { recursive: true });
+    const yaml = Object.entries(frontmatter)
+      .map(([k, v]) => `${k}: ${JSON.stringify(v)}`)
+      .join("\n");
+    writeFileSync(fullPath, `---\n${yaml}\n---\n\n${body}\n`);
+  }
+
+  function commitAll(dir: string, message: string): void {
+    execFileSync("git", ["-C", dir, "add", "-A"]);
+    execFileSync(
+      "git",
+      ["-C", dir, "-c", "user.email=test@test.com", "-c", "user.name=test", "commit", "-q", "--allow-empty", "-m", message],
+    );
+  }
+
+  function approvedFrontmatter(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+    return {
+      title: "Refund window",
+      status: "approved",
+      confidence: 0.82,
+      owner_id: "admin",
+      source_citations: [],
+      tags: ["billing", "refunds"],
+      last_validated_at: null,
+      version: 1,
+      superseded_by: null,
+      previous_version_id: null,
+      approved_by: "admin",
+      approved_at: "2026-07-14T00:00:00Z",
+      created_at: "2026-07-14T00:00:00Z",
+      pr_number: null,
+      pr_url: null,
+      ...overrides,
+    };
+  }
+
+  async function syncRepo(org: string, repoPath: string): Promise<Record<string, unknown>> {
+    const res = await authed("/sync", {
+      method: "POST",
+      body: JSON.stringify({ org, repoUrl: repoPath, pat: "unused-for-a-local-repo" }),
+    });
+    expect(res.status).toBe(200);
+    return (await res.json()) as Record<string, unknown>;
   }
 
   test("GET /health requires no auth", async () => {
@@ -486,6 +540,83 @@ describe.skipIf(!reachable)("internal HTTP API", () => {
     expect(rule.title).toBe("Refund window");
     expect(rule.body).toBe("Refunds are honored within 30 days of purchase.");
     expect(rule.tags.sort()).toEqual(["billing", "refunds"]);
+  });
+
+  test("POST /sync a second time with no repo changes returns up_to_date and embeds nothing", async () => {
+    const org = `org-http-sync-uptodate-${RUN_ID}`;
+    const repo = mkdtempSync(join(tmpdir(), "gnt-store-uptodate-"));
+    execFileSync("git", ["init", "-q", "-b", "main", repo]);
+    writeRuleFile(repo, "rules/stable.md", approvedFrontmatter({ title: "Stable" }), "Unchanged body.");
+    commitAll(repo, "seed");
+
+    const first = await syncRepo(org, repo);
+    expect(first.status).toBe("first_sync");
+    expect(first.added).toBe(1);
+
+    const second = await syncRepo(org, repo);
+    expect(second.status).toBe("up_to_date");
+    expect(second.added).toBe(0);
+    expect(second.modified).toBe(0);
+    expect(second.deleted).toBe(0);
+    expect(second.embedded).toBe(0);
+    expect(second.pagesAffected).toEqual([]);
+  });
+
+  test("POST /sync after a repo-side edit reports modified and updates the rule body", async () => {
+    const org = `org-http-sync-modified-${RUN_ID}`;
+    const repo = mkdtempSync(join(tmpdir(), "gnt-store-modified-"));
+    execFileSync("git", ["init", "-q", "-b", "main", repo]);
+    writeRuleFile(repo, "rules/edit-me.md", approvedFrontmatter({ title: "Edit target" }), "Original body.");
+    writeRuleFile(repo, "rules/untouched.md", approvedFrontmatter({ title: "Untouched" }), "Stays the same.");
+    commitAll(repo, "seed");
+
+    const first = await syncRepo(org, repo);
+    expect(first.status).toBe("first_sync");
+    expect(first.added).toBe(2);
+
+    writeRuleFile(repo, "rules/edit-me.md", approvedFrontmatter({ title: "Edit target" }), "Updated body.");
+    commitAll(repo, "edit");
+
+    const second = await syncRepo(org, repo);
+    expect(second.status).toBe("synced");
+    expect(second.modified).toBe(1);
+    expect(second.added).toBe(0);
+    expect(second.deleted).toBe(0);
+    expect(second.embedded).toBe(1);
+    expect(second.pagesAffected).toEqual(["rules/edit-me"]);
+
+    const edited = await authed(`/rules/${encodeURIComponent("rules/edit-me")}?org=${org}`);
+    expect(edited.status).toBe(200);
+    expect(((await edited.json()) as RulePage).body).toBe("Updated body.");
+
+    const untouched = await authed(`/rules/${encodeURIComponent("rules/untouched")}?org=${org}`);
+    expect(untouched.status).toBe(200);
+    expect(((await untouched.json()) as RulePage).body).toBe("Stays the same.");
+  });
+
+  test("POST /sync after a repo-side delete hard-deletes the page (404, not soft-deleted)", async () => {
+    const org = `org-http-sync-deleted-${RUN_ID}`;
+    const repo = mkdtempSync(join(tmpdir(), "gnt-store-deleted-"));
+    execFileSync("git", ["init", "-q", "-b", "main", repo]);
+    writeRuleFile(repo, "rules/delete-me.md", approvedFrontmatter({ title: "Delete target" }), "Gone soon.");
+    commitAll(repo, "seed");
+
+    await syncRepo(org, repo);
+    const before = await authed(`/rules/${encodeURIComponent("rules/delete-me")}?org=${org}`);
+    expect(before.status).toBe(200);
+
+    rmSync(join(repo, "rules/delete-me.md"));
+    commitAll(repo, "delete");
+
+    const result = await syncRepo(org, repo);
+    expect(result.status).toBe("synced");
+    expect(result.deleted).toBe(1);
+    expect(result.added).toBe(0);
+    expect(result.modified).toBe(0);
+    expect(result.pagesAffected).toEqual(["rules/delete-me"]);
+
+    const after = await authed(`/rules/${encodeURIComponent("rules/delete-me")}?org=${org}`);
+    expect(after.status).toBe(404);
   });
 
   // Org offboarding's store-side delete.
