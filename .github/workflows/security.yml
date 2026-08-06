@@ -199,4 +199,16 @@ jobs:
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.after }}
-        run: python3 .github/scripts/check_dco.py
+        run: |
+          # Run the checker from the trusted base revision, not the PR head.
+          # A PR must not be able to weaken enforcement by editing check_dco.py.
+          TRUSTED_SHA="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ "$TRUSTED_SHA" = "0000000000000000000000000000000000000000" ] || \
+             ! git cat-file -e "${TRUSTED_SHA}:.github/scripts/check_dco.py" 2>/dev/null; then
+            # First introduction on the base branch — reviewers validate the
+            # script in the PR itself; after merge, future PRs use main's copy.
+            cp .github/scripts/check_dco.py /tmp/check_dco.py
+          else
+            git show "${TRUSTED_SHA}:.github/scripts/check_dco.py" > /tmp/check_dco.py
+          fi
+          python3 /tmp/check_dco.py
