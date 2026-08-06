@@ -173,3 +173,20 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
       - run: python3 .github/scripts/check_workflow_security.py
+
+  dco:
+    name: dco (Signed-off-by on every commit)
+    # pull_request only -- this has no meaning on a push-to-main event (the
+    # commits are already merged by then) or workflow_dispatch, unlike the
+    # jobs above that share this workflow's `on:` block.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+        with:
+          # check_dco.py needs the PR's actual commit history, not just the
+          # merge commit a shallow checkout would leave it with.
+          fetch-depth: 0
+
+      - run: python3 .github/scripts/check_dco.py "origin/${{ github.event.pull_request.base.ref }}"
