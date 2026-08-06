@@ -1,0 +1,47 @@
+---
+title: Stale rules command
+sidebar_icon: clock
+description: Find approved rules that are due for human re-validation.
+---
+
+`gnt stale` lists approved rules whose guidance may need another human review:
+
+```bash
+gnt stale
+```
+
+## What staleness means
+
+A rule becomes due for re-validation when at least 42 days have passed since its last validation, or since its approval if it has never been re-validated. A nightly job calculates its age and an estimated freshness score using exponential decay.
+
+The score is only a prioritization signal. It is not evidence that a rule is incorrect, and the CLI labels every value as an estimate.
+
+## What the command shows
+
+Rules are listed oldest first. Each entry includes the rule title, approximate age, estimated freshness, and the next actions available through the rules API.
+
+```text
+Rules due for re-validation (2):
+Every number below is a decay estimate, not a verified fact.
+
+1. Enterprise refund window
+   ~90 days old · freshness 41% (estimate)
+   Confirm it's still true, or refresh/deprecate it:
+   curl -X POST "https://api.gntai.dev/v1/rules/refund-window/deprecate" -H "Authorization: Bearer $API_KEY"   # if it's no longer accurate
+   Otherwise: POST /v1/rules/refund-window/edit with the refreshed content, then `gnt review` to re-propose it.
+```
+
+When no rules have crossed the threshold, the command prints:
+
+```text
+No rules are due for re-validation.
+```
+
+## What to do next
+
+- If the rule is still accurate, refresh its content through `POST /v1/rules/{rule_id}/edit`, then run `gnt review` to re-propose it.
+- If the rule is no longer accurate, deprecate it through `POST /v1/rules/{rule_id}/deprecate`.
+
+The command is read-only: running it does not refresh, approve, or deprecate a rule. There is no separate "mark revalidated" action; re-validation goes through the existing edit or deprecate flow.
+
+`gnt stale` requires a key stored by `gnt login`. It waits up to ten seconds for the list and exits with an error if the request times out or the API returns an unsuccessful status.

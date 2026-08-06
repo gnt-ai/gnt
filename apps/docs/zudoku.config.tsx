@@ -174,6 +174,12 @@ const config: ZudokuConfig = {
     },
     {
       type: "category",
+      label: "CLI Commands",
+      icon: "terminal",
+      items: ["docs/org", "docs/billing", "docs/stale"],
+    },
+    {
+      type: "category",
       label: "Connect an Agent",
       icon: "plug",
       items: ["docs/connect", "docs/mcp-clients", "docs/hermes-agent"],

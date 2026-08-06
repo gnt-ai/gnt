@@ -13,6 +13,11 @@ or `0.5.5` publish.
 
 ## [Unreleased]
 
+### Added
+
+- Documentation for the `gnt org`, `gnt billing`, and `gnt stale` CLI
+  commands, including current behavior, examples, and follow-up actions.
+
 ### Fixed
 
 - `gnt billing` no longer crashes with a raw stack trace if the API is
