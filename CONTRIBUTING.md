@@ -106,9 +106,10 @@ certifying you wrote the change (or otherwise have the right to submit it) under
 Linux kernel and a lot of other open-source projects use instead of a CLA. It's a statement,
 not paperwork: no separate form, no signing tool, just the flag on `git commit`.
 
-There's no automated DCO check wired into CI yet. That's a real gap, tracked as follow-up, not
-something this PR (or any PR) should assume is enforced. Sign off anyway; it'll get checked by
-a maintainer by hand until the bot exists.
+CI enforces this on every PR (and on pushes to `main`): the `dco` job in
+`.github/workflows/security.yml` runs `.github/scripts/check_dco.py`, which fails the check if
+any non-merge commit in the range is missing an author-matching `Signed-off-by` trailer. Fix a
+tip commit with `git commit --amend -s`, or older commits with `git rebase --signoff <base>`.
 
 ## Opening a PR
 
