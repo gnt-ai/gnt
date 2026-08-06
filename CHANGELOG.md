@@ -23,6 +23,12 @@ or `0.5.5` publish.
 
 ### Fixed
 
+- `docs/self-hosting/gen_env_vars.py` now reads and writes `config.py`/
+  `env-vars.md` with explicit UTF-8, instead of the platform default (cp1252
+  on Windows, which was silently mangling a trailing "…" in one setting's
+  note). Regenerated `env-vars.md`, which also picks up the trial-risk and
+  GitLab OAuth settings that had been added to `config.py` since the last
+  regen.
 - `gnt billing` no longer crashes with a raw stack trace if the API is
   unreachable — a network failure on either request now prints the same
   `fail()`-styled message as `gnt gaps` and `gnt stale`.
