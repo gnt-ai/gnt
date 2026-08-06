@@ -6,9 +6,15 @@ import { dim, fail, text } from "../theme.js";
 export async function billing(): Promise<void> {
   const key = loadApiKey();
 
-  const statusRes = await fetch(`${API_URL}/v1/billing/status`, {
-    headers: { Authorization: `Bearer ${key}` },
-  });
+  let statusRes: Response;
+  try {
+    statusRes = await fetch(`${API_URL}/v1/billing/status`, {
+      headers: { Authorization: `Bearer ${key}` },
+    });
+  } catch {
+    console.error(fail("Failed to fetch billing status."));
+    process.exit(1);
+  }
   if (!statusRes.ok) {
     console.error(fail(`Failed to fetch billing status (${statusRes.status}).`));
     process.exit(1);
@@ -21,10 +27,16 @@ export async function billing(): Promise<void> {
   // the portal. Never having subscribed means there's nothing for the
   // portal to show, so that first pass goes through Checkout instead.
   const endpoint = billingStatus.subscription_status ? "portal" : "checkout";
-  const res = await fetch(`${API_URL}/v1/billing/${endpoint}`, {
-    method: "POST",
-    headers: { Authorization: `Bearer ${key}` },
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${API_URL}/v1/billing/${endpoint}`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${key}` },
+    });
+  } catch {
+    console.error(fail("Failed to start billing."));
+    process.exit(1);
+  }
   if (!res.ok) {
     console.error(fail(`Failed to start billing (${res.status}).`));
     process.exit(1);

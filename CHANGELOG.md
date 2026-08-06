@@ -13,7 +13,11 @@ or `0.5.5` publish.
 
 ## [Unreleased]
 
-Nothing yet.
+### Fixed
+
+- `gnt billing` no longer crashes with a raw stack trace if the API is
+  unreachable — a network failure on either request now prints the same
+  `fail()`-styled message as `gnt gaps` and `gnt stale`.
 
 ## [0.6.0] - 2026-07-27
 
