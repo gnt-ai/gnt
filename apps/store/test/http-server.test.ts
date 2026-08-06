@@ -583,6 +583,7 @@ describe.skipIf(!reachable)("internal HTTP API", () => {
     expect(second.added).toBe(0);
     expect(second.deleted).toBe(0);
     expect(second.embedded).toBe(1);
+    expect(second.pagesAffected).toEqual(["rules/edit-me"]);
 
     const edited = await authed(`/rules/${encodeURIComponent("rules/edit-me")}?org=${org}`);
     expect(edited.status).toBe(200);
@@ -612,6 +613,7 @@ describe.skipIf(!reachable)("internal HTTP API", () => {
     expect(result.deleted).toBe(1);
     expect(result.added).toBe(0);
     expect(result.modified).toBe(0);
+    expect(result.pagesAffected).toEqual(["rules/delete-me"]);
 
     const after = await authed(`/rules/${encodeURIComponent("rules/delete-me")}?org=${org}`);
     expect(after.status).toBe(404);
