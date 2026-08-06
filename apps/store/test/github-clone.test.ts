@@ -6,19 +6,38 @@
  * HTTP boundary. This file covers the two gaps that suite still leaves:
  *   1. cloneOrPull on an already-cloned dest takes pullRepo and picks up
  *      new commits from the source.
- *   2. An auth failure against a real HTTPS remote returns GithubCloneError
- *      whose message never echoes the PAT (or the Authorization header argv).
+ *   2. An auth failure against an HTTPS remote returns GithubCloneError
+ *      whose message never echoes the PAT (plaintext or Base64-encoded).
  *
  * Local-path clones don't exercise auth (http.extraHeader is
- * transport-specific), so (2) needs a live network call to GitHub. It
- * skips cleanly when offline.
+ * transport-specific), so (2) uses a local HTTP server that always
+ * returns 401 — deterministic and fully offline.
  */
 import { execFileSync } from "node:child_process";
+import { createServer } from "node:http";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import type { AddressInfo } from "node:net";
 import { describe, expect, test } from "bun:test";
 import { GithubCloneError, cloneOrPull, cloneRepo } from "../src/core/github-clone.ts";
+
+function startUnauthorizedGitServer(): Promise<{ repoUrl: string; close: () => void }> {
+  return new Promise((resolve, reject) => {
+    const server = createServer((_req, res) => {
+      res.writeHead(401, { "WWW-Authenticate": 'Basic realm="git"' });
+      res.end("Unauthorized");
+    });
+    server.on("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      const addr = server.address() as AddressInfo;
+      resolve({
+        repoUrl: `http://127.0.0.1:${addr.port}/fake.git`,
+        close: () => server.close(),
+      });
+    });
+  });
+}
 
 function initSourceRepo(files: Record<string, string>): string {
   const dir = mkdtempSync(join(tmpdir(), "gnt-clone-src-"));
@@ -93,36 +112,29 @@ describe("cloneOrPull", () => {
 
 describe("cloneOrPull auth failure", () => {
   test("a rejected PAT fails cleanly without leaking the token", async () => {
-    // GitHub rejects invalid Authorization even on public repos — that's
-    // enough to exercise runGit's stderr-only error path without needing
-    // a private fixture. Skip when the network is unreachable so offline
-    // `bun test` runs stay green.
-    const probe = await fetch("https://github.com/", { method: "HEAD", signal: AbortSignal.timeout(5_000) }).catch(
-      () => null,
-    );
-    if (!probe) {
-      console.warn("skipping auth-failure test: github.com unreachable");
-      return;
-    }
-
     const badPat = "ghp_thisIsDefinitelyNotARealToken_xxxxxxxxxxxxxxxxxxxx";
+    const encodedPat = Buffer.from(`x-access-token:${badPat}`).toString("base64");
     const dest = join(mkdtempSync(join(tmpdir(), "gnt-clone-auth-")), "repo");
+    const server = await startUnauthorizedGitServer();
 
     let err: unknown;
     try {
-      await cloneOrPull("https://github.com/gnt-ai/gnt.git", badPat, dest);
+      await cloneOrPull(server.repoUrl, badPat, dest);
     } catch (e) {
       err = e;
+    } finally {
+      server.close();
     }
 
     expect(err).toBeInstanceOf(GithubCloneError);
     const message = String((err as Error).message);
     expect(message.length).toBeGreaterThan(0);
     expect(message).not.toContain(badPat);
+    expect(message).not.toContain(encodedPat);
     expect(message).not.toContain("Authorization");
     expect(message).not.toContain("extraHeader");
     expect(message).not.toContain("x-access-token");
     // Failed clone must clean up the partial dest dir.
     expect(existsSync(dest)).toBe(false);
-  }, 90_000);
+  });
 });
