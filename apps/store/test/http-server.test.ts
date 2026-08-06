@@ -488,6 +488,33 @@ describe.skipIf(!reachable)("internal HTTP API", () => {
     expect(rule.tags.sort()).toEqual(["billing", "refunds"]);
   });
 
+  test("POST /ingest with a valid batch returns an IngestReceipt", async () => {
+    const org = `org-http-ingest-${RUN_ID}`;
+    const res = await authed("/ingest", {
+      method: "POST",
+      body: JSON.stringify({
+        org,
+        sourceKind: "capture",
+        text: "Customer asked about the 30-day refund window.",
+        ref: "evt-http-ingest-1",
+      }),
+    });
+    expect(res.status).toBe(200);
+    const receipt = (await res.json()) as { org: string; draftSlugs: string[] };
+    expect(receipt.org).toBe(org);
+    expect(Array.isArray(receipt.draftSlugs)).toBe(true);
+  });
+
+  test("POST /ingest with a schema-invalid body gets 400, not a raw 500", async () => {
+    // Missing required fields (sourceKind/text/ref) — same 400 shape as the
+    // malformed /rules and /sources cases already in this file.
+    const res = await authed("/ingest", {
+      method: "POST",
+      body: JSON.stringify({ org: `org-http-ingest-bad-${RUN_ID}` }),
+    });
+    expect(res.status).toBe(400);
+  });
+
   // Org offboarding's store-side delete.
   test("POST /sources/delete removes an org's rules mirror — the deleted rule is gone afterward", async () => {
     const rule = makeRule({ slug: "rules/http-delete-me", org: "org-http-delete" });
