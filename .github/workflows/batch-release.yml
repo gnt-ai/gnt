@@ -1,13 +1,13 @@
 name: Batch release (public contributions)
 
-# Weekly digest of whatever merged into main since the last release --
-# not every PR deserves its own release (noisy: a repo where every doc
-# typo fix gets its own release entry trains people to ignore the
-# Releases tab), but waiting for an unrelated future npm version bump to
-# sweep up an external contribution isn't good either -- that's exactly
-# what almost happened to gnt-ai/gnt#12, the project's first outside PR,
-# before it got a manual one-off release instead. This is the automated
-# middle ground: check weekly, skip silently if nothing merged since the
+# Digest of whatever merged into main since the last release -- not every
+# PR deserves its own release (noisy: a repo where every doc typo fix
+# gets its own release entry trains people to ignore the Releases tab),
+# but waiting for an unrelated future npm version bump to sweep up an
+# external contribution isn't good either -- that's exactly what almost
+# happened to gnt-ai/gnt#12, the project's first outside PR, before it
+# got a manual one-off release instead. This is the automated middle
+# ground: check every 3 days, skip silently if nothing merged since the
 # last release, credit everyone by PR (via --generate-notes) if something
 # did.
 #
@@ -33,7 +33,7 @@ name: Batch release (public contributions)
 
 on:
   schedule:
-    - cron: "0 9 * * 1" # every Monday, 09:00 UTC
+    - cron: "0 9 */3 * *" # every 3 days, 09:00 UTC
   workflow_dispatch:
 
 permissions:
