@@ -188,7 +188,11 @@ disconnect
   .description("Remove the locally stored Airtable token, base, and field selection")
   .action(disconnectAirtable);
 
-program.command("status").description("Show brain status").action(status);
+program
+  .command("status")
+  .description("Show brain status")
+  .option("--json", "Print machine-readable JSON instead of the human-readable summary")
+  .action(status);
 
 program
   .command("billing")
@@ -208,6 +212,7 @@ program
 program
   .command("gaps")
   .description("List uncovered queries with no approved rule")
+  .option("--json", "Print machine-readable JSON instead of the human-readable list")
   .action(gaps);
 
 program

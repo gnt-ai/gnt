@@ -86,6 +86,70 @@ test("prints ROI numbers with a week-over-week delta", async () => {
   expect(output).toContain("-5 vs. last week");
 });
 
+test("--json prints a machine-readable object with the same underlying data", async () => {
+  globalThis.fetch = mockFetchByUrl({
+    "/v1/brain/summary": SUMMARY_BODY,
+    "/v1/billing/status": { entitled: true, subscription_status: "active", trial_ends_at: null },
+    "/v1/onboarding/status": { connected_github: true, rules_approved: 5, rules_proposed: 6 },
+    "/v1/rules/staleness/due": { count: 2, rules: [] },
+    "/v1/roi/summary": ROI_BODY,
+  });
+
+  await status({ json: true });
+
+  expect(logs).toHaveLength(1);
+  const result = JSON.parse(logs[0] as string);
+  expect(result.pack_version).toBe(3);
+  expect(result.slack_connected).toBe(true);
+  expect(result.mcp_key_exists).toBe(true);
+  expect(result.connectors.Airtable).toBe(false);
+  expect(result.billing).toEqual({ entitled: true, subscription_status: "active", trial_ends_at: null });
+  expect(result.github_connected).toBe(true);
+  expect(result.rules_approved).toBe(5);
+  expect(result.rules_proposed).toBe(6);
+  expect(result.rules_due_for_revalidation).toBe(2);
+  expect(result.roi).toEqual(ROI_BODY);
+});
+
+test("--json omits billing/roi when their 200 response body is schema-invalid", async () => {
+  globalThis.fetch = mockFetchByUrl({
+    "/v1/brain/summary": SUMMARY_BODY,
+    // Both endpoints return 200 with a body that parses fine but isn't
+    // the object shape gnt/billing.py and roi.py actually return --
+    // billing as a bare array, roi as null. Neither is a JSON.parse
+    // failure, so only a shape check catches these.
+    "/v1/billing/status": [],
+    "/v1/onboarding/status": { connected_github: true, rules_approved: 5, rules_proposed: 6 },
+    "/v1/rules/staleness/due": { count: 0, rules: [] },
+    "/v1/roi/summary": null,
+  });
+
+  await status({ json: true });
+
+  const result = JSON.parse(logs[0] as string);
+  expect(result.pack_version).toBe(3);
+  expect(result).not.toHaveProperty("billing");
+  expect(result).not.toHaveProperty("roi");
+});
+
+test("--json omits a section's keys, not the whole command, when its endpoint fails", async () => {
+  globalThis.fetch = mock((url: string) => {
+    if (url.includes("/v1/roi/summary")) {
+      return Promise.resolve(new Response("", { status: 500 }));
+    }
+    if (url.includes("/v1/brain/summary")) {
+      return Promise.resolve(new Response(JSON.stringify(SUMMARY_BODY), { status: 200 }));
+    }
+    return Promise.resolve(new Response(JSON.stringify({}), { status: 200 }));
+  }) as unknown as typeof fetch;
+
+  await status({ json: true });
+
+  const result = JSON.parse(logs[0] as string);
+  expect(result.pack_version).toBe(3);
+  expect(result).not.toHaveProperty("roi");
+});
+
 test("omits the ROI section, not the rest of the command, when /v1/roi/summary fails", async () => {
   globalThis.fetch = mock((url: string) => {
     if (url.includes("/v1/roi/summary")) {
