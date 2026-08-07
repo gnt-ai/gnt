@@ -124,6 +124,8 @@ test("reports an unreadable env file and continues independent diagnostics", asy
     const output = stripAnsi(logs.join("\n"));
     expect(output).toContain("Could not read apps/api/.env");
     expect(output).toContain("ZEROENTROPY_API_KEY is empty");
+    expect(output).toContain("API reachable at");
+    expect(output).toContain("GitHub rules repository connected");
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
