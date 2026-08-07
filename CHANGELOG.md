@@ -20,6 +20,8 @@ or `0.5.5` publish.
 - `gnt status` and `gnt gaps` now accept a `--json` flag that prints the
   same data as machine-readable JSON instead of the human-formatted output,
   for scripting a CI gate or dashboard around either command.
+- Docs: a new "gnt vs. OPA/Cedar vs. a system prompt" page, covering where each fits
+  and where OPA/Cedar are still the better call.
 
 ### Fixed
 
