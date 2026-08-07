@@ -35,6 +35,18 @@ auditConfig:
     # no real attack surface here either: apps/docs ships as a static
     # Vite build with no server runtime for a CSRF bypass to act on.
     - GHSA-qwww-vcr4-c8h2
+    # js-yaml, high severity: pinned inside apps/docs' own zudoku
+    # dependency tree (zudoku > gray-matter > js-yaml, and separately
+    # zudoku > @apidevtools/json-schema-ref-parser > js-yaml), not
+    # something any app code here pulls in directly. The advisory's own
+    # title says the fix wasn't backported to either the 3.x or 4.x line
+    # js-yaml resolves to here, so there's no version to bump to. The
+    # vulnerability itself (quadratic CPU consumption resolving a crafted
+    # `!!omap` YAML tag) needs an attacker-controlled YAML document fed to
+    # js-yaml's parser at runtime -- apps/docs ships as a static Vite
+    # build with no server runtime parsing untrusted YAML, so there's no
+    # real attack surface here either.
+    - GHSA-5p4m-2wfm-xmqj
 minimumReleaseAgeExclude:
   - lodash@4.17.23 || 4.17.24
   - drizzle-orm@0.45.2
