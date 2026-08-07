@@ -13,6 +13,12 @@ or `0.5.5` publish.
 
 ## [Unreleased]
 
+### Added
+
+- `gnt doctor` checks the local Node version, login credentials, API
+  reachability, GitHub rules-repo connection, and common self-host `.env`
+  mistakes in one pass.
+
 ### Fixed
 
 - `gnt billing` no longer crashes with a raw stack trace if the API is

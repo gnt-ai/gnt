@@ -30,6 +30,7 @@ import {
   disconnectSentryMcp,
   disconnectZoomMcp,
 } from "./commands/disconnect-mcp.js";
+import { doctor } from "./commands/doctor.js";
 import { gaps } from "./commands/gaps.js";
 import { createKey, listKeys, revokeKey, rotateKey } from "./commands/keys.js";
 import { login } from "./commands/login.js";
@@ -189,6 +190,12 @@ disconnect
   .action(disconnectAirtable);
 
 program.command("status").description("Show brain status").action(status);
+program
+  .command("doctor")
+  .description("Diagnose local setup, login, API, and rules-repo connectivity")
+  .action(async () => {
+    if (!(await doctor())) process.exitCode = 1;
+  });
 
 program
   .command("billing")
