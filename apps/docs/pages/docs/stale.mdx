@@ -39,7 +39,7 @@ No rules are due for re-validation.
 
 ## What to do next
 
-- If the rule is still accurate, refresh its content through `POST /v1/rules/{rule_id}/edit`, then run `gnt review` to re-propose it.
+- If the rule is still accurate, refresh its content through `POST /v1/rules/{rule_id}/edit`. This creates a new draft with a new rule ID. Submit that returned rule through `POST /v1/rules/{new_rule_id}/submit`, then ask an organization administrator to run `gnt review` to re-propose it. Non-admin members receive a `403` response from the review action endpoints.
 - If the rule is no longer accurate, an organization administrator can deprecate it through `POST /v1/rules/{rule_id}/deprecate`. Non-admin members receive a `403` response from this endpoint.
 
 The command is read-only: running it does not refresh, approve, or deprecate a rule. There is no separate "mark revalidated" action; re-validation goes through the existing edit or deprecate flow.
