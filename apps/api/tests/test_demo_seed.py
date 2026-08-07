@@ -22,13 +22,15 @@ def test_demo_rule_is_an_approved_store_rule_with_structured_provenance():
 
 
 def test_demo_curl_targets_the_real_stateless_mcp_tool_call():
-    command = _curl("gnt_live_disposable_demo_key")
+    command = _curl("gnt_live_disposable_demo_key", api_port=18000)
 
-    assert "http://localhost:8000/mcp/" in command
+    assert "http://localhost:18000/mcp/" in command
     assert "Authorization: Bearer gnt_live_disposable_demo_key" in command
     assert '"method":"tools/call"' in command
     assert '"name":"check_action"' in command
     assert DEMO_DESCRIPTION in command
+    with pytest.raises(ValueError, match="between 1 and 65535"):
+        _curl("gnt_live_disposable_demo_key", api_port=0)
 
 
 def test_demo_payload_requires_retrieval_and_the_keyless_fail_closed_verdict(monkeypatch):

@@ -31,6 +31,7 @@ services:
       - docker/demo/api.env
     environment:
       ANTHROPIC_API_KEY: ${GNT_DEMO_ANTHROPIC_API_KEY:-}
+      GNT_DEMO_API_PORT: ${GNT_DEMO_API_PORT:-18000}
     depends_on:
       postgres:
         condition: service_healthy

@@ -149,7 +149,13 @@ async def _call_check_action(key: str) -> str:
     return json.dumps(payload, indent=2)
 
 
-def _curl(key: str) -> str:
+def _curl(key: str, *, api_port: int | None = None) -> str:
+    try:
+        port = api_port if api_port is not None else int(os.environ.get("GNT_DEMO_API_PORT", "18000"))
+    except ValueError:
+        raise ValueError("GNT_DEMO_API_PORT must be an integer between 1 and 65535") from None
+    if not 1 <= port <= 65535:
+        raise ValueError("GNT_DEMO_API_PORT must be between 1 and 65535")
     body = json.dumps(
         {
             "jsonrpc": "2.0",
@@ -164,7 +170,7 @@ def _curl(key: str) -> str:
     )
     return "\n".join(
         [
-            "curl -sS http://localhost:8000/mcp/ \\",
+            f"curl -sS http://localhost:{port}/mcp/ \\",
             f"  -H 'Authorization: Bearer {key}' \\",
             "  -H 'Accept: application/json, text/event-stream' \\",
             "  -H 'Content-Type: application/json' \\",
