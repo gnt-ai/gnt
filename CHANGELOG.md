@@ -13,6 +13,11 @@ or `0.5.5` publish.
 
 ## [Unreleased]
 
+### Added
+
+- `./demo.sh` provides a Docker-only, seeded `check_action` evaluation path
+  with an isolated Compose project and a ready-to-copy curl request.
+
 ### Fixed
 
 - `gnt billing` no longer crashes with a raw stack trace if the API is
