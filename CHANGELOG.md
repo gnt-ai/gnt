@@ -20,6 +20,10 @@ or `0.5.5` publish.
 - `gnt status` and `gnt gaps` now accept a `--json` flag that prints the
   same data as machine-readable JSON instead of the human-formatted output,
   for scripting a CI gate or dashboard around either command.
+- New starter pack: `ai-agent-governance`, covering `needs_human` escalation,
+  never bypassing `check_action`, smoke-testing new agent integrations,
+  audit logging of the verdict that allowed an action, and rule changes not
+  applying retroactively to actions already in flight.
 
 ### Fixed
 
