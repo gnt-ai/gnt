@@ -192,6 +192,12 @@ const config: ZudokuConfig = {
       ],
     },
     {
+      type: "doc",
+      file: "docs/account",
+      label: "Account & Billing",
+      icon: "users",
+    },
+    {
       type: "link",
       to: "/api",
       label: "API Reference",

@@ -1,0 +1,66 @@
+---
+title: Account & Billing
+sidebar_icon: users
+description: Manage your organization's members, subscription, and rule freshness from the CLI.
+---
+
+## Organization
+
+`gnt org` manages the organization your API key belongs to — members, pending invitations, and the
+org's name itself.
+
+```bash
+$ gnt org show
+
+Acme Corp
+
+Members (3)
+alice@acme.com    admin
+bob@acme.com      member
+carol@acme.com    member
+
+Pending invitations (1)
+dave@acme.com     member
+```
+
+`show` is the default subcommand, so `gnt org` alone does the same thing. The others:
+
+```bash
+$ gnt org rename "New Org Name"
+$ gnt org invite newperson@acme.com --role admin   # role defaults to "member"
+$ gnt org remove someone@acme.com
+```
+
+## Billing
+
+`gnt billing` opens the right Stripe page for your org's current state and prints the URL in case
+it can't launch a browser for you. An org that's never subscribed goes through Checkout; anything
+that has — even a canceled subscription — goes to the billing portal instead, since there's a Stripe
+customer behind it to manage.
+
+```bash
+$ gnt billing
+```
+
+## Stale rules
+
+Rules decay: a policy that was accurate a year ago may not be today. A nightly job scores every
+approved rule's freshness by age, and `gnt stale` lists whichever ones have crossed the
+re-validation threshold.
+
+```bash
+$ gnt stale
+
+Rules due for re-validation (2):
+Every number below is a decay estimate, not a verified fact.
+
+1. Refunds require manager approval over $500
+   ~194 days old · freshness 41% (estimate)
+   Confirm it's still true, or refresh/deprecate it:
+   curl -X POST ".../v1/rules/rule_abc123/deprecate" ...   # if it's no longer accurate
+   Otherwise: POST /v1/rules/rule_abc123/edit with the refreshed content, then `gnt review` to re-propose it.
+```
+
+There's no dedicated "mark as still valid" action — confirming a rule still holds, or refreshing it,
+goes through the same edit/deprecate flow as any other rule change, then `gnt review` to re-propose it
+for approval.

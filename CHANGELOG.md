@@ -19,6 +19,11 @@ or `0.5.5` publish.
   unreachable — a network failure on either request now prints the same
   `fail()`-styled message as `gnt gaps` and `gnt stale`.
 
+### Documentation
+
+- Added a docs page for `gnt org`, `gnt billing`, and `gnt stale`, none of
+  which had one before, and linked it in the site nav.
+
 ## [0.6.0] - 2026-07-27
 
 ### Added
