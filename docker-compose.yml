@@ -33,8 +33,6 @@ services:
       POSTGRES_USER: gnt
       POSTGRES_PASSWORD: gnt
       POSTGRES_DB: gnt
-    ports:
-      - "127.0.0.1:${GNT_COMPOSE_POSTGRES_PORT:-5432}:5432"
     volumes:
       - gnt-postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -45,8 +43,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "127.0.0.1:${GNT_COMPOSE_REDIS_PORT:-6379}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s

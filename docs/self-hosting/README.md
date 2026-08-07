@@ -200,10 +200,11 @@ login`'s browser step has nowhere to land.
 
 One honest way through this today, not polished, but it works:
 
-**Mint a key by hand.** Insert an `orgs` row and an `mcp_api_keys` row
-directly via `psql` against the compose Postgres, with a `gnt_live_`-prefixed
-key whose SHA-256 hash you compute locally, then write it to
-`~/.gnt/credentials.json` yourself (`{"api_key": "...", "key_id": "..."}`,
+**Mint a key by hand.** Open the database shell with
+`docker compose exec postgres psql -U gnt -d gnt` (or the equivalent
+`docker-compose` command), then insert an `orgs` row and an `mcp_api_keys` row
+with a `gnt_live_`-prefixed key whose SHA-256 hash you compute locally. Write
+it to `~/.gnt/credentials.json` yourself (`{"api_key": "...", "key_id": "..."}`,
 the same shape `saveApiKey()` in `apps/cli/src/credentials.ts` writes).
 Manual, and it means trusting yourself with a raw key instead of going
 through a real auth flow — acceptable for a local self-host instance you

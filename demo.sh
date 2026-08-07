@@ -20,12 +20,10 @@ fi
 # existing self-host checkout never lends real secrets to demo containers.
 export GNT_COMPOSE_API_ENV_FILE=docker/demo/api.env
 export GNT_COMPOSE_STORE_ENV_FILE=docker/demo/store.env
-# Keep normal self-host ports unchanged while avoiding the ports most likely
-# to be occupied by another local stack. Each can still be overridden.
+# Use a demo-specific API port so another local stack can keep port 8000.
+# Postgres and Redis stay entirely inside the Compose network.
 export GNT_DEMO_API_PORT="${GNT_DEMO_API_PORT:-18000}"
 export GNT_COMPOSE_API_PORT="$GNT_DEMO_API_PORT"
-export GNT_COMPOSE_POSTGRES_PORT="${GNT_DEMO_POSTGRES_PORT:-15432}"
-export GNT_COMPOSE_REDIS_PORT="${GNT_DEMO_REDIS_PORT:-16379}"
 
 demo_compose=(
   "${compose[@]}"
