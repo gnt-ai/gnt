@@ -33,6 +33,10 @@ minimumReleaseAgeExclude:
   - valibot@1.4.2
   - brace-expansion@5.0.9
   - hono@4.12.34
+  - '@ai-sdk/gateway@4.0.44'
+  - '@ai-sdk/provider-utils@5.0.23'
+  - '@ai-sdk/provider@4.0.6'
+  - ai@7.0.56
 overrides:
   '@hono/node-server@<2.0.5': ^2.0.5
   # 5.0.8 (the prior pin here) turned out to only fix CVE-2026-14257's
