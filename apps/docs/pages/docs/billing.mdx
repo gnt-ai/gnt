@@ -1,0 +1,32 @@
+---
+title: Billing command
+sidebar_icon: credit-card
+description: Start a subscription or manage an existing one from the CLI.
+---
+
+Run the billing command to open the correct Stripe page for your organization:
+
+```bash
+gnt billing
+```
+
+The CLI first checks the organization's billing status, then chooses one of two destinations:
+
+- If the organization has never completed Checkout, it creates a Checkout session for starting a subscription.
+- If `subscription_status` is present—even for a canceled subscription—it creates a billing portal session for managing the existing Stripe customer.
+
+The session URL is always printed before the CLI tries to open it in your default browser.
+
+```text
+https://checkout.stripe.com/c/pay/...
+Opened in your browser.
+```
+
+If the browser cannot be opened automatically, copy the printed URL instead:
+
+```text
+https://billing.stripe.com/p/session/...
+Couldn't open a browser automatically — open the URL above manually.
+```
+
+`gnt billing` requires a key stored by `gnt login`. A failure while checking the billing status or creating the session prints an error and exits; it does not fall back to guessing which destination to open.
