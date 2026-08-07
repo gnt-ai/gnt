@@ -20,6 +20,10 @@ or `0.5.5` publish.
 - `gnt status` and `gnt gaps` now accept a `--json` flag that prints the
   same data as machine-readable JSON instead of the human-formatted output,
   for scripting a CI gate or dashboard around either command.
+- New starter pack: `marketing-brand-approval`, covering sign-off on
+  performance/results claims, legal review for competitor mentions,
+  approval on pricing-page changes, following a brand style guide, and
+  documented permission before using customer quotes or logos.
 
 ### Fixed
 
