@@ -20,6 +20,8 @@ or `0.5.5` publish.
 - `gnt status` and `gnt gaps` now accept a `--json` flag that prints the
   same data as machine-readable JSON instead of the human-formatted output,
   for scripting a CI gate or dashboard around either command.
+- `gnt completion bash|zsh|fish` prints a shell completion script, generated
+  from the CLI's own command table.
 
 ### Fixed
 

@@ -4,6 +4,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 import { billing } from "./commands/billing.js";
+import { completion } from "./commands/completion.js";
 import { connectAirtable, disconnectAirtable } from "./commands/connect-airtable.js";
 import { connectDatadog, disconnectDatadog } from "./commands/connect-datadog.js";
 import { connectFigma, disconnectFigma } from "./commands/connect-figma.js";
@@ -417,6 +418,11 @@ org
   .option("--role <role>", 'Role to invite them as: "member" or "admin"', "member")
   .action(orgInvite);
 org.command("remove <email>").description("Remove someone from the organization").action(orgRemove);
+
+program
+  .command("completion <shell>")
+  .description("Print a completion script for bash, zsh, or fish -- eval it in your shell's rc file")
+  .action((shell: string) => completion(shell, program));
 
 function describeUnknownError(err: unknown): string {
   if (err instanceof Error) return err.message;
