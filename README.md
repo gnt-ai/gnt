@@ -41,8 +41,8 @@ the repository and run the Docker-only demo:
 It builds the full local stack in an isolated `gnt-demo` Compose project,
 seeds an approved refund rule, calls `check_action`, and prints a curl command
 you can run again. Without an Anthropic key the real fail-closed path returns
-`needs_human`; pass `ANTHROPIC_API_KEY=sk-ant-... ./demo.sh` to get the model's
-grounded policy verdict. The demo uses deterministic local embeddings and
+`needs_human`; pass `GNT_DEMO_ANTHROPIC_API_KEY=sk-ant-... ./demo.sh` to opt in
+to the model's grounded policy verdict. The demo uses deterministic local embeddings and
 throwaway localhost-only secrets, so it does not need a ZeroEntropy key.
 
 ![gnt connect's interactive picker, and what gnt prebrain's draft-PR output looks like](.github/assets/cli-demo.gif)

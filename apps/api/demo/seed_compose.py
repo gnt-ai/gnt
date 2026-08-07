@@ -7,6 +7,7 @@ real signed-approval gate, then calls the published check_action endpoint.
 
 import asyncio
 import json
+import os
 import uuid
 from datetime import UTC, datetime, timedelta
 
@@ -58,6 +59,13 @@ def _demo_rule() -> dict:
         "prNumber": None,
         "prUrl": None,
     }
+
+
+def _validate_demo_payload(payload: dict) -> None:
+    if payload.get("rules_retrieved", 0) < 1:
+        raise RuntimeError(f"the seeded rule was not retrieved: {payload}")
+    if not os.environ.get("ANTHROPIC_API_KEY") and payload.get("verdict") != "needs_human":
+        raise RuntimeError(f"expected fail-closed needs_human verdict: {payload}")
 
 
 async def _seed() -> str:
@@ -137,8 +145,7 @@ async def _call_check_action(key: str) -> str:
     if "result" not in envelope:
         raise RuntimeError(f"check_action returned a JSON-RPC error: {event}")
     payload = json.loads(envelope["result"]["content"][0]["text"])
-    if payload.get("rules_retrieved", 0) < 1:
-        raise RuntimeError(f"the seeded rule was not retrieved: {payload}")
+    _validate_demo_payload(payload)
     return json.dumps(payload, indent=2)
 
 

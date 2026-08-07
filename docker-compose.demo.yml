@@ -17,12 +17,12 @@ services:
     environment:
       # A real key produces a policy verdict. With no key, check_action's
       # production fail-closed path returns needs_human instead of faking one.
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_API_KEY: ${GNT_DEMO_ANTHROPIC_API_KEY:-}
 
   worker:
     image: gnt-api-local
     environment:
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_API_KEY: ${GNT_DEMO_ANTHROPIC_API_KEY:-}
 
   demo-seed:
     profiles: [demo]
@@ -30,7 +30,7 @@ services:
     env_file:
       - docker/demo/api.env
     environment:
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_API_KEY: ${GNT_DEMO_ANTHROPIC_API_KEY:-}
     depends_on:
       postgres:
         condition: service_healthy

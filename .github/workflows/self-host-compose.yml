@@ -155,6 +155,7 @@ jobs:
 
       - name: run the Docker-only seeded demo path
         run: |
+          set -euo pipefail
           ./demo.sh | tee /tmp/gnt-demo.log
           grep -q "Demo check_action response" /tmp/gnt-demo.log
           grep -q '"rules_retrieved": 1' /tmp/gnt-demo.log
