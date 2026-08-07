@@ -46,6 +46,15 @@ function parseEnv(path: string): EnvMap {
   return values;
 }
 
+function tryParseEnv(path: string, label: string, failures: string[]): EnvMap | null {
+  try {
+    return parseEnv(path);
+  } catch {
+    failures.push(`Could not read ${label}. Check that it exists as a readable file.`);
+    return null;
+  }
+}
+
 function findSelfHostRoot(start: string): string | null {
   let current = resolve(start);
   while (true) {
@@ -61,27 +70,53 @@ function findSelfHostRoot(start: string): string | null {
 function inspectSelfHostEnv(root: string): string[] {
   const apiPath = join(root, "apps/api/.env");
   const storePath = join(root, "apps/store/.env");
-  if (!existsSync(apiPath) || !existsSync(storePath)) {
-    return ["Self-host env files are missing. Run `./setup.sh` from the repository root."];
-  }
-
-  const api = parseEnv(apiPath);
-  const store = parseEnv(storePath);
   const failures: string[] = [];
-  const placeholders = Object.entries(api)
-    .filter(([, value]) => value.includes("change-me"))
-    .map(([key]) => key);
+  let api: EnvMap | null;
+  let store: EnvMap | null;
+  if (existsSync(apiPath)) {
+    api = tryParseEnv(apiPath, "apps/api/.env", failures);
+  } else {
+    failures.push("apps/api/.env is missing. Run `./setup.sh` from the repository root.");
+    api = null;
+  }
+  if (existsSync(storePath)) {
+    store = tryParseEnv(storePath, "apps/store/.env", failures);
+  } else {
+    failures.push("apps/store/.env is missing. Run `./setup.sh` from the repository root.");
+    store = null;
+  }
 
-  if (placeholders.length > 0) {
-    failures.push(`Unreplaced apps/api placeholders: ${placeholders.join(", ")}. Run \`./setup.sh\` to generate them.`);
+  if (api) {
+    const placeholders = Object.entries(api)
+      .filter(([, value]) => value.includes("change-me"))
+      .map(([key]) => key);
+    if (placeholders.length > 0) {
+      failures.push(
+        `Unreplaced apps/api placeholders: ${placeholders.join(", ")}. Run \`./setup.sh\` to generate them.`,
+      );
+    }
+    if (!api.STORE_INTERNAL_API_SECRET) {
+      failures.push("STORE_INTERNAL_API_SECRET is missing from apps/api/.env.");
+    }
+    if (!api.APPROVAL_SIGNING_SECRET) {
+      failures.push("APPROVAL_SIGNING_SECRET is missing from apps/api/.env.");
+    }
   }
-  if (!store.GNT_STORE_INTERNAL_API_SECRET || store.GNT_STORE_INTERNAL_API_SECRET.includes("change-me")) {
-    failures.push("GNT_STORE_INTERNAL_API_SECRET is missing or still a placeholder in apps/store/.env.");
-  }
-  if (!api.STORE_INTERNAL_API_SECRET) {
-    failures.push("STORE_INTERNAL_API_SECRET is missing from apps/api/.env.");
+
+  if (store) {
+    if (!store.GNT_STORE_INTERNAL_API_SECRET || store.GNT_STORE_INTERNAL_API_SECRET.includes("change-me")) {
+      failures.push("GNT_STORE_INTERNAL_API_SECRET is missing or still a placeholder in apps/store/.env.");
+    }
+    if (!store.GNT_APPROVAL_SIGNING_SECRET || store.GNT_APPROVAL_SIGNING_SECRET.includes("change-me")) {
+      failures.push("GNT_APPROVAL_SIGNING_SECRET is missing or still a placeholder in apps/store/.env.");
+    }
+    if (!store.ZEROENTROPY_API_KEY) {
+      failures.push("ZEROENTROPY_API_KEY is empty in apps/store/.env; rule embedding and reranking will fail.");
+    }
   }
   if (
+    api &&
+    store &&
     api.STORE_INTERNAL_API_SECRET &&
     store.GNT_STORE_INTERNAL_API_SECRET &&
     api.STORE_INTERNAL_API_SECRET !== store.GNT_STORE_INTERNAL_API_SECRET
@@ -89,16 +124,14 @@ function inspectSelfHostEnv(root: string): string[] {
     failures.push("STORE_INTERNAL_API_SECRET and GNT_STORE_INTERNAL_API_SECRET do not match.");
   }
   if (
+    api &&
+    store &&
     api.APPROVAL_SIGNING_SECRET &&
     store.GNT_APPROVAL_SIGNING_SECRET &&
     api.APPROVAL_SIGNING_SECRET !== store.GNT_APPROVAL_SIGNING_SECRET
   ) {
     failures.push("APPROVAL_SIGNING_SECRET and GNT_APPROVAL_SIGNING_SECRET do not match.");
   }
-  if (!store.ZEROENTROPY_API_KEY) {
-    failures.push("ZEROENTROPY_API_KEY is empty in apps/store/.env; rule embedding and reranking will fail.");
-  }
-
   return failures;
 }
 

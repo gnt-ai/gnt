@@ -104,3 +104,53 @@ test("identifies the documented self-host environment mistakes", async () => {
     rmSync(root, { recursive: true, force: true });
   }
 });
+
+test("reports an unreadable env file and continues independent diagnostics", async () => {
+  const root = mkdtempSync(join(tmpdir(), "gnt-doctor-unreadable-env-"));
+  mkdirSync(join(root, "apps/api/.env"), { recursive: true });
+  mkdirSync(join(root, "apps/store"), { recursive: true });
+  writeFileSync(join(root, "docker-compose.yml"), "services: {}\n");
+  writeFileSync(join(root, "apps/api/.env.example"), "");
+  writeFileSync(
+    join(root, "apps/store/.env"),
+    "GNT_STORE_INTERNAL_API_SECRET=store-secret\nGNT_APPROVAL_SIGNING_SECRET=approval-secret\nZEROENTROPY_API_KEY=\n",
+  );
+  saveApiKey("gnt_live_test", "key-id");
+
+  try {
+    const result = await doctor({ cwd: root, fetchImpl: healthyFetch(), nodeVersion: "22.13.0" });
+
+    expect(result).toBe(false);
+    const output = stripAnsi(logs.join("\n"));
+    expect(output).toContain("Could not read apps/api/.env");
+    expect(output).toContain("ZEROENTROPY_API_KEY is empty");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
+
+test("rejects a missing store approval-signing secret", async () => {
+  const root = mkdtempSync(join(tmpdir(), "gnt-doctor-missing-approval-secret-"));
+  mkdirSync(join(root, "apps/api"), { recursive: true });
+  mkdirSync(join(root, "apps/store"), { recursive: true });
+  writeFileSync(join(root, "docker-compose.yml"), "services: {}\n");
+  writeFileSync(join(root, "apps/api/.env.example"), "");
+  writeFileSync(
+    join(root, "apps/api/.env"),
+    "STORE_INTERNAL_API_SECRET=shared-secret\nAPPROVAL_SIGNING_SECRET=approval-secret\n",
+  );
+  writeFileSync(
+    join(root, "apps/store/.env"),
+    "GNT_STORE_INTERNAL_API_SECRET=shared-secret\nZEROENTROPY_API_KEY=ze-demo\n",
+  );
+  saveApiKey("gnt_live_test", "key-id");
+
+  try {
+    const result = await doctor({ cwd: root, fetchImpl: healthyFetch(), nodeVersion: "22.13.0" });
+
+    expect(result).toBe(false);
+    expect(stripAnsi(logs.join("\n"))).toContain("GNT_APPROVAL_SIGNING_SECRET is missing");
+  } finally {
+    rmSync(root, { recursive: true, force: true });
+  }
+});
