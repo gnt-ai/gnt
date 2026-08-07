@@ -38,6 +38,7 @@ import { orgInvite, orgRemove, orgRename, orgShow } from "./commands/org.js";
 import { prebrain } from "./commands/prebrain.js";
 import { pull } from "./commands/pull.js";
 import { review } from "./commands/review.js";
+import { rulesLint } from "./commands/rules-lint.js";
 import { stale } from "./commands/stale.js";
 import { status } from "./commands/status.js";
 import { createWebhookToken, listWebhookTokens, revokeWebhookToken } from "./commands/webhook.js";
@@ -385,6 +386,12 @@ program
   .command("stale")
   .description("List approved rules due for re-validation")
   .action(stale);
+
+const rules = program.command("rules").description("Work with local rule files");
+rules
+  .command("lint [path]")
+  .description("Validate rule frontmatter shape locally, before a PR round-trip (defaults to ./rules)")
+  .action(rulesLint);
 
 const keys = program.command("keys").description("Manage MCP keys used by agents");
 keys.command("list").description("List MCP keys").action(listKeys);

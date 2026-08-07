@@ -20,6 +20,10 @@ or `0.5.5` publish.
 - `gnt status` and `gnt gaps` now accept a `--json` flag that prints the
   same data as machine-readable JSON instead of the human-formatted output,
   for scripting a CI gate or dashboard around either command.
+- `gnt rules lint [path]` validates a rule file's frontmatter shape locally
+  (title/body length, `status`, `confidence`, `owner_id`, `tags`) — the same
+  constraints `apps/api` enforces server-side — so a malformed rule fails
+  before a PR round-trip instead of after. Defaults to `./rules`.
 
 ### Fixed
 
