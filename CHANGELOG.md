@@ -20,6 +20,10 @@ or `0.5.5` publish.
 - `gnt status` and `gnt gaps` now accept a `--json` flag that prints the
   same data as machine-readable JSON instead of the human-formatted output,
   for scripting a CI gate or dashboard around either command.
+- New starter pack: `soc2-audit-readiness`, covering evidence-collection
+  cadence, control-owner assignment, compensating-control notes for changes
+  during an active audit window, audit scope review, and evidence-gap
+  remediation.
 
 ### Fixed
 
