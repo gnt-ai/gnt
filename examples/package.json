@@ -16,7 +16,7 @@
     "@anthropic-ai/sdk": "^0.115.0",
     "@langchain/core": "^1.1.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
-    "ai": "^5.0.0",
+    "ai": "^7.0.56",
     "zod": "^4.4.0"
   },
   "devDependencies": {

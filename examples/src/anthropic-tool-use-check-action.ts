@@ -1,8 +1,9 @@
 import Anthropic from "@anthropic-ai/sdk";
 
 import { connectGntMcp } from "./gnt-mcp.js";
-import { mockRefund, runGuardedAction } from "./guard.js";
+import { mockRefund, parseRefundInput, runGuardedAction } from "./guard.js";
 
+const MAX_TOOL_USE_ROUNDS = 5;
 const anthropic = new Anthropic();
 const gnt = await connectGntMcp();
 
@@ -11,7 +12,7 @@ const messages: Anthropic.MessageParam[] = [
 ];
 
 try {
-  while (true) {
+  for (let round = 0; round < MAX_TOOL_USE_ROUNDS; round += 1) {
     const response = await anthropic.messages.create({
       model: process.env.ANTHROPIC_MODEL ?? "claude-haiku-4-5",
       max_tokens: 512,
@@ -40,15 +41,19 @@ try {
       break;
     }
 
+    if (round === MAX_TOOL_USE_ROUNDS - 1) {
+      throw new Error(`Anthropic kept requesting tools after ${MAX_TOOL_USE_ROUNDS} rounds.`);
+    }
+
     const toolResults: Anthropic.ToolResultBlockParam[] = [];
     for (const toolUse of toolUses) {
-      const input = toolUse.input as { orderId?: unknown; amount?: unknown };
-      if (typeof input.orderId !== "string" || typeof input.amount !== "number") {
+      const input = parseRefundInput(toolUse.input);
+      if (!input) {
         toolResults.push({
           type: "tool_result",
           tool_use_id: toolUse.id,
           is_error: true,
-          content: "refund_order requires a string orderId and a numeric amount.",
+          content: "refund_order requires a non-empty string orderId and a finite positive amount.",
         });
         continue;
       }

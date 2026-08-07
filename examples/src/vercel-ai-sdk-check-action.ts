@@ -7,7 +7,7 @@ import { mockRefund, runGuardedAction } from "./guard.js";
 const refundOrder = tool({
   description: "Refund an order only after gnt's policy check allows it.",
   inputSchema: z.object({
-    orderId: z.string().describe("The order to refund"),
+    orderId: z.string().trim().min(1, { error: "orderId is required" }).describe("The order to refund"),
     amount: z.number().positive().describe("Refund amount in US dollars"),
   }),
   async execute({ orderId, amount }) {

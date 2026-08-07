@@ -5,6 +5,21 @@ export interface GuardedActionResult {
   message: string;
 }
 
+export interface RefundInput {
+  orderId: string;
+  amount: number;
+}
+
+export function parseRefundInput(value: unknown): RefundInput | undefined {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return undefined;
+
+  const { orderId, amount } = value as { orderId?: unknown; amount?: unknown };
+  if (typeof orderId !== "string" || orderId.trim() === "") return undefined;
+  if (typeof amount !== "number" || !Number.isFinite(amount) || amount <= 0) return undefined;
+
+  return { orderId: orderId.trim(), amount };
+}
+
 function citedRules(result: CheckActionResult): string {
   return result.cited_rules.length === 0
     ? "No rule was cited."

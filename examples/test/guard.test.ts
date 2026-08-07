@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { runGuardedAction } from "../src/guard.js";
+import { parseRefundInput, runGuardedAction } from "../src/guard.js";
 import type { CheckActionResult } from "../src/gnt-mcp.js";
 
 function verdict(verdictValue: CheckActionResult["verdict"]): CheckActionResult {
@@ -40,4 +40,24 @@ test("needs_human never executes the risky action", async () => {
   assert.equal(ran, false);
   assert.equal(result.status, "needs_human");
   assert.match(result.message, /ask a human/i);
+});
+
+test("refund input requires a non-empty order id and a finite positive amount", () => {
+  assert.deepEqual(parseRefundInput({ orderId: "  #8021  ", amount: 750 }), {
+    orderId: "#8021",
+    amount: 750,
+  });
+
+  for (const input of [
+    null,
+    [],
+    { orderId: "", amount: 750 },
+    { orderId: "   ", amount: 750 },
+    { orderId: "#8021", amount: 0 },
+    { orderId: "#8021", amount: -1 },
+    { orderId: "#8021", amount: Number.NaN },
+    { orderId: "#8021", amount: Number.POSITIVE_INFINITY },
+  ]) {
+    assert.equal(parseRefundInput(input), undefined);
+  }
 });
