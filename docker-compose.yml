@@ -33,8 +33,6 @@ services:
       POSTGRES_USER: gnt
       POSTGRES_PASSWORD: gnt
       POSTGRES_DB: gnt
-    ports:
-      - "127.0.0.1:5432:5432"
     volumes:
       - gnt-postgres-data:/var/lib/postgresql/data
     healthcheck:
@@ -45,8 +43,6 @@ services:
 
   redis:
     image: redis:7-alpine
-    ports:
-      - "127.0.0.1:6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -58,8 +54,7 @@ services:
       context: apps/store
       dockerfile: Dockerfile
     env_file:
-      - path: ${GNT_COMPOSE_STORE_ENV_FILE:-apps/store/.env}
-        required: false
+      - ${GNT_COMPOSE_STORE_ENV_FILE:-apps/store/.env}
     environment:
       # Overrides for the compose network — everything else comes from
       # apps/store/.env (copied from apps/store/.env.example).
@@ -79,8 +74,7 @@ services:
       context: .
       dockerfile: apps/api/Dockerfile
     env_file:
-      - path: ${GNT_COMPOSE_API_ENV_FILE:-apps/api/.env}
-        required: false
+      - ${GNT_COMPOSE_API_ENV_FILE:-apps/api/.env}
     environment:
       DATABASE_URL: postgresql+asyncpg://gnt:gnt@postgres:5432/gnt
       MIGRATION_DATABASE_URL: postgresql+asyncpg://gnt:gnt@postgres:5432/gnt
@@ -103,8 +97,7 @@ services:
       context: .
       dockerfile: apps/api/Dockerfile
     env_file:
-      - path: ${GNT_COMPOSE_API_ENV_FILE:-apps/api/.env}
-        required: false
+      - ${GNT_COMPOSE_API_ENV_FILE:-apps/api/.env}
     environment:
       PROCESS_TYPE: worker
       DATABASE_URL: postgresql+asyncpg://gnt:gnt@postgres:5432/gnt

@@ -28,8 +28,7 @@ services:
     profiles: [demo]
     image: gnt-api-local
     env_file:
-      - path: docker/demo/api.env
-        required: true
+      - docker/demo/api.env
     environment:
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     depends_on:
