@@ -17,6 +17,8 @@ or `0.5.5` publish.
 
 - `./demo.sh` provides a Docker-only, seeded `check_action` evaluation path
   with an isolated Compose project and a ready-to-copy curl request.
+- Runnable LangChain, Vercel AI SDK, and Anthropic tool-use examples that call `check_action`
+  before a simulated refund and fail closed on blocked or human-review verdicts.
 
 ### Fixed
 

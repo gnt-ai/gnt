@@ -1,5 +1,6 @@
 packages:
   - "apps/*"
+  - "examples"
   - "packages/*"
   # apps/store is Bun-native at the runtime level (Bun.serve, bun:test —
   # not a dependency's requirement, its own code) — managed by its own
