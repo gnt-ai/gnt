@@ -31,6 +31,7 @@ import {
   disconnectZoomMcp,
 } from "./commands/disconnect-mcp.js";
 import { gaps } from "./commands/gaps.js";
+import { init } from "./commands/init.js";
 import { createKey, listKeys, revokeKey, rotateKey } from "./commands/keys.js";
 import { login } from "./commands/login.js";
 import { logout } from "./commands/logout.js";
@@ -65,6 +66,12 @@ program
 
 program.command("login").description("Sign in and store an API key locally").action(login);
 program.command("logout").description("Remove the locally stored API key").action(logout);
+
+program
+  .command("init")
+  .description("Scaffold a local rules/ directory with example rule files")
+  .option("--dir <path>", "Directory to scaffold rules/ into (defaults to the current directory)")
+  .action((options: { dir?: string }) => init(options));
 
 const connect = program.command("connect").description("Connect an app to your brain");
 connect.command("slack").description("Connect a Slack workspace").action(connectSlack);

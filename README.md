@@ -47,6 +47,10 @@ throwaway localhost-only secrets, so it does not need a ZeroEntropy key.
 
 ![gnt connect's interactive picker, and what gnt prebrain's draft-PR output looks like](.github/assets/cli-demo.gif)
 
+> Nothing for `gnt prebrain` to scan yet? Run `gnt init` first — it scaffolds `rules/` locally
+> with a couple of example rule files so there's something real to look at and edit, and points
+> you at `gnt prebrain --starter-packs` for a curated pack to start from instead.
+
 That merge lands a rule file in your connected repo, shaped like this:
 
 ```
@@ -132,6 +136,7 @@ One MCP endpoint, five tools:
 
 ```bash
 gnt login                # sign in, store an API key locally
+gnt init                 # scaffold a local rules/ dir with example rule files
 gnt connect github       # connect the repo your rules PRs open against
 gnt prebrain             # scan sources, extract candidate rules, open PRs
 gnt review               # review rules awaiting approval
@@ -179,6 +184,7 @@ gnt gaps                 # list uncovered queries with no approved rule
 ```
 gnt login
 gnt logout
+gnt init                 scaffold a local rules/ dir with example rule files (--dir <path>)
 gnt connect <app>        github, slack, notion-mcp, monday-mcp, linear-mcp, jira-mcp,
                           sentry-mcp, granola-mcp, zoom-mcp, figma, datadog,
                           gitlab-threads, hubspot, airtable, openclaw, hermes

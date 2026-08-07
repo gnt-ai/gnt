@@ -20,6 +20,9 @@ or `0.5.5` publish.
 - `gnt status` and `gnt gaps` now accept a `--json` flag that prints the
   same data as machine-readable JSON instead of the human-formatted output,
   for scripting a CI gate or dashboard around either command.
+- `gnt init` scaffolds a local `rules/` directory with a couple of example
+  rule files, for a brand-new repo with nothing yet for `gnt prebrain` to
+  scan. Prints the available starter packs as the next step.
 
 ### Fixed
 
