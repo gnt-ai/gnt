@@ -28,6 +28,6 @@ if (!refundOrder.execute) throw new Error("The Vercel AI SDK tool did not expose
 
 const result = await refundOrder.execute(
   { orderId: "#8021", amount: 750 },
-  { toolCallId: "gnt-example-refund", messages: [] },
+  { toolCallId: "gnt-example-refund", messages: [], context: {} },
 );
 console.log(JSON.stringify(result));
