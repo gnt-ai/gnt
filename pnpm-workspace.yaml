@@ -1,5 +1,6 @@
 packages:
   - "apps/*"
+  - "examples"
   - "packages/*"
   # apps/store is Bun-native at the runtime level (Bun.serve, bun:test —
   # not a dependency's requirement, its own code) — managed by its own
@@ -21,32 +22,6 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
   utf-8-validate: true
-# Specific, documented findings only, same rule .gitleaksignore's own
-# header states -- never a blanket --ignore-unfixable, so a genuinely new
-# advisory on anything else still fails js-audit.
-auditConfig:
-  ignoreGhsas:
-    # react-router, high severity: pinned inside apps/docs' own zudoku
-    # dependency (zudoku > react-router@7.18.1), not something any app
-    # code here pulls in directly. No fixed react-router version exists
-    # in zudoku's tree yet (checked directly against npm -- zudoku's own
-    # latest release still pins 7.18.1), there's nothing to bump to. The
-    # vulnerability itself (an RSC-mode CSRF bypass on server actions) has
-    # no real attack surface here either: apps/docs ships as a static
-    # Vite build with no server runtime for a CSRF bypass to act on.
-    - GHSA-qwww-vcr4-c8h2
-    # js-yaml, high severity: pinned inside apps/docs' own zudoku
-    # dependency tree (zudoku > gray-matter > js-yaml, and separately
-    # zudoku > @apidevtools/json-schema-ref-parser > js-yaml), not
-    # something any app code here pulls in directly. The advisory's own
-    # title says the fix wasn't backported to either the 3.x or 4.x line
-    # js-yaml resolves to here, so there's no version to bump to. The
-    # vulnerability itself (quadratic CPU consumption resolving a crafted
-    # `!!omap` YAML tag) needs an attacker-controlled YAML document fed to
-    # js-yaml's parser at runtime -- apps/docs ships as a static Vite
-    # build with no server runtime parsing untrusted YAML, so there's no
-    # real attack surface here either.
-    - GHSA-5p4m-2wfm-xmqj
 minimumReleaseAgeExclude:
   - lodash@4.17.23 || 4.17.24
   - drizzle-orm@0.45.2
@@ -58,6 +33,10 @@ minimumReleaseAgeExclude:
   - valibot@1.4.2
   - brace-expansion@5.0.9
   - hono@4.12.34
+  - '@ai-sdk/gateway@4.0.44'
+  - '@ai-sdk/provider-utils@5.0.23'
+  - '@ai-sdk/provider@4.0.6'
+  - ai@7.0.56
 overrides:
   '@hono/node-server@<2.0.5': ^2.0.5
   # 5.0.8 (the prior pin here) turned out to only fix CVE-2026-14257's
@@ -91,3 +70,24 @@ overrides:
   # tooling) -- this is plain "hono", not the already-overridden
   # "@hono/node-server".
   hono@<4.12.34: ^4.12.34
+  # GHSA-5p4m-2wfm-xmqj (js-yaml, high): quadratic CPU consumption on
+  # !!omap resolution. This was previously dependabot-ignored as
+  # unfixable -- a fix has since shipped for both major lines js-yaml
+  # resolves to in apps/docs' zudoku dependency tree (zudoku >
+  # gray-matter > js-yaml, and zudoku > @apidevtools/json-schema-ref-
+  # parser > js-yaml). Keyed to each consumer's own literal requested
+  # range, not the bare "js-yaml@3"/"js-yaml@4" shorthand, since js-yaml
+  # 4 dropped the unsafe/multi-doc load() API 3.x consumers rely on.
+  'js-yaml@^3.13.1': '>=3.15.1 <4'
+  'js-yaml@^4.1.0': '>=4.3.1 <5'
+  'js-yaml@^4.2.0': '>=4.3.1 <5'
+  # GHSA-2v37-7h3g-55p8 (nanoid, high): custom generators can loop
+  # indefinitely when size is zero, DoS. Pulled in transitively via
+  # apps/docs' zudoku>vite>postcss chain, not a direct dependency.
+  nanoid@<3.3.17: ^3.3.17
+  # GHSA-qwww-vcr4-c8h2 (react-router, high): CSRF bypass in unstable RSC
+  # code paths lets an action run before the expected 400 response. This
+  # was previously dependabot-ignored as unfixable (zudoku's own release
+  # still pins 7.18.1) -- forcing the override works even though zudoku
+  # itself hasn't bumped its declared range yet.
+  react-router@<7.18.2: ^7.18.2

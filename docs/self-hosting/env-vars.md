@@ -47,9 +47,15 @@ default and is required to boot even if you never connect Slack — see the
 | `WEBHOOK_INGEST_RATE_LIMIT_PER_HOUR` | `int` | no | `100` | Generic webhook ingestion (routers/webhooks.py) rate limit. This one's a real abuse vector, not just cost: unlike cli_key_rate_ limit_per_hour above (gated on… |
 | `MCP_KEY_RATE_LIMIT_PER_HOUR` | `int` | no | `30` | create_mcp_key had no rate limit at all, unlike its cli-key sibling above. Same abuse-backstop reasoning as cli_key_rate_limit_per_hour (minting a key is… |
 | `WEBHOOK_INGEST_IP_RATE_LIMIT_PER_HOUR` | `int` | no | `1000` | Per-IP backstop on the webhook ingest endpoint, on top of webhook_ingest_rate_limit_per_hour above. That limit is keyed per org (resolved from the token), so… |
+| `TRIAL_RISK_IP_REUSE_WEIGHT` | `int` | no | `20` | Free-trial abuse scoring (gnt.trial_risk, trial_signals table) — weighted composite score per signup, combining a reused signup IP, device fingerprint, and… |
+| `TRIAL_RISK_DEVICE_FINGERPRINT_REUSE_WEIGHT` | `int` | no | `40` |  |
+| `TRIAL_RISK_CARD_FINGERPRINT_REUSE_WEIGHT` | `int` | no | `100` |  |
+| `TRIAL_RISK_LOOKBACK_DAYS` | `int` | no | `30` | How far back a prior signup's signals still count as "reused" — a device fingerprint seen once, months ago, on an org that's since converted or churned isn't… |
+| `TRIAL_RISK_FLAG_THRESHOLD` | `int` | no | `50` | Score bands gnt.trial_risk._status_for_score checks the composite score against. Below flag_threshold: clean, passes silently. At or above it but below… |
+| `TRIAL_RISK_BLOCK_THRESHOLD` | `int` | no | `150` |  |
 | `MAX_DRAFT_RULES_PER_ORG` | `int` | no | `500` | Storage ceiling on unreviewed draft rules. With the old capture pipeline retired, unbounded draft-rule creation is the closest live equivalent: both POST… |
 | `MAX_RULES_PER_BATCH_PROPOSE` | `int` | no | `20` | batch-propose (routers/rules.py) opens one PR for several rules at once. gnt prebrain's own grouping heuristic targets 5-8 rules per PR grouped by topic — this… |
-| `WEB_ORIGIN` | `str` | no | `'http://localhost:3000'` | Whatever frontend you point at this API — its public base URL. Doubles as the Better Auth jwt plugin's "iss"/"aud" claim value and the base for… |
+| `WEB_ORIGIN` | `str` | no | `'http://localhost:3000'` | apps/web's own public base URL. Doubles as the Better Auth jwt plugin's "iss"/"aud" claim value (apps/web/lib/auth.ts doesn't override either) and the base for… |
 | `API_ORIGIN` | `str` | no | `'http://localhost:8000'` | This API's own public origin — needed to build the exact redirect_uri sent to Slack's OAuth authorize/token endpoints, which must byte-for- byte match what's… |
 | `MCP_EXTRA_ALLOWED_HOSTS` | `str` | no | `''` | Extra hostnames the MCP server's dns-rebinding check accepts besides api_origin's own — comma-separated. Exists for the legacy .up.railway.app domain:… |
 | `COMPILE_DEBOUNCE_SECONDS` | `int` | no | `600` | Skill packs compile `debounce_seconds` after a rule is approved (github_webhook.py's merge handler enqueues the compile job) — dedupes on job id, so several… |
@@ -79,6 +85,11 @@ default and is required to boot even if you never connect Slack — see the
 | `LINEAR_CLIENT_ID` | `str` | yes | `(no default)` | Linear connector — reuses the same "gnt CLI" OAuth app already registered at linear.app/settings/api/ applications for the CLI's own loopback-redirect flow… |
 | `LINEAR_STATE_SECRET` | `str` | yes | `(no default)` |  |
 | `LINEAR_TOKEN_ENCRYPTION_KEY` | `str` | yes | `(no default)` |  |
+| `GITLAB_CLIENT_ID` | `str | None` | no | `None` | GitLab connector — a genuine confidential-client OAuth 2.0 authorization-code flow (gitlab.com/oauth/authorize + /oauth/token), unlike Linear's PKCE-only… |
+| `GITLAB_CLIENT_SECRET` | `str | None` | no | `None` |  |
+| `GITLAB_STATE_SECRET` | `str | None` | no | `None` |  |
+| `GITLAB_TOKEN_ENCRYPTION_KEY` | `str | None` | no | `None` |  |
+| `GITLAB_WEBHOOK_SECRET` | `str | None` | no | `None` |  |
 | `INTERCOM_TOKEN_ENCRYPTION_KEY` | `str` | yes | `(no default)` | Intercom connector — continuous server-side sync, same architecture as Zendesk's (see workers/tasks_intercom.py's module docstring). Self-serve Personal Access… |
 | `INTERCOM_SWEEP_MAX_ITEMS_PER_ORG` | `int` | no | `50` | Nightly Intercom sync (workers/tasks_intercom.py) — same founder- tunable-knob convention zendesk_sweep_max_items_per_org establishes, its own separate cap… |
 | `CONTENT_EXTRACTION_MODEL` | `str` | no | `'claude-haiku-4-5'` | Haiku-tier, same reasoning as check_action_model/rule_merge_model above — turning one piece of already gate-masked support prose into zero or more candidate… |
@@ -96,7 +107,7 @@ default and is required to boot even if you never connect Slack — see the
 | `STRIPE_PRICE_ID` | `str | None` | no | `None` |  |
 | `STRIPE_PRICE_ID_PRO` | `str | None` | no | `None` |  |
 | `BILLING_TRIAL_DAYS` | `int` | no | `14` |  |
-| `RESEND_API_KEY` | `str | None` | no | `None` | Weekly digest email (workers/tasks_digest.py, gnt/email.py). If your frontend also sends transactional email (login OTP, invites), it can reuse the same Resend account,… |
+| `RESEND_API_KEY` | `str | None` | no | `None` | Weekly digest email (workers/tasks_digest.py, gnt/email.py). Same Resend account apps/web/lib/email.ts already uses for Better Auth's login OTP/invite emails,… |
 | `RESEND_FROM_EMAIL` | `str` | no | `'gnt.ai <notifications@gntai.dev>'` | Mirrors email.ts's FROM_EMAIL fallback exactly — gntai.dev is verified in Resend (DKIM/SPF/DMARC records live), a real sending address. |
 | `PLATFORM_ADMIN_EMAILS` | `str` | no | `''` | Comma-separated allowlist for the internal platform-admin dashboard — a signed-in user whose email is on this list can view/manage every org across the… |
 <!-- AUTOGENERATED:apps-api END -->

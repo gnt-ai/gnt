@@ -1,0 +1,45 @@
+# Local evaluation overlay for `./demo.sh`. The checked-in env files under
+# docker/demo contain public, throwaway values and this overlay enables the
+# store's deterministic demo embedding so trying gnt does not require a
+# ZeroEntropy account. It is deliberately separate from docker-compose.yml:
+# normal self-hosting continues to use the user's generated secrets and real
+# embedding provider.
+
+services:
+  store:
+    # demo.sh points docker-compose.yml's GNT_COMPOSE_STORE_ENV_FILE at the
+    # checked-in throwaway file, so this never inherits a real store env.
+    environment:
+      GNT_STORE_DEMO_FAKE_EMBED: "1"
+
+  api:
+    image: gnt-api-local
+    environment:
+      # A real key produces a policy verdict. With no key, check_action's
+      # production fail-closed path returns needs_human instead of faking one.
+      ANTHROPIC_API_KEY: ${GNT_DEMO_ANTHROPIC_API_KEY:-}
+
+  worker:
+    image: gnt-api-local
+    environment:
+      ANTHROPIC_API_KEY: ${GNT_DEMO_ANTHROPIC_API_KEY:-}
+
+  demo-seed:
+    profiles: [demo]
+    image: gnt-api-local
+    env_file:
+      - docker/demo/api.env
+    environment:
+      ANTHROPIC_API_KEY: ${GNT_DEMO_ANTHROPIC_API_KEY:-}
+      GNT_DEMO_API_PORT: ${GNT_DEMO_API_PORT:-18000}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      store:
+        condition: service_started
+      api:
+        condition: service_started
+    entrypoint: []
+    command: ["uv", "run", "python", "demo/seed_compose.py"]
