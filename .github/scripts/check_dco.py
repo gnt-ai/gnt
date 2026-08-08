@@ -21,8 +21,12 @@ point them at any range you want to verify.
 from __future__ import annotations
 
 import os
+import re
 import subprocess
 import sys
+
+# GitHub's default squash-merge commit subject ("<PR title> (#123)").
+SQUASH_MERGE_SUBJECT_RE = re.compile(r"\(#\d+\)$")
 
 
 def run_git(*args: str) -> str:
@@ -58,6 +62,17 @@ def check_commit(sha: str) -> str | None:
         return None
     short = run_git("rev-parse", "--short", sha)
     subject = run_git("show", "--no-patch", "--format=%s", sha)
+    if "Signed-off-by:" in parsed and SQUASH_MERGE_SUBJECT_RE.search(subject):
+        # A GitHub squash-merge commit carries the trailer text from the
+        # PR's original commits verbatim, but GitHub sets the squash
+        # commit's own author to the contributor's GitHub-known identity
+        # (e.g. their noreply email), which can literally differ from the
+        # email their original commits signed off with. Those original
+        # commits were already checked individually by this same script's
+        # pull_request run before the PR could merge -- this isn't a
+        # missing or fabricated sign-off, just squash-authorship the
+        # contributor doesn't control.
+        return None
     if "Signed-off-by:" in parsed:
         return (
             f"{short} ({subject}): Signed-off-by present but does not match "

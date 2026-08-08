@@ -47,7 +47,7 @@ function proposeHint(gap: Gap): string[] {
   ];
 }
 
-export async function gaps(): Promise<void> {
+export async function gaps(opts: { json?: boolean } = {}): Promise<void> {
   const key = loadApiKey();
   let res: Response;
   try {
@@ -63,6 +63,11 @@ export async function gaps(): Promise<void> {
     process.exit(1);
   }
   const gapsList: Gap[] = await res.json();
+
+  if (opts.json) {
+    console.log(JSON.stringify(gapsList, null, 2));
+    return;
+  }
 
   if (gapsList.length === 0) {
     console.log(muted("No coverage gaps logged yet."));

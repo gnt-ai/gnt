@@ -170,7 +170,7 @@ const config: ZudokuConfig = {
       type: "category",
       label: "Tools & Enforcement",
       icon: "wrench",
-      items: ["docs/tools", "docs/enforce"],
+      items: ["docs/tools", "docs/enforce", "docs/vs-opa-cedar"],
     },
     {
       type: "category",

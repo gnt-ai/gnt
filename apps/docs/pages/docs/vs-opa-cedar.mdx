@@ -1,0 +1,79 @@
+---
+title: gnt vs. OPA/Cedar vs. a system prompt
+sidebar_icon: git-compare
+description: Where gnt fits next to a policy engine or a longer system prompt, and where those are still the better call.
+---
+
+Two questions come up before "how do I install this": why not just write the rules into the system
+prompt, and why not use a policy engine that already exists. Both are reasonable defaults. Here's
+where each one holds up and where it doesn't.
+
+## vs. a longer system prompt
+
+A system prompt is where most agent policy starts, and for a handful of rules it's fine. It stops
+holding up once the rule count grows or the rules need to change without a redeploy:
+
+- **No enforcement.** A rule in the prompt is a suggestion the model can misread, forget under a
+  long context, or have overridden by a later instruction (a tool result, an injected string, a
+  user turn). Nothing stops the agent from acting anyway. `check_action` is a call the agent makes
+  and branches on; wired into a `PreToolUse` hook (see [Enforce before
+  acting](/docs/enforce)), the side effect cannot happen without a verdict for every tool included
+  in the hook's guarded set, independent of whether the model chose to follow the prompt.
+- **No retrieval.** Every rule sits in context on every call, whether or not it's relevant, and
+  there's a ceiling on how many rules fit before the prompt itself becomes the thing nobody reads
+  closely. `search_rules`/`check_action` retrieve only what's relevant to the action at hand, so
+  the rule count an org can carry isn't bounded by context window.
+- **No approval trail.** Editing a system prompt is editing a string. There's no requirement that a
+  second person looked at the change, and no record of who approved which rule when. Every gnt rule
+  is a markdown file whose `approved` status comes from a merge to your connected repo's default
+  branch, not a client-submitted write gnt takes on faith — the merge itself is the approval event.
+  Whether that means a second person actually reviewed it depends on your org's own branch
+  protection requiring a PR before that merge, same as it would for any other file in the repo.
+- **No source-of-truth conflicts.** Two people editing the same prompt file, or two prompts for two
+  agents, can drift out of sync silently. Rules live once, in git, and every connected agent reads
+  the same approved set.
+
+What a system prompt is still right for: instructing the agent to *call* `check_action` in the
+first place, and everything about tone, format, and task framing that isn't a policy decision. Pair
+it with gnt rather than replace it — see the [system prompt instruction](/docs/enforce#system-prompt-instruction)
+on the enforcement page.
+
+## vs. OPA/Cedar
+
+Open Policy Agent and Cedar are mature, and the honest comparison is that they solve a different
+problem well: deterministic authorization over structured input. `allow if user.role == "admin"`
+is exactly what Rego or Cedar's policy language is for, and gnt doesn't compete there.
+
+The problem gnt is built for is upstream of that: an agent describes what it's *about to do* in
+natural language — "refund order #8021, placed 90 days ago" — and there's no schema to evaluate
+against. Getting from that sentence to a verdict needs retrieval over policy that's mostly written
+as prose (Slack threads, support docs, a Notion page a human wrote once), not structured input a
+rules engine can pattern-match. That's what `check_action` and `search_rules` are for: semantic
+retrieval over approved, natural-language rules, with a verdict and a cited reason an agent (or a
+human reading its output) can act on.
+
+Concretely:
+
+| | OPA / Cedar | gnt |
+| --- | --- | --- |
+| Input | Structured (JSON, a request context, an ABAC/RBAC schema) | Free text (an action description) |
+| Policy format | Rego / Cedar policy language | Markdown rules with YAML frontmatter |
+| Where policy comes from | Written directly in the policy language, usually by an engineer | Extracted from real sources (`gnt prebrain`) or hand-proposed, then approved via PR |
+| Evaluation | Deterministic, no model in the loop | Retrieval + an LLM judge, verified against cited rules before returning a verdict |
+| Fails closed on | Cedar denies by default when no `permit` policy matches; OPA can return an undefined decision unless your policy or integration explicitly maps that to deny | A missing or unclear rule → always `needs_human`, by design, not convention |
+
+If your access-control decision is "does this API key have the `orders:refund` scope," that's a
+schema OPA or Cedar can enforce with no model involved, no retrieval latency, and no LLM cost per
+check — reach for those instead. gnt is for the layer above that: whether an agent's *described
+action*, in whatever words it used, matches something a human already approved in writing. The two
+aren't mutually exclusive in the same system — Cedar can gate what an API key is allowed to touch at
+all, while gnt gates whether a specific action an agent is about to take is one your org signed off
+on.
+
+## When neither fits
+
+Non-LLM authorization — service-to-service calls, API gateways, anything where the caller and the
+action are already structured and don't need natural-language interpretation — is squarely OPA or
+Cedar's territory, not gnt's. Bolting an LLM-judged retrieval step onto a check that a schema
+already answers deterministically is strictly worse: slower, non-deterministic, and harder to audit
+than `allow if`.

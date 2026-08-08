@@ -11,6 +11,10 @@ on:
   pull_request:
     paths:
       - "docker-compose.yml"
+      - "docker-compose.demo.yml"
+      - "demo.sh"
+      - "docker/demo/**"
+      - "apps/api/demo/seed_compose.py"
       - "apps/api/Dockerfile"
       - "apps/api/docker-entrypoint.sh"
       - "apps/store/Dockerfile"
@@ -20,6 +24,10 @@ on:
     branches: [main]
     paths:
       - "docker-compose.yml"
+      - "docker-compose.demo.yml"
+      - "demo.sh"
+      - "docker/demo/**"
+      - "apps/api/demo/seed_compose.py"
       - "apps/api/Dockerfile"
       - "apps/api/docker-entrypoint.sh"
       - "apps/store/Dockerfile"
@@ -51,9 +59,9 @@ jobs:
     runs-on: ubuntu-latest
     # Had no timeout at all -- a stuck docker build or a healthz poll
     # that never comes up would otherwise ride GitHub's 360-min default.
-    # 15 min covers build + migrate + up + the 1-min poll window with
-    # real room to spare.
-    timeout-minutes: 15
+    # This now verifies both the normal self-host boot and the isolated
+    # seeded demo path. 25 min covers both even without a warm image cache.
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
@@ -142,6 +150,18 @@ jobs:
       - name: verify store's own health endpoint
         run: docker compose exec -T api curl -sSf http://store:8787/health
 
+      - name: stop the baseline stack before the isolated demo
+        run: docker compose down -v
+
+      - name: run the Docker-only seeded demo path
+        run: |
+          set -euo pipefail
+          ./demo.sh | tee /tmp/gnt-demo.log
+          grep -q "Demo check_action response" /tmp/gnt-demo.log
+          grep -q '"rules_retrieved": 1' /tmp/gnt-demo.log
+
       - name: teardown
         if: always()
-        run: docker compose down -v
+        run: |
+          docker compose down -v
+          docker compose --project-name gnt-demo --file docker-compose.yml --file docker-compose.demo.yml down -v

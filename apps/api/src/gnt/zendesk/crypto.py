@@ -1,18 +1,3 @@
-from functools import lru_cache
+from gnt.crypto import make_token_cipher
 
-from cryptography.fernet import Fernet
-
-from gnt.config import get_settings
-
-
-@lru_cache
-def _fernet() -> Fernet:
-    return Fernet(get_settings().zendesk_token_encryption_key.encode("utf-8"))
-
-
-def encrypt_token(plaintext: str) -> str:
-    return _fernet().encrypt(plaintext.encode("utf-8")).decode("utf-8")
-
-
-def decrypt_token(ciphertext: str) -> str:
-    return _fernet().decrypt(ciphertext.encode("utf-8")).decode("utf-8")
+encrypt_token, decrypt_token = make_token_cipher("zendesk_token_encryption_key")

@@ -8,6 +8,28 @@ function yesNo(value: boolean): string {
   return value ? success("yes") : error("no");
 }
 
+// A 200 response with a body that parses fine but isn't the shape we
+// expect (null, an array, a bare string/number, or an object missing the
+// field these commands actually key off of) is a malformed response too,
+// just not one JSON.parse itself catches -- the JSON output path below
+// assigns billing/roi straight onto `result` with no further checking, so
+// a schema-invalid body would otherwise land in the CLI's machine-readable
+// output as-is instead of being omitted like every other malformed-
+// response case here. Checks one field each, not the full shape both
+// routers return -- enough to reject {}/[]/null without re-deriving the
+// whole response schema client-side.
+function isPlainRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function isBillingShape(value: unknown): value is Record<string, unknown> {
+  return isPlainRecord(value) && typeof value.entitled === "boolean";
+}
+
+function isRoiShape(value: unknown): value is Record<string, unknown> {
+  return isPlainRecord(value) && typeof value.window_days === "number";
+}
+
 // "N (+M vs. last week)" / "N (flat vs. last week)",
 // same shape gnt.email.render_weekly_digest uses for the email version of
 // these same numbers (apps/api/src/gnt/email.py's own _delta helper) --
@@ -38,7 +60,7 @@ function billingLine(billingStatus: {
   return text(`trial, ${daysLeft} day${daysLeft === 1 ? "" : "s"} left`);
 }
 
-export async function status(): Promise<void> {
+export async function status(opts: { json?: boolean } = {}): Promise<void> {
   const key = loadApiKey();
   // allSettled, not all -- a network failure fetching billing/onboarding/
   // staleness/roi status (separate concerns from brain/summary) must not
@@ -57,6 +79,65 @@ export async function status(): Promise<void> {
     process.exit(1);
   }
   const data = await summaryResult.value.json();
+
+  if (opts.json) {
+    const connectors: Record<string, boolean> = {};
+    for (const connector of mcpConnectorHealth()) {
+      connectors[connector.label] = connector.connected;
+    }
+    connectors["GitLab threads"] = loadMcpToken(GITLAB_TOKEN_ID) !== undefined;
+    connectors.HubSpot = loadMcpToken(HUBSPOT_TOKEN_ID) !== undefined;
+    connectors.Airtable = hasStoredAirtableConnection(loadMcpToken(AIRTABLE_TOKEN_ID));
+
+    const result: Record<string, unknown> = {
+      pack_version: data.pack_version ?? null,
+      slack_connected: data.slack_connected,
+      mcp_key_exists: data.mcp_key_exists,
+      connectors,
+    };
+    // Same best-effort treatment as the human-readable path below: a
+    // hiccup on any one of these omits its key from the JSON rather than
+    // failing the whole command.
+    if (billingResult.status === "fulfilled" && billingResult.value.ok) {
+      try {
+        const billing = await billingResult.value.json();
+        if (isBillingShape(billing)) result.billing = billing;
+      } catch {
+        // malformed billing response body -- omit the key, not the command
+      }
+    }
+    if (onboardingResult.status === "fulfilled" && onboardingResult.value.ok) {
+      try {
+        const onboarding = await onboardingResult.value.json();
+        result.github_connected = onboarding.connected_github;
+        result.github_needs_upgrade = onboarding.github_needs_upgrade;
+        result.rules_approved = onboarding.rules_approved;
+        result.rules_proposed = onboarding.rules_proposed;
+      } catch {
+        // malformed onboarding response body -- omit the keys, not the command
+      }
+    }
+    if (staleResult.status === "fulfilled" && staleResult.value.ok) {
+      try {
+        const { count } = await staleResult.value.json();
+        result.rules_due_for_revalidation = count;
+      } catch {
+        // malformed staleness response body -- omit the key, not the command
+      }
+    }
+    if (roiResult.status === "fulfilled" && roiResult.value.ok) {
+      try {
+        const roi = await roiResult.value.json();
+        if (isRoiShape(roi)) result.roi = roi;
+      } catch {
+        // malformed roi summary response body -- omit the key, not the command
+      }
+    }
+
+    console.log(JSON.stringify(result, null, 2));
+    return;
+  }
+
   const lines: Array<[string, string]> = [
     ["Skill pack version", text(data.pack_version ? String(data.pack_version) : "none yet")],
     ["Slack connected", yesNo(data.slack_connected)],

@@ -194,6 +194,8 @@ describe("apps/store server startup (subprocess)", () => {
     const env: Record<string, string> = { ...(process.env as Record<string, string>) };
     delete env.RAILWAY_PUBLIC_DOMAIN;
     delete env.RAILWAY_TCP_PROXY_DOMAIN;
+    delete env.GNT_STORE_TEST_FAKE_EMBED;
+    delete env.GNT_STORE_DEMO_FAKE_EMBED;
     for (const [key, value] of Object.entries(overrides)) {
       if (value === undefined) delete env[key];
       else env[key] = value;

@@ -551,18 +551,24 @@ async function main(): Promise<void> {
     );
   }
   const testFakeEmbed = process.env.GNT_STORE_TEST_FAKE_EMBED === "1";
+  const demoFakeEmbed = process.env.GNT_STORE_DEMO_FAKE_EMBED === "1";
   if (testFakeEmbed) {
     console.warn(
       "[gnt-store] GNT_STORE_TEST_FAKE_EMBED=1 — using a deterministic fake embedding, " +
         "NOT a real provider. This must never be set outside a test/CI fixture (e.g. the " +
         "Python backend's pytest suite spawning this server as a subprocess).",
     );
+  } else if (demoFakeEmbed) {
+    console.warn(
+      "[gnt-store] GNT_STORE_DEMO_FAKE_EMBED=1 — using deterministic local demo embeddings, " +
+        "not a real provider. This mode is only for the isolated ./demo.sh evaluation stack.",
+    );
   }
 
   // orgId below only bootstraps a placeholder source; every real org's
   // source is lazily bootstrapped on its first putPage.
   let store: StoreWithGithubSource;
-  if (testFakeEmbed) {
+  if (testFakeEmbed || demoFakeEmbed) {
     const { fakeEmbed } = await import("../testing/fake-embed.ts");
     // Same live-call gate as the embed above (tests must never make a
     // real paid provider call) — this test path must never construct

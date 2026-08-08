@@ -4,9 +4,63 @@ sidebar_icon: shield-check
 description: Wire check_action into a PreToolUse hook or a system prompt so an agent can't skip enforcement.
 ---
 
+import { Mermaid } from "zudoku/mermaid";
+
 Retrieval tells an agent what the policy is; `check_action` stops it from breaking it. Call it right
 before a side-effectful step and branch on the verdict: proceed on `allowed`, stop and cite the rule
 on `blocked`, escalate on `needs_human`. There are two natural places to wire it in.
+
+## Request flow
+
+One `check_action` call travels from the agent through gnt's API, retrieval, and verdict before the
+agent is allowed to act:
+
+<Mermaid
+  chart={`flowchart TB
+    Agent["Agent / MCP client"]
+    API["gnt API - MCP server"]
+    Gate{"Auth and rate limit"}
+    Error["Request error"]
+    Retrieve["Retrieve org-approved rules"]
+    Store[(Org-approved rule store)]
+    Quota{"LLM spend quota"}
+    Plan{"Plan action cap"}
+    Judge["Policy judge LLM"]
+    Verify{"Verify cited rules"}
+    Human["needs_human"]
+    Verdict["allowed / blocked / needs_human"]
+    Proceed["Agent proceeds"]
+    Stop["Agent stops and cites the rule"]
+    Escalate["Agent asks a human"]
+
+    Agent -->|"check_action(description, context)"| API
+    API -->|"unexpected error"| Error
+    API --> Gate
+    Gate -->|"rejected"| Error
+    Gate -->|"ok"| Retrieve
+    Retrieve -->|"org-scoped query"| Store
+    Store -->|"retrieved rules"| Quota
+    Retrieve -->|"retrieval failure"| Human
+    Retrieve -->|"no approved rule covers it"| Human
+    Quota -->|"exceeded or unavailable"| Human
+    Quota -->|"ok"| Plan
+    Plan -->|"limit reached or unavailable"| Human
+    Plan -->|"ok"| Judge
+    Judge -->|"LLM or parse error"| Human
+    Judge -->|"sanitized action + rules"| Verify
+    Verify -->|"malformed or ungrounded"| Human
+    Verify -->|"valid structured verdict"| Verdict
+    Verdict -->|"allowed"| Proceed
+    Verdict -->|"blocked"| Stop
+    Verdict -->|"needs_human"| Escalate
+  `}
+/>
+
+Auth and rate-limit rejections, and unexpected request failures, return an error to the caller
+rather than a verdict. The server only returns `allowed` or `blocked` when the judge cites a rule
+that was actually retrieved for that org. Expected evaluation failures degrade to `needs_human`:
+retrieval failure, no approved rule, spend-quota or plan-cap rejection, an LLM or parse error, or
+malformed/ungrounded citations.
 
 ## Claude Code PreToolUse hook
 

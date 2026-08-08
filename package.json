@@ -1,15 +1,29 @@
 {
   "name": "gnt-ai",
+  "description": "Checks every AI agent action against your company's real rules before it runs. Git-native, PR-reviewed.",
+  "homepage": "https://docs.gntai.dev",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gnt-ai/gnt.git"
+  },
+  "keywords": [
+    "ai-agents",
+    "agent-guardrails",
+    "policy-as-code",
+    "governance",
+    "cli"
+  ],
   "private": true,
   "scripts": {
     "dev": "turbo run dev",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
     "clip": "./scripts/clip.sh"
   },
   "devDependencies": {
-    "turbo": "^2.10.8"
+    "turbo": "^2.3.0"
   },
   "packageManager": "pnpm@11.10.0",
   "engines": {
