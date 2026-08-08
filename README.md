@@ -204,6 +204,19 @@ gnt webhook list|create|revoke
 gnt org show|rename|invite|remove
 ```
 
+### Shell completion
+
+```bash
+# bash, add to ~/.bashrc
+eval "$(gnt completion bash)"
+
+# zsh, add to ~/.zshrc
+eval "$(gnt completion zsh)"
+
+# fish, add to ~/.config/fish/config.fish
+gnt completion fish | source
+```
+
 ## Learn more
 
 - Self-hosting walkthrough, including the production-hardening path: [`docs/self-hosting/README.md`](docs/self-hosting/README.md)

@@ -29,6 +29,8 @@ or `0.5.5` publish.
   for scripting a CI gate or dashboard around either command.
 - README now has a Contributors section so merged PRs show up somewhere
   beyond the commit graph.
+- `gnt completion bash|zsh|fish` prints a shell completion script, generated
+  from the CLI's own command table.
 - New starter pack: `account-offboarding`, covering identity verification
   before deletion, legal-hold and unresolved-billing overrides on retention,
   closure approval beyond the requesting agent, a grace period before
