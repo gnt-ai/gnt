@@ -24,6 +24,8 @@ or `0.5.5` publish.
   never bypassing `check_action`, smoke-testing new agent integrations,
   audit logging of the verdict that allowed an action, and rule changes not
   applying retroactively to actions already in flight.
+- Docs: a new "gnt vs. OPA/Cedar vs. a system prompt" page, covering where each fits
+  and where OPA/Cedar are still the better call.
 
 ### Fixed
 
