@@ -91,6 +91,31 @@ test("lists each gap with a copy-pasteable propose-a-rule curl hint", async () =
   expect(output).toContain("/submit");
 });
 
+test("--json prints the raw gap list instead of the human-readable format", async () => {
+  const body = [
+    { tool: "search_rules", query: "refund policy", count: 4, last_seen: "2026-07-16T00:00:00Z" },
+  ];
+  globalThis.fetch = mock(() =>
+    Promise.resolve(new Response(JSON.stringify(body), { status: 200 })),
+  ) as unknown as typeof fetch;
+
+  await gaps({ json: true });
+
+  expect(logs).toHaveLength(1);
+  expect(JSON.parse(logs[0] as string)).toEqual(body);
+});
+
+test("--json prints an empty array, not the plain-text message, when there are no gaps", async () => {
+  globalThis.fetch = mock(() =>
+    Promise.resolve(new Response(JSON.stringify([]), { status: 200 })),
+  ) as unknown as typeof fetch;
+
+  await gaps({ json: true });
+
+  expect(logs).toHaveLength(1);
+  expect(JSON.parse(logs[0] as string)).toEqual([]);
+});
+
 test("a query containing a single quote produces a shell-safe curl command", async () => {
   const body = [
     { tool: "search_rules", query: "what's our refund policy", count: 1, last_seen: "2026-07-17T00:00:00Z" },
