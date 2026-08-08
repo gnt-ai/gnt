@@ -11,6 +11,7 @@ trusted from a summary count) plus the store-side rules mirror — while
 leaving a second org's data completely untouched.
 """
 
+import asyncio
 import uuid
 from datetime import date, datetime, timezone
 
@@ -50,6 +51,8 @@ from gnt.github.crypto import encrypt_token
 from gnt.intercom.crypto import encrypt_token as encrypt_intercom_token
 from gnt.linear.crypto import encrypt_token as encrypt_linear_token
 from gnt.notion.crypto import encrypt_token as encrypt_notion_token
+from gnt.queue import get_pool
+from gnt.routers.org_admin import _CONFIRM_TTL_SECONDS, _redis_key
 from gnt.slack.crypto import encrypt_token as encrypt_slack_token
 from gnt.store_client import get_rule as store_get_rule
 from gnt.zendesk.crypto import encrypt_token as encrypt_zendesk_token
@@ -339,6 +342,43 @@ async def test_confirm_is_single_use(db_session, org_a, admin_a):
 
         second = await client.post("/v1/org/offboarding/confirm", json={"confirmation_token": token})
         assert second.status_code == 400
+
+
+# -- the confirmation token actually lives in redis, and actually expires --
+
+
+async def test_request_sets_the_confirmation_token_in_redis(db_session, org_a, admin_a):
+    await ensure_org(db_session, org_a)
+    await db_session.commit()
+
+    async with admin_a as client:
+        requested = await client.post("/v1/org/offboarding/request")
+        token = requested.json()["confirmation_token"]
+
+    stored = await get_pool().get(_redis_key(org_a))
+    assert stored.decode() == token
+
+    ttl = await get_pool().ttl(_redis_key(org_a))
+    assert 0 < ttl <= _CONFIRM_TTL_SECONDS
+
+
+async def test_confirm_rejects_an_expired_token(db_session, org_a, admin_a):
+    await ensure_org(db_session, org_a)
+    await db_session.commit()
+
+    async with admin_a as client:
+        requested = await client.post("/v1/org/offboarding/request")
+        token = requested.json()["confirmation_token"]
+
+        # Force the real TTL down instead of deleting the key outright —
+        # this exercises Redis actually expiring the key under us, not
+        # just the "no key at all" case test_confirm_without_a_prior_
+        # request_is_refused already covers.
+        await get_pool().pexpire(_redis_key(org_a), 1)
+        await asyncio.sleep(0.05)
+
+        expired = await client.post("/v1/org/offboarding/confirm", json={"confirmation_token": token})
+        assert expired.status_code == 400
 
 
 # -- cross-org isolation: the plan's own automatic-rejection non-negotiable
