@@ -47,6 +47,10 @@ throwaway localhost-only secrets, so it does not need a ZeroEntropy key.
 
 ![gnt connect's interactive picker, and what gnt prebrain's draft-PR output looks like](.github/assets/cli-demo.gif)
 
+> Nothing for `gnt prebrain` to scan yet? Run `gnt init` first — it scaffolds `rules/` locally
+> with a couple of example rule files so there's something real to look at and edit, and points
+> you at `gnt prebrain --starter-packs` for a curated pack to start from instead.
+
 That merge lands a rule file in your connected repo, shaped like this:
 
 ```
@@ -132,6 +136,7 @@ One MCP endpoint, five tools:
 
 ```bash
 gnt login                # sign in, store an API key locally
+gnt init                 # scaffold a local rules/ dir with example rule files
 gnt connect github       # connect the repo your rules PRs open against
 gnt prebrain             # scan sources, extract candidate rules, open PRs
 gnt review               # review rules awaiting approval
@@ -161,6 +166,7 @@ gnt gaps                 # list uncovered queries with no approved rule
 - **Who writes rules**: anyone with access to your connected repo, either through `gnt prebrain` (batch-extracted from real sources) or `gnt review` (hand-proposed).
 - **How approval works**: merging the PR is the approval. There's no separate publish step.
 - **What gets committed**: `rules/<rule-id>.md` files with the frontmatter shown above and a plain markdown body.
+- **Catching a malformed rule before it's reviewed**: `gnt rules lint` checks a rule file's frontmatter locally, and [`gnt-ai/gnt/.github/actions/lint-rules`](.github/actions/lint-rules) runs the same check as a CI step on your rules repo's own PRs, so a bad frontmatter fails the PR instead of the review.
 
 ## Troubleshooting
 
@@ -179,6 +185,7 @@ gnt gaps                 # list uncovered queries with no approved rule
 ```
 gnt login
 gnt logout
+gnt init                 scaffold a local rules/ dir with example rule files (--dir <path>)
 gnt connect <app>        github, slack, notion-mcp, monday-mcp, linear-mcp, jira-mcp,
                           sentry-mcp, granola-mcp, zoom-mcp, figma, datadog,
                           gitlab-threads, hubspot, airtable, openclaw, hermes

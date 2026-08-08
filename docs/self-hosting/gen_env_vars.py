@@ -72,7 +72,7 @@ def summarize(comment: str) -> str:
 
 
 def main() -> None:
-    source = CONFIG_PATH.read_text()
+    source = CONFIG_PATH.read_text(encoding="utf-8")
     lines = source.splitlines()
     tree = ast.parse(source)
 
@@ -104,11 +104,11 @@ def main() -> None:
     table = "\n".join(table_lines)
     generated = f"{START_MARKER}\n{table}\n{END_MARKER}"
 
-    doc = ENV_VARS_MD.read_text()
+    doc = ENV_VARS_MD.read_text(encoding="utf-8")
     pattern = re.compile(re.escape(START_MARKER) + r".*?" + re.escape(END_MARKER), re.DOTALL)
     if not pattern.search(doc):
         raise SystemExit(f"markers not found in {ENV_VARS_MD} -- add {START_MARKER!r}/{END_MARKER!r} first")
-    ENV_VARS_MD.write_text(pattern.sub(generated, doc))
+    ENV_VARS_MD.write_text(pattern.sub(generated, doc), encoding="utf-8")
     print(f"wrote {len(rows)} apps/api settings fields into {ENV_VARS_MD}")
 
 

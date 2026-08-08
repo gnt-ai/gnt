@@ -15,16 +15,67 @@ or `0.5.5` publish.
 
 ### Added
 
+- `gnt doctor` checks the local Node version, login credentials, API
+  reachability, GitHub rules-repo connection, and common self-host `.env`
+  mistakes in one pass.
+- Documentation for the `gnt org`, `gnt billing`, and `gnt stale` CLI
+  commands, including current behavior, examples, and follow-up actions.
 - `./demo.sh` provides a Docker-only, seeded `check_action` evaluation path
   with an isolated Compose project and a ready-to-copy curl request.
+- Runnable LangChain, Vercel AI SDK, and Anthropic tool-use examples that call `check_action`
+  before a simulated refund and fail closed on blocked or human-review verdicts.
 - `gnt status` and `gnt gaps` now accept a `--json` flag that prints the
   same data as machine-readable JSON instead of the human-formatted output,
   for scripting a CI gate or dashboard around either command.
 - README now has a Contributors section so merged PRs show up somewhere
   beyond the commit graph.
+- New starter pack: `account-offboarding`, covering identity verification
+  before deletion, legal-hold and unresolved-billing overrides on retention,
+  closure approval beyond the requesting agent, a grace period before
+  permanent deletion, and confirmation back to the requester.
+- `gnt rules lint [path]` validates a rule file's frontmatter shape locally
+  (title/body length, `status`, `confidence`, `owner_id`, `tags`) — the same
+  constraints `apps/api` enforces server-side — so a malformed rule fails
+  before a PR round-trip instead of after. Defaults to `./rules`.
+- `gnt init` scaffolds a local `rules/` directory with a couple of example
+  rule files, for a brand-new repo with nothing yet for `gnt prebrain` to
+  scan. Prints the available starter packs as the next step.
+- New starter pack: `marketing-brand-approval`, covering sign-off on
+  performance/results claims, legal review for competitor mentions,
+  approval on pricing-page changes, following a brand style guide, and
+  documented permission before using customer quotes or logos.
+- New starter pack: `customer-success-renewals`, covering renewal-risk
+  escalation timing, win-back discount approval, usage-drop churn signals,
+  save-play review before a CSM commits to an offer, and logging contract
+  downgrades as a partial churn signal.
+- New starter pack: `soc2-audit-readiness`, covering evidence-collection
+  cadence, control-owner assignment, compensating-control notes for changes
+  during an active audit window, audit scope review, and evidence-gap
+  remediation.
+- New starter pack: `content-moderation-brand-safety`, covering unverified
+  claims, competitor disparagement, off-brand tone, legal-sensitive topics,
+  and silent edits/deletions on public or customer-facing posts.
+- New starter pack: `open-source-license-compliance`, covering license checks
+  on new dependencies, copyleft escalation, unlicensed code, third-party
+  attribution and notices, and centralized license tracking.
+- New starter pack: `ai-agent-governance`, covering `needs_human` escalation,
+  never bypassing `check_action`, smoke-testing new agent integrations,
+  audit logging of the verdict that allowed an action, and rule changes not
+  applying retroactively to actions already in flight.
+- Docs: a new "gnt vs. OPA/Cedar vs. a system prompt" page, covering where each fits
+  and where OPA/Cedar are still the better call.
+- `gnt-ai/gnt/.github/actions/lint-rules`, a composite GitHub Action that runs
+  `gnt rules lint` in CI, for a rules repo to drop into its own PR checks
+  without installing the CLI ahead of time.
 
 ### Fixed
 
+- `docs/self-hosting/gen_env_vars.py` now reads and writes `config.py`/
+  `env-vars.md` with explicit UTF-8, instead of the platform default (cp1252
+  on Windows, which was silently mangling a trailing "…" in one setting's
+  note). Regenerated `env-vars.md`, which also picks up the trial-risk and
+  GitLab OAuth settings that had been added to `config.py` since the last
+  regen.
 - `gnt billing` no longer crashes with a raw stack trace if the API is
   unreachable — a network failure on either request now prints the same
   `fail()`-styled message as `gnt gaps` and `gnt stale`.
