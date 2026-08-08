@@ -8550,8 +8550,6 @@ snapshots:
 
   js-base64@3.9.2: {}
 
-  js-yaml@3.15.1:
-
   js-tiktoken@1.0.21:
     dependencies:
       base64-js: 1.5.1
