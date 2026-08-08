@@ -23,6 +23,12 @@ or `0.5.5` publish.
 - New starter pack: `open-source-license-compliance`, covering license checks
   on new dependencies, copyleft escalation, unlicensed code, third-party
   attribution and notices, and centralized license tracking.
+- New starter pack: `ai-agent-governance`, covering `needs_human` escalation,
+  never bypassing `check_action`, smoke-testing new agent integrations,
+  audit logging of the verdict that allowed an action, and rule changes not
+  applying retroactively to actions already in flight.
+- Docs: a new "gnt vs. OPA/Cedar vs. a system prompt" page, covering where each fits
+  and where OPA/Cedar are still the better call.
 
 ### Fixed
 
