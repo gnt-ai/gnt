@@ -166,6 +166,7 @@ gnt gaps                 # list uncovered queries with no approved rule
 - **Who writes rules**: anyone with access to your connected repo, either through `gnt prebrain` (batch-extracted from real sources) or `gnt review` (hand-proposed).
 - **How approval works**: merging the PR is the approval. There's no separate publish step.
 - **What gets committed**: `rules/<rule-id>.md` files with the frontmatter shown above and a plain markdown body.
+- **Catching a malformed rule before it's reviewed**: `gnt rules lint` checks a rule file's frontmatter locally, and [`gnt-ai/gnt/.github/actions/lint-rules`](.github/actions/lint-rules) runs the same check as a CI step on your rules repo's own PRs, so a bad frontmatter fails the PR instead of the review.
 
 ## Troubleshooting
 

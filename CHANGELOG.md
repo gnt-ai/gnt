@@ -57,6 +57,9 @@ or `0.5.5` publish.
   applying retroactively to actions already in flight.
 - Docs: a new "gnt vs. OPA/Cedar vs. a system prompt" page, covering where each fits
   and where OPA/Cedar are still the better call.
+- `gnt-ai/gnt/.github/actions/lint-rules`, a composite GitHub Action that runs
+  `gnt rules lint` in CI, for a rules repo to drop into its own PR checks
+  without installing the CLI ahead of time.
 
 ### Fixed
 
