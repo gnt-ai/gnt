@@ -24,6 +24,26 @@ or `0.5.5` publish.
   performance/results claims, legal review for competitor mentions,
   approval on pricing-page changes, following a brand style guide, and
   documented permission before using customer quotes or logos.
+- New starter pack: `customer-success-renewals`, covering renewal-risk
+  escalation timing, win-back discount approval, usage-drop churn signals,
+  save-play review before a CSM commits to an offer, and logging contract
+  downgrades as a partial churn signal.
+- New starter pack: `soc2-audit-readiness`, covering evidence-collection
+  cadence, control-owner assignment, compensating-control notes for changes
+  during an active audit window, audit scope review, and evidence-gap
+  remediation.
+- New starter pack: `content-moderation-brand-safety`, covering unverified
+  claims, competitor disparagement, off-brand tone, legal-sensitive topics,
+  and silent edits/deletions on public or customer-facing posts.
+- New starter pack: `open-source-license-compliance`, covering license checks
+  on new dependencies, copyleft escalation, unlicensed code, third-party
+  attribution and notices, and centralized license tracking.
+- New starter pack: `ai-agent-governance`, covering `needs_human` escalation,
+  never bypassing `check_action`, smoke-testing new agent integrations,
+  audit logging of the verdict that allowed an action, and rule changes not
+  applying retroactively to actions already in flight.
+- Docs: a new "gnt vs. OPA/Cedar vs. a system prompt" page, covering where each fits
+  and where OPA/Cedar are still the better call.
 
 ### Fixed
 
