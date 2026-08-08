@@ -1,24 +1,25 @@
 # Contributing to gnt
 
-## Dev setup
+## Setup
 
-Prerequisites: Node >=22.13, [pnpm](https://pnpm.io/installation) 11.10.0 (`corepack enable`
-picks it up from `packageManager` in `package.json`), plus [uv](https://docs.astral.sh/uv/) for
-`apps/api` and [bun](https://bun.sh) for `apps/store`.
+1. **Install prerequisites**: Node >=22.13, [pnpm](https://pnpm.io/installation) 11.10.0
+   (`corepack enable` picks it up from `packageManager` in `package.json`), plus
+   [uv](https://docs.astral.sh/uv/) for `apps/api` and [bun](https://bun.sh) for `apps/store`.
 
-```bash
-git clone https://github.com/gnt-ai/gnt
-cd gnt
-pnpm install
-```
+2. **Clone and install the pnpm workspace** (covers `apps/cli` and `apps/docs`):
 
-That covers `apps/cli` and `apps/docs` (the pnpm workspace). Two apps need their own setup on
-top of that:
+   ```bash
+   git clone https://github.com/gnt-ai/gnt
+   cd gnt
+   pnpm install
+   ```
 
-```bash
-cd apps/api && uv sync && cp .env.example .env    # fill it in, needs local Postgres + Redis
-cd apps/store && bun install && cp .env.example .env
-```
+3. **Set up `apps/api` and `apps/store`**, each on its own dependency manager:
+
+   ```bash
+   cd apps/api && uv sync && cp .env.example .env    # fill it in, needs local Postgres + Redis
+   cd apps/store && bun install && cp .env.example .env
+   ```
 
 `apps/api` and `apps/store` talk to each other over HTTP in local dev. `apps/store`'s server
 has to be running for `apps/api`'s rules routes to work. See each app's own README for the
