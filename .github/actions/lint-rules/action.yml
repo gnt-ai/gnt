@@ -1,0 +1,28 @@
+name: gnt rules lint
+description: >-
+  Lints a rules/ directory's frontmatter (title, body, status, confidence,
+  owner_id, tags) the same way apps/api's CreateRuleRequest validates it
+  server-side, via `gnt rules lint`. Drop into a rules repo's own CI to catch
+  a malformed rule on the PR instead of after it lands.
+author: gnt-ai
+
+branding:
+  icon: check-circle
+  color: purple
+
+inputs:
+  path:
+    description: Directory (or single rule file) to lint, passed straight through to `gnt rules lint`.
+    required: false
+    default: rules
+  version:
+    description: '"@gnt-ai/cli" npm version specifier to run (e.g. "0.6.1", "latest").'
+    required: false
+    default: latest
+
+runs:
+  using: composite
+  steps:
+    - name: gnt rules lint
+      shell: bash
+      run: npx --yes "@gnt-ai/cli@${{ inputs.version }}" rules lint "${{ inputs.path }}"
