@@ -1,0 +1,30 @@
+{
+  "name": "@gnt-ai/examples",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src test",
+    "test": "tsx --test test/**/*.test.ts",
+    "example:langchain": "tsx src/langchain-check-action.ts",
+    "example:vercel-ai-sdk": "tsx src/vercel-ai-sdk-check-action.ts",
+    "example:anthropic": "tsx src/anthropic-tool-use-check-action.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
+    "@langchain/core": "^1.1.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "ai": "^7.0.56",
+    "zod": "^4.4.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@types/node": "^26.0.0",
+    "eslint": "^9.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^6.0.0",
+    "typescript-eslint": "^8.0.0"
+  }
+}
