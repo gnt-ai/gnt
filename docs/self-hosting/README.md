@@ -19,11 +19,21 @@ website. That has one real consequence worth knowing before you start: see
 
 ## Fast path
 
+Want to evaluate the product before configuring a deployment? From a fresh
+clone, `./demo.sh` boots an isolated stack, seeds a real approved rule, calls
+the MCP `check_action` tool, and prints a reusable curl command. It needs only
+Docker; an Anthropic key is optional because a missing key demonstrates gnt's
+real fail-closed `needs_human` behavior. Demo data lives under the separate
+`gnt-demo` Compose project and never shares the normal self-host volume.
+
 ```bash
 git clone https://github.com/gnt-ai/gnt
 cd gnt
-./setup.sh
+./demo.sh
 ```
+
+When you are ready to configure a persistent self-hosted deployment instead,
+run `./setup.sh`; that is the path described in the sections below.
 
 `setup.sh` does everything sections 1 and 2 below do by hand: copies both
 `.env` files, generates every secret it safely can, asks for the three keys
@@ -190,10 +200,11 @@ login`'s browser step has nowhere to land.
 
 One honest way through this today, not polished, but it works:
 
-**Mint a key by hand.** Insert an `orgs` row and an `mcp_api_keys` row
-directly via `psql` against the compose Postgres, with a `gnt_live_`-prefixed
-key whose SHA-256 hash you compute locally, then write it to
-`~/.gnt/credentials.json` yourself (`{"api_key": "...", "key_id": "..."}`,
+**Mint a key by hand.** Open the database shell with
+`docker compose exec postgres psql -U gnt -d gnt` (or the equivalent
+`docker-compose` command), then insert an `orgs` row and an `mcp_api_keys` row
+with a `gnt_live_`-prefixed key whose SHA-256 hash you compute locally. Write
+it to `~/.gnt/credentials.json` yourself (`{"api_key": "...", "key_id": "..."}`,
 the same shape `saveApiKey()` in `apps/cli/src/credentials.ts` writes).
 Manual, and it means trusting yourself with a raw key instead of going
 through a real auth flow — acceptable for a local self-host instance you

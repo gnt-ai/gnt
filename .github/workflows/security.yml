@@ -173,3 +173,42 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
       - run: python3 .github/scripts/check_workflow_security.py
+
+  # Workflow/script-based (not the dcoapp GitHub App): matches this repo's
+  # existing policy-check pattern (check_workflow_security.py above), needs
+  # no org-level App install, and stays fork-safe by running on ubuntu-latest
+  # only — same hosted-runner discipline CONTRIBUTING.md / issue #58 call out.
+  dco:
+    name: dco (Signed-off-by)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # push with before=000… is a new-branch / first-push edge where there's
+    # no meaningful parent range; workflow_dispatch has no commit range at
+    # all. PRs and ordinary pushes to main are what we care about.
+    if: >-
+      github.event_name == 'pull_request' ||
+      (github.event_name == 'push' && github.event.before != '0000000000000000000000000000000000000000')
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
+        with:
+          # Full history so BASE_SHA..HEAD_SHA is resolvable even when the
+          # PR is many commits deep — a shallow clone would make rev-list
+          # miss (or fail to find) the base.
+          fetch-depth: 0
+      - name: Verify DCO sign-offs
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha || github.event.before }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha || github.event.after }}
+        run: |
+          # Run the checker from the trusted base revision, not the PR head.
+          # A PR must not be able to weaken enforcement by editing check_dco.py.
+          TRUSTED_SHA="${{ github.event.pull_request.base.sha || github.event.before }}"
+          if [ "$TRUSTED_SHA" = "0000000000000000000000000000000000000000" ] || \
+             ! git cat-file -e "${TRUSTED_SHA}:.github/scripts/check_dco.py" 2>/dev/null; then
+            # First introduction on the base branch — reviewers validate the
+            # script in the PR itself; after merge, future PRs use main's copy.
+            cp .github/scripts/check_dco.py /tmp/check_dco.py
+          else
+            git show "${TRUSTED_SHA}:.github/scripts/check_dco.py" > /tmp/check_dco.py
+          fi
+          python3 /tmp/check_dco.py

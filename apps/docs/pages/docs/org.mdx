@@ -1,0 +1,65 @@
+---
+title: Organization commands
+sidebar_icon: users
+description: View and manage your gnt organization from the CLI.
+---
+
+Use `gnt org` to view the organization attached to your stored API key, rename it, and manage its members and invitations.
+
+## Show the organization
+
+```bash
+gnt org show
+```
+
+`show` is the default subcommand, so `gnt org` produces the same result. It prints the organization name followed by every member's email address and role. Pending invitations are included when any exist.
+
+```text
+Acme
+
+Members (2)
+alex@example.com: admin
+sam@example.com:  member
+
+Pending invitations (1)
+lee@example.com: member
+```
+
+## Rename the organization
+
+```bash
+gnt org rename "Acme AI"
+```
+
+The new name is sent to the organization service and takes effect immediately when the request succeeds.
+
+```text
+✓ Renamed to "Acme AI".
+```
+
+## Invite a member
+
+```bash
+gnt org invite lee@example.com
+gnt org invite priya@example.com --role admin
+```
+
+Invitations use the `member` role by default. Pass `--role admin` to invite an administrator; any other role value is treated as `member`.
+
+```text
+✓ Invited priya@example.com as admin.
+```
+
+## Remove a member
+
+```bash
+gnt org remove lee@example.com
+```
+
+This removes the person identified by the email address from the organization.
+
+```text
+✓ Removed lee@example.com.
+```
+
+All four subcommands require a key stored by `gnt login`. If the organization service rejects a request, the CLI prints the service's error message when one is available and exits without making a local change.

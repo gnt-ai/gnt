@@ -1,20 +1,25 @@
 # Contributing to gnt
 
-## Dev setup
+## Setup
 
-```bash
-git clone https://github.com/gnt-ai/gnt
-cd gnt
-pnpm install
-```
+1. **Install prerequisites**: Node >=22.13, [pnpm](https://pnpm.io/installation) 11.10.0
+   (`corepack enable` picks it up from `packageManager` in `package.json`), plus
+   [uv](https://docs.astral.sh/uv/) for `apps/api` and [bun](https://bun.sh) for `apps/store`.
 
-That covers `apps/cli` and `apps/docs` (the pnpm workspace). Two apps need their own setup on
-top of that:
+2. **Clone and install the pnpm workspace** (covers `apps/cli` and `apps/docs`):
 
-```bash
-cd apps/api && uv sync && cp .env.example .env    # fill it in, needs local Postgres + Redis
-cd apps/store && bun install && cp .env.example .env
-```
+   ```bash
+   git clone https://github.com/gnt-ai/gnt
+   cd gnt
+   pnpm install
+   ```
+
+3. **Set up `apps/api` and `apps/store`**, each on its own dependency manager:
+
+   ```bash
+   cd apps/api && uv sync && cp .env.example .env    # fill it in, needs local Postgres + Redis
+   cd apps/store && bun install && cp .env.example .env
+   ```
 
 `apps/api` and `apps/store` talk to each other over HTTP in local dev. `apps/store`'s server
 has to be running for `apps/api`'s rules routes to work. See each app's own README for the
@@ -106,9 +111,10 @@ certifying you wrote the change (or otherwise have the right to submit it) under
 Linux kernel and a lot of other open-source projects use instead of a CLA. It's a statement,
 not paperwork: no separate form, no signing tool, just the flag on `git commit`.
 
-There's no automated DCO check wired into CI yet. That's a real gap, tracked as follow-up, not
-something this PR (or any PR) should assume is enforced. Sign off anyway; it'll get checked by
-a maintainer by hand until the bot exists.
+CI enforces this on every PR (and on pushes to `main`): the `dco` job in
+`.github/workflows/security.yml` runs `.github/scripts/check_dco.py`, which fails the check if
+any non-merge commit in the range is missing an author-matching `Signed-off-by` trailer. Fix a
+tip commit with `git commit --amend -s`, or older commits with `git rebase --signoff <base>`.
 
 ## Opening a PR
 

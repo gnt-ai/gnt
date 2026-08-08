@@ -211,20 +211,13 @@ jobs:
       # field gets a throwaway value here instead. Nothing under test
       # touches Slack/Anthropic for real, these just have to parse.
       #
-      # DATABASE_URL/CRON_DATABASE_URL name gnt_app/gnt_cron, not the
-      # Postgres service's own superuser (gnt) — so CI genuinely exercises
-      # the same restricted, RLS-enforcing roles production uses (see
-      # migrations 0013/0014), not a connection that bypasses RLS
-      # entirely. Those roles don't exist until the first test session's
-      # migration step creates them, and migrations never set a role's
-      # password (see 0013's docstring) — conftest.py's _sync_role_password
-      # sets it to match these placeholder passwords right after
-      # migrating, every run, since this container is destroyed after CI
-      # finishes anyway.
-      DATABASE_URL: postgresql+asyncpg://gnt_app:ci-placeholder@localhost:15432/gnt
-      MIGRATION_DATABASE_URL: postgresql+asyncpg://gnt:gnt@localhost:15432/gnt
-      CRON_DATABASE_URL: postgresql+asyncpg://gnt_cron:ci-placeholder@localhost:15432/gnt
-      REDIS_URL: redis://localhost:16379/0
+      # DATABASE_URL/MIGRATION_DATABASE_URL/CRON_DATABASE_URL/REDIS_URL and
+      # the two GNT_STORE_*_DATABASE_URL vars below aren't set here — they
+      # depend on the run-scoped host port Docker assigns in the "Start
+      # postgres + redis" step, which can't be known until that step runs,
+      # and a job's env: block is evaluated once before any step does. That
+      # step writes them to $GITHUB_ENV instead (same pattern the store and
+      # alembic-check jobs above use).
       GROQ_API_KEY: ci-placeholder
       CONTRIBUTOR_HASH_SECRET: ci-placeholder
       SLACK_CLIENT_ID: ci-placeholder
@@ -272,17 +265,6 @@ jobs:
       # subprocess-backed integration tests, which set their own values.
       STORE_INTERNAL_API_SECRET: ci-placeholder
       APPROVAL_SIGNING_SECRET: ci-placeholder
-      # NativeStore is Postgres-only — a plain postgres:// URL (the
-      # `postgres` npm package), not this job's own postgresql+asyncpg://
-      # one, and a dedicated database (created below) so its tables never
-      # share a schema with apps/api's own. Superuser gnt:gnt, not the
-      # RLS-restricted gnt_app role above: NativeStore's schema bootstrap
-      # runs DDL (CREATE TABLE/EXTENSION), which gnt_app deliberately can't
-      # do. Read by conftest.py's `_store_server` fixture (the whole pytest
-      # suite's spawned store) and by eval-serve.ts, spawned via
-      # store_harness.py's EvalStoreHarness (the retrieval eval).
-      GNT_STORE_TEST_DATABASE_URL: postgres://gnt:gnt@localhost:15432/gnt_store_native_test
-      GNT_STORE_EVAL_NATIVE_DATABASE_URL: postgres://gnt:gnt@localhost:15432/gnt_store_native_test
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
 
@@ -294,30 +276,72 @@ jobs:
       # any OS with Docker beats two runner-specific ones. rm -f first
       # clears a stale container left behind by a cancelled previous run;
       # the matching teardown step below always runs, cancelled or not.
+      #
+      # Container names and host ports are both run-scoped (run_id +
+      # run_attempt) and random (-p 127.0.0.1::5432, left blank so Docker
+      # picks one) rather than the fixed ci-postgres:15432/ci-redis:16379
+      # this used to be — same reasoning as the store job's own Postgres
+      # container above: fixed names/ports bake in an assumption this job
+      # always gets an isolated machine to itself, which breaks on a
+      # shared/self-hosted runner or a contributor running this by hand
+      # alongside another copy of the job.
       - name: Start postgres + redis
         run: |
           set -euo pipefail
-          docker rm -f ci-postgres ci-redis >/dev/null 2>&1 || true
-          docker run -d --name ci-postgres \
+          PG_NAME="ci-postgres-${{ github.run_id }}-${{ github.run_attempt }}"
+          REDIS_NAME="ci-redis-${{ github.run_id }}-${{ github.run_attempt }}"
+          echo "API_PG_CONTAINER=$PG_NAME" >> "$GITHUB_ENV"
+          echo "API_REDIS_CONTAINER=$REDIS_NAME" >> "$GITHUB_ENV"
+          docker rm -f "$PG_NAME" "$REDIS_NAME" >/dev/null 2>&1 || true
+          docker run -d --name "$PG_NAME" \
             -e POSTGRES_USER=gnt -e POSTGRES_PASSWORD=gnt -e POSTGRES_DB=gnt \
-            -p 15432:5432 \
+            -p 127.0.0.1::5432 \
             pgvector/pgvector:pg17
-          docker run -d --name ci-redis -p 16379:6379 redis:7-alpine
+          docker run -d --name "$REDIS_NAME" -p 127.0.0.1::6379 redis:7-alpine
           for i in $(seq 1 30); do
-            docker exec ci-postgres pg_isready -U gnt >/dev/null 2>&1 && break
+            docker exec "$PG_NAME" pg_isready -U gnt >/dev/null 2>&1 && break
             sleep 2
           done
-          docker exec ci-postgres pg_isready -U gnt
+          docker exec "$PG_NAME" pg_isready -U gnt
           for i in $(seq 1 30); do
-            docker exec ci-redis redis-cli ping >/dev/null 2>&1 && break
+            docker exec "$REDIS_NAME" redis-cli ping >/dev/null 2>&1 && break
             sleep 2
           done
-          docker exec ci-redis redis-cli ping
+          docker exec "$REDIS_NAME" redis-cli ping
           # Separate database on the same container for apps/store's
           # NativeStore subprocesses (conftest.py's _store_server fixture,
           # the retrieval eval's EvalStoreHarness) — see this job's
-          # GNT_STORE_TEST_DATABASE_URL/GNT_STORE_EVAL_NATIVE_DATABASE_URL.
-          docker exec ci-postgres psql -U gnt -d gnt -c 'CREATE DATABASE gnt_store_native_test'
+          # GNT_STORE_TEST_DATABASE_URL/GNT_STORE_EVAL_NATIVE_DATABASE_URL
+          # below.
+          docker exec "$PG_NAME" psql -U gnt -d gnt -c 'CREATE DATABASE gnt_store_native_test'
+          PG_PORT=$(docker port "$PG_NAME" 5432/tcp | head -1 | cut -d: -f2)
+          REDIS_PORT=$(docker port "$REDIS_NAME" 6379/tcp | head -1 | cut -d: -f2)
+          # DATABASE_URL/CRON_DATABASE_URL name gnt_app/gnt_cron, not the
+          # Postgres container's own superuser (gnt) — so CI genuinely
+          # exercises the same restricted, RLS-enforcing roles production
+          # uses (see migrations 0013/0014), not a connection that bypasses
+          # RLS entirely. Those roles don't exist until the first test
+          # session's migration step creates them, and migrations never set
+          # a role's password (see 0013's docstring) — conftest.py's
+          # _sync_role_password sets it to match these placeholder passwords
+          # right after migrating, every run, since this container is
+          # destroyed after CI finishes anyway.
+          echo "DATABASE_URL=postgresql+asyncpg://gnt_app:ci-placeholder@localhost:$PG_PORT/gnt" >> "$GITHUB_ENV"
+          echo "MIGRATION_DATABASE_URL=postgresql+asyncpg://gnt:gnt@localhost:$PG_PORT/gnt" >> "$GITHUB_ENV"
+          echo "CRON_DATABASE_URL=postgresql+asyncpg://gnt_cron:ci-placeholder@localhost:$PG_PORT/gnt" >> "$GITHUB_ENV"
+          echo "REDIS_URL=redis://localhost:$REDIS_PORT/0" >> "$GITHUB_ENV"
+          # NativeStore is Postgres-only — a plain postgres:// URL (the
+          # `postgres` npm package), not this job's own postgresql+asyncpg://
+          # one, and the dedicated database created above so its tables
+          # never share a schema with apps/api's own. Superuser gnt:gnt, not
+          # the RLS-restricted gnt_app role above: NativeStore's schema
+          # bootstrap runs DDL (CREATE TABLE/EXTENSION), which gnt_app
+          # deliberately can't do. Read by conftest.py's `_store_server`
+          # fixture (the whole pytest suite's spawned store) and by
+          # eval-serve.ts, spawned via store_harness.py's EvalStoreHarness
+          # (the retrieval eval).
+          echo "GNT_STORE_TEST_DATABASE_URL=postgres://gnt:gnt@localhost:$PG_PORT/gnt_store_native_test" >> "$GITHUB_ENV"
+          echo "GNT_STORE_EVAL_NATIVE_DATABASE_URL=postgres://gnt:gnt@localhost:$PG_PORT/gnt_store_native_test" >> "$GITHUB_ENV"
 
       - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
@@ -344,7 +368,7 @@ jobs:
 
       - name: Stop postgres + redis
         if: always()
-        run: docker rm -f ci-postgres ci-redis >/dev/null 2>&1 || true
+        run: docker rm -f "$API_PG_CONTAINER" "$API_REDIS_CONTAINER" >/dev/null 2>&1 || true
 
   alembic-migration-changes:
     name: detect alembic migration changes
@@ -409,12 +433,11 @@ jobs:
       # Fernet-backed keys, the same literal values) as the api job's own
       # env block above -- nothing here needs to be a distinct secret,
       # migrations never read any of these beyond Settings() constructing.
-      # Port filled in by the "Start postgres" step below, not hardcoded to
-      # 15432 like the api job's own fixed port -- that's fine for the api
-      # job (one throwaway container, one job) but this job runs concurrently
-      # with it, and a fixed matching port would collide on the self-hosted
-      # single-machine runner this pipeline stays portable to (see the api
-      # job's own docker-run-by-hand comment above).
+      # Port filled in by the "Start postgres" step below, run-scoped like
+      # the api job's own Postgres/Redis containers above -- this job runs
+      # concurrently with it, and a fixed port here would collide on the
+      # self-hosted single-machine runner this pipeline stays portable to
+      # (see the api job's own docker-run-by-hand comment above).
       GROQ_API_KEY: ci-placeholder
       CONTRIBUTOR_HASH_SECRET: ci-placeholder
       SLACK_CLIENT_ID: ci-placeholder
@@ -439,10 +462,10 @@ jobs:
 
       # Same docker-run-by-hand pattern as the api/store jobs above, not
       # GitHub Actions' `services:` block -- see the store job's comment for
-      # why. Run-scoped container name AND a random host port (like store's,
-      # not api's fixed ci-postgres:15432) -- this job runs in parallel with
-      # the api job, so a fixed 15432 here would collide with api's own on
-      # the self-hosted single-machine runner this pipeline stays portable
+      # why. Run-scoped container name AND a random host port (like store's
+      # and api's own) -- this job runs in parallel with the api job, so a
+      # fixed port here would collide with api's own on the self-hosted
+      # single-machine runner this pipeline stays portable
       # to, the exact failure mode store's own comment above documents.
       - name: Start postgres
         run: |
