@@ -60,7 +60,7 @@ _gnt() {
 ${cases}
   esac
 }
-_gnt
+compdef _gnt gnt
 `;
 }
 

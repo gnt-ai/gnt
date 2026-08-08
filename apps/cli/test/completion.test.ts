@@ -50,6 +50,7 @@ test("zsh script completes top-level commands and connect's subcommands", () => 
   expect(output).toContain("#compdef gnt");
   expect(output).toContain("_values 'command' status connect");
   expect(output).toContain("connect) _values 'subcommand' slack github ;;");
+  expect(output).toContain("compdef _gnt gnt");
 });
 
 test("fish script completes top-level commands and connect's subcommands", () => {
