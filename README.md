@@ -216,6 +216,12 @@ Self-hosting gnt costs you nothing, forever — clone it, run `docker compose up
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for dev setup and how to open a PR. Every commit needs a `Signed-off-by` trailer (`git commit -s`), the [Developer Certificate of Origin](https://developercertificate.org/) instead of a CLA. No separate form, just the flag.
 
+Thanks to everyone who's sent a PR:
+
+<a href="https://github.com/gnt-ai/gnt/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=gnt-ai/gnt" alt="gnt contributors" />
+</a>
+
 <div align="center">
 
 [![Discussions](https://shieldcn.dev/badge/discussions-github.svg?variant=secondary)](https://github.com/gnt-ai/gnt/discussions) [![Issues](https://shieldcn.dev/github/issues/gnt-ai/gnt.svg?variant=secondary)](https://github.com/gnt-ai/gnt/issues) [![Code of conduct](https://shieldcn.dev/badge/code%20of%20conduct-CODE_OF_CONDUCT.md.svg?variant=secondary)](CODE_OF_CONDUCT.md)
