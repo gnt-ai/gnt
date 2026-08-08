@@ -99,8 +99,25 @@ function lintFrontmatter(fm: Record<string, unknown>, body: string): LintIssue[]
     }
   }
 
-  if ("source_citations" in fm && !Array.isArray(fm.source_citations)) {
-    issues.push({ field: "source_citations", message: "must be an array when present" });
+  if ("source_citations" in fm) {
+    const citations = fm.source_citations;
+    if (!Array.isArray(citations)) {
+      issues.push({ field: "source_citations", message: "must be an array when present" });
+    } else {
+      citations.forEach((citation, index) => {
+        if (typeof citation !== "object" || citation === null || Array.isArray(citation)) {
+          issues.push({ field: "source_citations", message: `entry ${index} must be an object` });
+        }
+      });
+    }
+  }
+
+  if ("source" in fm && fm.source !== null) {
+    if (typeof fm.source !== "string") {
+      issues.push({ field: "source", message: "must be a string when present" });
+    } else if (fm.source.length > 2000) {
+      issues.push({ field: "source", message: `must be <=2000 characters (got ${fm.source.length})` });
+    }
   }
 
   if ("version" in fm) {

@@ -138,6 +138,32 @@ Body.
   expect(logs.join("\n")).toContain("must have <=20 entries");
 });
 
+test("flags a non-object source_citations entry and an overlong source", async () => {
+  const bad = `---
+title: Some rule
+source_citations: [42]
+source: ${"x".repeat(2001)}
+---
+
+Body.
+`;
+  writeFileSync(join(testDir, "provenance.md"), bad);
+  const { exitCalls, restore } = stubExit();
+
+  try {
+    await expect(rulesLint(testDir)).rejects.toThrow("process.exit called");
+  } finally {
+    restore();
+  }
+
+  expect(exitCalls).toEqual([1]);
+  const output = logs.join("\n");
+  expect(output).toContain("source_citations");
+  expect(output).toContain("entry 0 must be an object");
+  expect(output).toContain("source");
+  expect(output).toContain("must be <=2000 characters");
+});
+
 test("lints a single file passed directly, not just a directory", async () => {
   const filePath = join(testDir, "refund.md");
   writeFileSync(filePath, VALID_RULE);
