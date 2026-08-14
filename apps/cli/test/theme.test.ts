@@ -48,9 +48,12 @@ test("box draws a fixed-width frame around its lines", () => {
 });
 
 test("box pads by visible width, so ANSI colors don't throw off alignment", () => {
-  // success("a") is a 1-char string wrapped in escape codes; a length-based
-  // pad would see ~20 chars and add nothing, visibly misaligning the box.
-  const frame = box([success("a")], 4).split("\n");
+  // Hand-built ANSI string instead of success("a"): chalk disables colors
+  // when stdout isn't a TTY (bun test), so the codes would silently vanish
+  // and the test would pass even with a length-based pad.
+  const colored = "\x1b[38;2;0;255;133ma\x1b[39m";
+  expect(colored.length).toBeGreaterThan(1); // raw length must exceed visible length
+  const frame = box([colored], 4).split("\n");
   expect(frame.map(plain)).toEqual(["┌──────┐", "│ a    │", "└──────┘"]);
 });
 
