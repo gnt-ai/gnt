@@ -13,7 +13,7 @@ const testConfigDir = mkdtempSync(join(tmpdir(), "gnt-review-test-"));
 process.env.GNT_CONFIG_DIR = testConfigDir;
 
 const { saveApiKey } = await import("../src/credentials.js");
-const { describeErrorDetail, fetchPending, actOnRule, boxWidth, review } = await import(
+const { describeErrorDetail, fetchPending, actOnRule, boxWidth, render, review } = await import(
   "../src/commands/review.js"
 );
 
@@ -167,6 +167,41 @@ test("boxWidth: a terminal narrower than MIN_BOX_WIDTH returns the available wid
 test("boxWidth: columns undefined falls back to treating the terminal as 80 columns wide", () => {
   Object.defineProperty(process.stdout, "columns", { value: undefined, configurable: true });
   expect(boxWidth()).toBe(76);
+});
+
+// Strips chalk's ANSI escapes the way theme.ts's own visibleLength does,
+// so box line widths can be measured on the raw render() output.
+// eslint-disable-next-line no-control-regex -- same escape-stripping pattern theme.ts uses
+const ANSI_PATTERN = /\x1b\[[0-9;]*m/g;
+
+test("render: a rule title wider than the box wraps inside it instead of overflowing", () => {
+  Object.defineProperty(process.stdout, "columns", { value: 80, configurable: true });
+  // @ts-expect-error -- stubbing console.clear for the render test
+  console.clear = mock(() => {});
+
+  const longTitle = "A very long rule title ".repeat(10);
+  const rules = [{ id: "r1", title: longTitle, body: "short body", confidence: 0.8, tags: [], version: 1 }];
+  render(rules, 0, null);
+
+  const width = boxWidth();
+  const boxTotalWidth = width + 4; // border + padding on each side
+  const renderedLines = logs.join("\n").split("\n").map((line) => line.replace(ANSI_PATTERN, ""));
+  expect(renderedLines.length).toBeGreaterThan(1);
+  for (const line of renderedLines) {
+    expect(line.length).toBeLessThanOrEqual(boxTotalWidth);
+  }
+});
+
+test("render: a short title stays on one line", () => {
+  Object.defineProperty(process.stdout, "columns", { value: 80, configurable: true });
+  // @ts-expect-error -- stubbing console.clear for the render test
+  console.clear = mock(() => {});
+
+  const rules = [{ id: "r1", title: "Refund window", body: "...", confidence: 0.8, tags: [], version: 1 }];
+  render(rules, 0, null);
+
+  const renderedLines = logs.join("\n").split("\n").map((line) => line.replace(ANSI_PATTERN, ""));
+  expect(renderedLines.filter((line) => line.includes("Refund window"))).toHaveLength(1);
 });
 
 test("review(): zero pending rules prints a message and returns without touching stdin", async () => {

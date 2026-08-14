@@ -95,7 +95,7 @@ export function boxWidth(): number {
 
 type Message = { kind: "ok" | "error"; text: string } | null;
 
-function render(rules: Rule[], index: number, message: Message): void {
+export function render(rules: Rule[], index: number, message: Message): void {
   console.clear();
   const rule = rules[index];
   const width = boxWidth();
@@ -103,7 +103,10 @@ function render(rules: Rule[], index: number, message: Message): void {
   const lines: string[] = [];
   lines.push(muted(`[${index + 1}/${rules.length}] in review · v${rule.version}`));
   lines.push("");
-  lines.push(bold(rule.title));
+  // Same wrap-as-you-push treatment the body gets below: titles are capped
+  // at 200 chars by the lint/server but the box is at most 76 wide, and
+  // box() only pads short lines -- it doesn't wrap long ones.
+  lines.push(...wrapText(rule.title, width).map((line) => bold(line)));
   lines.push(...wrapText(rule.body, width).map((line) => text(line)));
   lines.push("");
   const confidencePct = `${Math.round(rule.confidence * 100)}%`;
