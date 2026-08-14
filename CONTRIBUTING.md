@@ -29,7 +29,7 @@ brings up all of it plus Postgres and Redis in one shot.
 ## Test and lint
 
 ```bash
-pnpm turbo run lint typecheck build test   # web + cli, via turbo
+pnpm turbo run lint typecheck build test   # cli + docs, via turbo
 ```
 
 ```bash
