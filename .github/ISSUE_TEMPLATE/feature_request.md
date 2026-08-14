@@ -18,7 +18,7 @@ actionable.
 
 ## Which part of gnt this touches
 
-- [ ] apps/web (marketing site / docs)
+- [ ] apps/docs (documentation site)
 - [ ] apps/api (rules pipeline, GitHub webhook, MCP server, connectors)
 - [ ] apps/cli (`gnt` command)
 - [ ] apps/store (rules storage, approval gate)
