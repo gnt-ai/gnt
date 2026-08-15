@@ -18,7 +18,7 @@ async function authedFetch(key: string, path: string, init?: RequestInit): Promi
   });
 }
 
-export async function listKeys(): Promise<void> {
+export async function listKeys(options: { json?: boolean } = {}): Promise<void> {
   const key = loadApiKey();
   const res = await authedFetch(key, "/v1/settings/mcp-keys");
   if (!res.ok) {
@@ -26,6 +26,10 @@ export async function listKeys(): Promise<void> {
     process.exit(1);
   }
   const keys: McpKey[] = await res.json();
+  if (options.json) {
+    console.log(JSON.stringify(keys, null, 2));
+    return;
+  }
   if (keys.length === 0) {
     console.log(muted("No MCP keys yet. Create one with `gnt keys create`."));
     return;

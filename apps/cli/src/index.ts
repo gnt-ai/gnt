@@ -409,7 +409,11 @@ rules
   .action(rulesLint);
 
 const keys = program.command("keys").description("Manage MCP keys used by agents");
-keys.command("list").description("List MCP keys").action(listKeys);
+keys
+  .command("list")
+  .description("List MCP keys")
+  .option("--json", "Print machine-readable JSON instead of the human-readable list")
+  .action((options: { json?: boolean }) => listKeys(options));
 keys
   .command("create [name]")
   .description("Create a new MCP key")
