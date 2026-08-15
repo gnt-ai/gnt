@@ -32,8 +32,10 @@ top-level settings object:
 Keep the trailing slash in the URL. The deployed server redirects `/mcp` to `/mcp/`, so this
 points Zed at the final endpoint.
 
-Create a key with `gnt keys create`, or use an existing key from `gnt keys list`. Replace only
-the placeholder inside your user settings file.
+`gnt keys create` prints a new key once. Use that value, or a plaintext key you already stored
+securely. `gnt keys list` shows IDs and status only; it cannot recover the secret. If the value is
+lost, create a new key or run `gnt keys rotate <id>`. Replace only the placeholder inside your
+user settings file.
 
 Zed 1.15 does not interpolate environment variables in remote MCP headers. Its HTTP settings
 schema treats each header value as a literal string and passes that map to the transport. This
