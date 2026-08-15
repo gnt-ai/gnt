@@ -1,0 +1,34 @@
+# EditorConfig - https://editorconfig.org
+# Canonical formatting for this repository. The committed tree uses LF line
+# endings (git ls-files --eol reports i/lf), 2-space indentation for
+# TypeScript/JavaScript/JSON/YAML/Markdown, and 4-space for Python (ruff's
+# default). Editors on any platform pick these up automatically, so no one
+# depends on local git or editor settings to produce a conforming file.
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}]
+indent_style = space
+indent_size = 2
+
+[*.py]
+indent_style = space
+indent_size = 4
+
+[*.{json,jsonc,yml,yaml}]
+indent_style = space
+indent_size = 2
+
+[*.{md,mdx}]
+indent_style = space
+indent_size = 2
+
+[*.sh]
+indent_style = space
+indent_size = 2
