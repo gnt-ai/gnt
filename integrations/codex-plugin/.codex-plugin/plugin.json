@@ -1,0 +1,25 @@
+{
+  "name": "gnt",
+  "version": "0.6.4-codex.1",
+  "description": "Check consequential agent actions against approved company policy before execution.",
+  "author": {
+    "name": "gnt.ai",
+    "url": "https://gntai.dev"
+  },
+  "homepage": "https://gntai.dev",
+  "repository": "https://github.com/gnt-ai/gnt",
+  "license": "Apache-2.0",
+  "interface": {
+    "displayName": "gnt",
+    "shortDescription": "The check before the action",
+    "longDescription": "Fail-closed policy checks before consequential agent actions.",
+    "developerName": "gnt.ai",
+    "category": "Developer Tools",
+    "capabilities": ["Pre-tool enforcement"],
+    "websiteURL": "https://gntai.dev",
+    "defaultPrompt": [
+      "Check this action against our approved company policy."
+    ],
+    "brandColor": "#1D1D1B"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "description": "Fail-closed gnt policy check before consequential Codex tools.",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "gnt hooks check-action",
+            "timeout": 20,
+            "statusMessage": "Checking company policy..."
+          }
+        ]
+      }
+    ]
+  }
+}
