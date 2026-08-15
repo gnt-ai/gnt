@@ -406,7 +406,8 @@ const rules = program.command("rules").description("Work with local rule files")
 rules
   .command("lint [path]")
   .description("Validate rule frontmatter shape locally, before a PR round-trip (defaults to ./rules)")
-  .action(rulesLint);
+  .option("--json", "Print machine-readable JSON instead of the human-readable report")
+  .action((path: string | undefined, options: { json?: boolean }) => rulesLint(path, options));
 
 const keys = program.command("keys").description("Manage MCP keys used by agents");
 keys.command("list").description("List MCP keys").action(listKeys);

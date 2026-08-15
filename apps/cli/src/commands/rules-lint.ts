@@ -16,6 +16,28 @@ interface LintIssue {
   message: string;
 }
 
+// One entry per file walked, in the same order the human-readable path
+// prints them. error is set only for file-level failures (an unreadable
+// file, a missing/malformed frontmatter fence); issues holds the per-field
+// frontmatter problems for files that parsed. A clean file is issues: []
+// with no error key at all.
+interface LintedFile {
+  path: string;
+  issues: LintIssue[];
+  error?: string;
+}
+
+// Shape of "gnt rules lint --json" -- the same numbers the human summary
+// line prints, plus per-file detail, so a CI step can consume real data
+// instead of scraping colored stdout (see .github/actions/lint-rules).
+interface LintReport {
+  files: LintedFile[];
+  checked: number;
+  clean: number;
+  with_issues: number;
+  ok: boolean;
+}
+
 interface ParsedRuleFile {
   frontmatter: Record<string, unknown>;
   body: string;
@@ -140,52 +162,78 @@ function resolveTargets(target: string): string[] {
 // apps/api's CreateRuleRequest and apps/store's RuleStatus enforce server-side
 // today -- so a malformed rule fails locally, before a PR round-trip, instead
 // of only surfacing once a maintainer opens the PR (see #97).
-export async function rulesLint(inputPath?: string): Promise<void> {
+//
+// Both output modes share the same walk and the same failure accounting; the
+// --json branch just renders the accumulated report instead of the colored
+// lines. Exit code is identical either way (1 when any file has issues), so
+// a CI step gets the same pass/fail signal from the machine-readable path.
+export async function rulesLint(inputPath?: string, options: { json?: boolean } = {}): Promise<void> {
   const target = resolve(inputPath ?? "rules");
   const files = resolveTargets(target);
 
   if (files.length === 0) {
+    if (options.json) {
+      console.log(JSON.stringify({ files: [], checked: 0, clean: 0, with_issues: 0, ok: true }, null, 2));
+      return;
+    }
     console.log(muted(`No rule files found at ${target}.`));
     return;
   }
 
-  let errorCount = 0;
-  let cleanCount = 0;
+  const report: LintReport = { files: [], checked: 0, clean: 0, with_issues: 0, ok: true };
 
   for (const filePath of files) {
     const relPath = relative(process.cwd(), filePath);
+    const linted: LintedFile = { path: relPath, issues: [] };
+
     let content: string;
     try {
       content = readFileSync(filePath, "utf-8");
     } catch (err) {
-      errorCount++;
-      console.log(fail(`${relPath}: could not read file (${(err as Error).message})`));
+      linted.error = `could not read file (${(err as Error).message})`;
+      report.with_issues++;
+      report.ok = false;
+      if (!options.json) console.log(fail(`${relPath}: ${linted.error}`));
+      report.files.push(linted);
       continue;
     }
 
     const parsed = parseRuleFile(content);
     if (!parsed) {
-      errorCount++;
-      console.log(fail(`${relPath}: missing or malformed frontmatter fence`));
+      linted.error = "missing or malformed frontmatter fence";
+      report.with_issues++;
+      report.ok = false;
+      if (!options.json) console.log(fail(`${relPath}: ${linted.error}`));
+      report.files.push(linted);
       continue;
     }
 
     const issues = lintFrontmatter(parsed.frontmatter, parsed.body);
+    linted.issues = issues;
     if (issues.length === 0) {
-      cleanCount++;
-      console.log(ok(relPath));
-      continue;
+      report.clean++;
+      if (!options.json) console.log(ok(relPath));
+    } else {
+      report.with_issues++;
+      report.ok = false;
+      if (!options.json) {
+        console.log(fail(relPath));
+        for (const issue of issues) {
+          console.log(`   ${dim(issue.field)} ${text(issue.message)}`);
+        }
+      }
     }
-
-    errorCount++;
-    console.log(fail(relPath));
-    for (const issue of issues) {
-      console.log(`   ${dim(issue.field)} ${text(issue.message)}`);
-    }
+    report.files.push(linted);
   }
 
-  console.log();
-  console.log(bold(`${cleanCount + errorCount} file(s) checked: ${cleanCount} clean, ${errorCount} with issues.`));
+  report.checked = report.files.length;
 
-  if (errorCount > 0) process.exit(1);
+  if (options.json) {
+    console.log(JSON.stringify(report, null, 2));
+  } else {
+    console.log();
+    console.log(bold(`${report.checked} file(s) checked: ${report.clean} clean, ${report.with_issues} with issues.`));
+  }
+
+  if (report.with_issues > 0) process.exit(1);
 }

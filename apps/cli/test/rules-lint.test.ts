@@ -172,3 +172,82 @@ test("lints a single file passed directly, not just a directory", async () => {
 
   expect(logs.join("\n")).toContain("1 clean, 0 with issues");
 });
+
+test("--json prints an empty report when no rule files exist", async () => {
+  await rulesLint(join(testDir, "nope"), { json: true });
+
+  expect(JSON.parse(logs.join("\n"))).toEqual({
+    files: [],
+    checked: 0,
+    clean: 0,
+    with_issues: 0,
+    ok: true,
+  });
+});
+
+test("--json reports a clean pass with per-file detail", async () => {
+  writeFileSync(join(testDir, "refund.md"), VALID_RULE);
+
+  await rulesLint(testDir, { json: true });
+
+  const report = JSON.parse(logs.join("\n"));
+  expect(report.ok).toBe(true);
+  expect(report.checked).toBe(1);
+  expect(report.clean).toBe(1);
+  expect(report.with_issues).toBe(0);
+  expect(report.files).toHaveLength(1);
+  expect(report.files[0].path).toContain("refund.md");
+  expect(report.files[0].issues).toEqual([]);
+  // A clean file carries no error key at all, not an empty string.
+  expect("error" in report.files[0]).toBe(false);
+});
+
+test("--json lists frontmatter issues per file and keeps the exit code", async () => {
+  const bad = `---
+title: ""
+status: bogus
+confidence: 1.5
+---
+
+Some body text.
+`;
+  writeFileSync(join(testDir, "bad.md"), bad);
+  const { exitCalls, restore } = stubExit();
+
+  try {
+    await expect(rulesLint(testDir, { json: true })).rejects.toThrow("process.exit called");
+  } finally {
+    restore();
+  }
+
+  expect(exitCalls).toEqual([1]);
+  const report = JSON.parse(logs.join("\n"));
+  expect(report.ok).toBe(false);
+  expect(report.checked).toBe(1);
+  expect(report.clean).toBe(0);
+  expect(report.with_issues).toBe(1);
+  expect(report.files[0].issues).toEqual(
+    expect.arrayContaining([
+      { field: "title", message: "must be a non-empty string" },
+      { field: "status", message: "must be one of draft, in_review, pending_merge, approved, deprecated (got \"bogus\")" },
+      { field: "confidence", message: "must be a number between 0 and 1 (got 1.5)" },
+    ]),
+  );
+});
+
+test("--json reports a malformed frontmatter fence as a file-level error", async () => {
+  writeFileSync(join(testDir, "broken.md"), "no frontmatter here\n");
+  const { exitCalls, restore } = stubExit();
+
+  try {
+    await expect(rulesLint(testDir, { json: true })).rejects.toThrow("process.exit called");
+  } finally {
+    restore();
+  }
+
+  expect(exitCalls).toEqual([1]);
+  const report = JSON.parse(logs.join("\n"));
+  expect(report.ok).toBe(false);
+  expect(report.files[0].error).toContain("missing or malformed frontmatter fence");
+  expect(report.files[0].issues).toEqual([]);
+});
