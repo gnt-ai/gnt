@@ -11,11 +11,10 @@ Both also support `workflow_dispatch` for a manual run.
 
 **`ci.yml`**
 
-- `js` — lint, typecheck, build, test for the pnpm workspace (`apps/cli`, `apps/docs`, and
-  everything under `packages/`), via `pnpm turbo run lint typecheck build test --affected`.
-  `--affected` scopes the run to packages actually touched by the diff (or everything, if the
-  diff touches a shared dependency like the root lockfile). Required status check:
-  `js (lint, typecheck, build, test)`.
+- `js`: lint, typecheck, build, and test for the pnpm workspace (`apps/cli`, `apps/docs`, and
+  `examples`). Each task type has its own `pnpm turbo run` step so a stall names the exact
+  check. Every step runs across all three workspaces, including on workflow-only changes.
+  Required status check: `js (lint, typecheck, build, test)`.
 - `clean-install` — proves a fresh `git clone` with no `.env` and no repo secrets can install and
   typecheck the JS/TS workspace and `apps/api`, matching `CONTRIBUTING.md`'s own quickstart.
   `continue-on-error: true` — not a required check, it's a canary for "did we accidentally start
@@ -92,8 +91,8 @@ expected, not a bug.
   `enable-cache: true`. Wired up in `ci.yml` (`clean-install`, `api`, `alembic-check`) and
   `security.yml` (`api-audit`).
 - **No Turbo remote cache in this repo.** Fork PRs never receive secrets, and remote caching
-  needs a token, so this repo runs every turbo invocation cold. `--affected` still scopes work to
-  packages actually touched by a diff, which is most of the win.
+  needs a token, so this repo runs every turbo invocation cold. The `js` job checks all three
+  workspaces on purpose so changes to the workflow itself cannot pass with zero tasks.
 - No caching is wired up for `apps/store`'s `bun install` — `oven-sh/setup-bun` doesn't cache by
   default and none of the `store`/`api`/`extraction-eval` jobs opt into one.
 
