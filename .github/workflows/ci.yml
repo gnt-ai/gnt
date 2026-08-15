@@ -24,16 +24,7 @@ jobs:
     timeout-minutes: 20
     runs-on: ubuntu-latest
     steps:
-      # fetch-depth: 0 (full history, not just the last commit) -- turbo's
-      # --affected below needs to walk back to the PR's merge base (or the
-      # previous commit on push-to-main) to diff changed files. A shallow
-      # clone doesn't break this, turbo just falls back to treating
-      # everything as affected, but that silently defeats the point of this
-      # job, so pay for full history instead of finding out from a
-      # suspiciously-full CI run.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v4
-        with:
-          fetch-depth: 0
 
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86 # v6.0.10
 
@@ -52,36 +43,23 @@ jobs:
         with:
           bun-version: 1.3.14
 
-      # turbo's own GITHUB_BASE_REF auto-detection resolves to a bare branch
-      # name ("main"), which doesn't exist as a local ref in this checkout --
-      # only origin/main does -- so it fails to resolve and silently falls
-      # back to treating every package as affected (safe, but defeats the
-      # point). Set TURBO_SCM_BASE explicitly instead of trusting the
-      # auto-detect: origin/<base branch> for a PR, the pre-push commit for
-      # a push to main, origin/main for anything else (e.g. a manual
-      # workflow_dispatch run).
-      - name: Resolve turbo affected base
-        run: |
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            base="origin/${{ github.event.pull_request.base.ref }}"
-          elif [ "${{ github.event_name }}" = "push" ] && [ "${{ github.event.before }}" != "0000000000000000000000000000000000000000" ]; then
-            base="${{ github.event.before }}"
-          else
-            base="origin/main"
-          fi
-          echo "TURBO_SCM_BASE=$base" >> "$GITHUB_ENV"
+      # Keep task types in separate steps. The previous combined invocation
+      # left the TypeScript, ESLint, and Bun processes alive until the job
+      # timeout on GitHub's 20260810.271.1 hosted image. Separate steps avoid
+      # that invocation shape and make any future stall identify the exact
+      # check. Run all three small workspaces so a workflow-only PR exercises
+      # this job instead of reporting success with zero affected tasks.
+      - name: Lint JavaScript workspaces
+        run: pnpm turbo run lint
 
-      # --affected scopes this to packages actually touched by the diff
-      # (base set above, head defaults to this checkout's HEAD). A change to
-      # a package's own dependency closure (root lockfile, a shared package
-      # it imports) still marks it affected, so a broad diff still gets the
-      # full check -- this only narrows work for diffs that are genuinely
-      # narrow. One combined invocation, not four: turbo already schedules
-      # lint/typecheck/build/test concurrently across the task graph, so
-      # splitting into separate steps or jobs here would only add
-      # checkout/install overhead per job without shortening the actual
-      # critical path.
-      - run: pnpm turbo run lint typecheck build test --affected
+      - name: Typecheck JavaScript workspaces
+        run: pnpm turbo run typecheck
+
+      - name: Build JavaScript workspaces
+        run: pnpm turbo run build
+
+      - name: Test JavaScript workspaces
+        run: pnpm turbo run test
 
   clean-install:
     name: clean install (no secrets, from scratch)
