@@ -18,7 +18,7 @@ assignees: ""
 
 ## Which part of gnt
 
-- [ ] apps/web (marketing site / docs)
+- [ ] apps/docs (marketing site / docs)
 - [ ] apps/api (rules pipeline, GitHub webhook, MCP server, connectors)
 - [ ] apps/cli (`gnt` command)
 - [ ] apps/store (rules storage, approval gate)

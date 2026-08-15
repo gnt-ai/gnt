@@ -55,7 +55,7 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      # Covers apps/web + apps/cli, the pnpm workspace (pnpm-workspace.yaml).
+      # Covers apps/cli + apps/docs, the pnpm workspace (pnpm-workspace.yaml).
       # apps/store is deliberately excluded from it (Bun-native, own
       # lockfile — see that file's comment) and audited separately below.
       - run: pnpm install --frozen-lockfile

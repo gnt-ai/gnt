@@ -45,11 +45,13 @@ Needs a running Postgres and Redis (`REDIS_URL`/`DATABASE_URL`) — see the repo
 - **MCP server** (`mcp_server/`) — mounted at `/mcp`. This is the one
   published, customer-facing, agent-facing MCP surface (a founder decision)
   — `settings.mcp_url` is the source-of-truth URL, echoed
-  in the CLI (`gnt keys create`) and the docs site. Four tools, all reading
+  in the CLI (`gnt keys create`) and the docs site. Five tools, all reading
   from the git-native rules store: `search_rules`, `get_rule`,
-  `list_skill_packs`, `get_skill_pack`. apps/store doesn't run an MCP
-  server at all anymore — it's purely an internal HTTP service this router
-  set talks to (see `apps/store/README.md`).
+  `check_action` (a compliance verdict — allowed/blocked/needs_human —
+  before an agent takes a side-effectful action), `list_skill_packs`,
+  `get_skill_pack`. apps/store doesn't run an MCP server at all anymore —
+  it's purely an internal HTTP service this router set talks to (see
+  `apps/store/README.md`).
 
   A separate, older knowledge-unit pipeline (`capture`, `list_topics`,
   `get_skill`, `search_knowledge`, `ask_brain` — triage/extract/embed via
