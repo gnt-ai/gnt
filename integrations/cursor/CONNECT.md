@@ -30,8 +30,10 @@ Add this entry to the `mcpServers` object in the appropriate `mcp.json`:
 Keep the trailing slash in the URL. The deployed server redirects `/mcp` to `/mcp/`, so this
 points Cursor at the final endpoint instead of relying on redirect handling.
 
-Create a key with `gnt keys create`, or use an existing key from `gnt keys list`. Make it
-available to the process that starts Cursor:
+`gnt keys create` prints a new key once. Use that value, or a plaintext key you already stored
+securely. `gnt keys list` shows IDs and status only; it cannot recover the secret. If the value is
+lost, create a new key or run `gnt keys rotate <id>`. Make the key available to the process that
+starts Cursor:
 
 ```bash
 export GNT_MCP_KEY="gnt_live_..."
