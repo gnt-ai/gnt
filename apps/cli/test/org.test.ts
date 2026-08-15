@@ -176,3 +176,45 @@ test("falls back to a status-coded message when the error body isn't JSON", asyn
   expect(exitCode).toBe(1);
   expect(errors.join("\n")).toContain("(401)");
 });
+
+test("orgShow --json passes the fetched org payload through as JSON", async () => {
+  globalThis.fetch = mock(() =>
+    Promise.resolve(
+      new Response(
+        JSON.stringify({
+          id: "org_1",
+          name: "Acme",
+          members: [{ email: "owner@acme.com", role: "owner" }],
+          invitations: [{ email: "pending@acme.com", role: "member" }],
+        }),
+        { status: 200 },
+      ),
+    ),
+  ) as unknown as typeof fetch;
+
+  await orgShow({ json: true });
+
+  const report = JSON.parse(logs.join("\n"));
+  expect(report).toEqual({
+    id: "org_1",
+    name: "Acme",
+    members: [{ email: "owner@acme.com", role: "owner" }],
+    invitations: [{ email: "pending@acme.com", role: "member" }],
+  });
+});
+
+test("orgShow --json works with empty members and invitations", async () => {
+  globalThis.fetch = mock(() =>
+    Promise.resolve(
+      new Response(JSON.stringify({ id: "org_1", name: "Acme", members: [], invitations: [] }), {
+        status: 200,
+      }),
+    ),
+  ) as unknown as typeof fetch;
+
+  await orgShow({ json: true });
+
+  const report = JSON.parse(logs.join("\n"));
+  expect(report.members).toEqual([]);
+  expect(report.invitations).toEqual([]);
+});

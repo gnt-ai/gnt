@@ -19,7 +19,10 @@ async function errorMessage(res: Response, fallback: string): Promise<string> {
   return typeof body?.error === "string" ? body.error : `${fallback} (${res.status}).`;
 }
 
-export async function orgShow(): Promise<void> {
+// Same shape the human path reads, printed as-is in --json mode so a
+// script gets exactly what the server returned (id and any future fields
+// included), the way gaps --json passes its payload straight through.
+export async function orgShow(options: { json?: boolean } = {}): Promise<void> {
   const res = await orgFetch("");
   if (!res.ok) {
     console.error(fail(await errorMessage(res, "Failed to fetch organization")));
@@ -30,6 +33,11 @@ export async function orgShow(): Promise<void> {
     members: Array<{ email: string; role: string }>;
     invitations: Array<{ email: string; role: string }>;
   } = await res.json();
+
+  if (options.json) {
+    console.log(JSON.stringify(org, null, 2));
+    return;
+  }
 
   console.log(text(org.name));
   console.log();
