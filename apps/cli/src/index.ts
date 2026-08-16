@@ -406,10 +406,15 @@ const rules = program.command("rules").description("Work with local rule files")
 rules
   .command("lint [path]")
   .description("Validate rule frontmatter shape locally, before a PR round-trip (defaults to ./rules)")
-  .action(rulesLint);
+  .option("--json", "Print machine-readable JSON instead of the human-readable report")
+  .action((path: string | undefined, options: { json?: boolean }) => rulesLint(path, options));
 
 const keys = program.command("keys").description("Manage MCP keys used by agents");
-keys.command("list").description("List MCP keys").action(listKeys);
+keys
+  .command("list")
+  .description("List MCP keys")
+  .option("--json", "Print machine-readable JSON instead of the human-readable list")
+  .action((options: { json?: boolean }) => listKeys(options));
 keys
   .command("create [name]")
   .description("Create a new MCP key")
@@ -431,7 +436,11 @@ webhook
 webhook.command("revoke <id>").description("Revoke a webhook token").action(revokeWebhookToken);
 
 const org = program.command("org").description("Manage your organization");
-org.command("show", { isDefault: true }).description("Show organization name, members, and pending invitations").action(orgShow);
+org
+  .command("show", { isDefault: true })
+  .description("Show organization name, members, and pending invitations")
+  .option("--json", "Print machine-readable JSON instead of the human-readable summary")
+  .action((options: { json?: boolean }) => orgShow(options));
 org.command("rename <name>").description("Rename the organization").action(orgRename);
 org
   .command("invite <email>")

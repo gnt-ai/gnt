@@ -112,6 +112,40 @@ test("prints a message when there are no MCP keys", async () => {
   expect(output()).toContain("No MCP keys yet. Create one with `gnt keys create`.");
 });
 
+test("listKeys --json prints an empty array when there are no MCP keys", async () => {
+  mockFetch([]);
+
+  await listKeys({ json: true });
+
+  expect(JSON.parse(output())).toEqual([]);
+});
+
+test("listKeys --json prints the raw key list", async () => {
+  const payload = [
+    {
+      id: "a",
+      name: "short",
+      created_at: "2026-08-01T00:00:00Z",
+      last_used_at: null,
+      revoked_at: null,
+      expires_at: null,
+    },
+    {
+      id: "revoked-id",
+      name: null,
+      created_at: "2026-08-01T00:00:00Z",
+      last_used_at: null,
+      revoked_at: "2026-08-02T09:00:00Z",
+      expires_at: null,
+    },
+  ];
+  mockFetch(payload);
+
+  await listKeys({ json: true });
+
+  expect(JSON.parse(output())).toEqual(payload);
+});
+
 test("lists aligned MCP keys with revoked, used, and unused states", async () => {
   mockFetch([
     {
