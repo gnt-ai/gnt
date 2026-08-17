@@ -111,7 +111,7 @@ jobs:
 
       - run: pnpm turbo run lint typecheck
 
-      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
           version: 0.12.1
           enable-cache: true
@@ -330,7 +330,7 @@ jobs:
           echo "GNT_STORE_TEST_DATABASE_URL=postgres://gnt:gnt@localhost:$PG_PORT/gnt_store_native_test" >> "$GITHUB_ENV"
           echo "GNT_STORE_EVAL_NATIVE_DATABASE_URL=postgres://gnt:gnt@localhost:$PG_PORT/gnt_store_native_test" >> "$GITHUB_ENV"
 
-      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
           version: 0.12.1
           enable-cache: true
@@ -473,7 +473,7 @@ jobs:
           echo "DATABASE_URL=postgresql+asyncpg://gnt:gnt@localhost:$PORT/gnt" >> "$GITHUB_ENV"
           echo "MIGRATION_DATABASE_URL=postgresql+asyncpg://gnt:gnt@localhost:$PORT/gnt" >> "$GITHUB_ENV"
 
-      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+      - uses: astral-sh/setup-uv@20cfd1bf945f4377ade1205e4dbc17946fc9a30d # v10.0.1
         with:
           version: 0.12.1
           enable-cache: true
