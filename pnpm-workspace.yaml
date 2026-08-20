@@ -37,6 +37,10 @@ minimumReleaseAgeExclude:
   - '@ai-sdk/provider-utils@5.0.23'
   - '@ai-sdk/provider@4.0.6'
   - ai@7.0.56
+  - '@openai/agents-core@0.17.0'
+  - '@openai/agents-openai@0.17.0'
+  - '@openai/agents-realtime@0.17.0'
+  - '@openai/agents@0.17.0'
 overrides:
   '@hono/node-server@<2.0.5': ^2.0.5
   # 5.0.8 (the prior pin here) turned out to only fix CVE-2026-14257's
