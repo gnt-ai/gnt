@@ -23,7 +23,7 @@
     "clip": "./scripts/clip.sh"
   },
   "devDependencies": {
-    "turbo": "^2.10.9"
+    "turbo": "^2.10.10"
   },
   "packageManager": "pnpm@11.10.0",
   "engines": {

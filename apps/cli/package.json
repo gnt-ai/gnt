@@ -40,13 +40,13 @@
     "eval:extraction": "bun run eval/extraction/run.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.116.0",
+    "@anthropic-ai/sdk": "^0.117.1",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "chalk": "^5.6.2",
     "commander": "^15.0.0",
     "compromise": "^14.16.0",
     "js-yaml": "^5",
-    "open": "^11.0.0",
+    "open": "^11.0.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {

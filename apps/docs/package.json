@@ -13,7 +13,7 @@
     "mermaid": "^11.16.1",
     "react": ">=19.2.8",
     "react-dom": ">=19.2.8",
-    "zudoku": "0.83.0"
+    "zudoku": "0.83.1"
   },
   "devDependencies": {
     "@types/node": "^26",
