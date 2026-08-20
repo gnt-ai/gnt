@@ -24,6 +24,14 @@ export GNT_MCP_KEY=gnt_live_your_key_here
 export GNT_MCP_URL=https://api.gntai.dev/mcp/
 ```
 
+The OpenAI Agents SDK example also needs an OpenAI API key. `OPENAI_MODEL` is optional; the default
+in the example is `gpt-4.1-mini`.
+
+```bash
+export OPENAI_API_KEY=sk-proj_your_key_here
+export OPENAI_MODEL=gpt-4.1-mini
+```
+
 ## Run an example
 
 Each script uses refund order `#8021` for `$750`. Its actual verdict depends on the approved rules
@@ -32,6 +40,7 @@ in your gnt organization.
 ```bash
 pnpm --filter @gnt-ai/examples example:langchain
 pnpm --filter @gnt-ai/examples example:vercel-ai-sdk
+pnpm --filter @gnt-ai/examples example:openai-agents
 ```
 
 The Anthropic loop also needs an Anthropic key. It lets Claude choose `refund_order`, calls gnt
