@@ -14,19 +14,19 @@
     "example:openai-agents": "tsx src/openai-agents-sdk-check-action.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.116.0",
-    "@langchain/core": "^1.1.0",
+    "@anthropic-ai/sdk": "^0.120.0",
+    "@langchain/core": "^1.2.9",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@openai/agents": "^0.17.0",
-    "ai": "^7.0.58",
+    "ai": "^7.0.74",
     "zod": "^4.4.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
     "@types/node": "^26.2.0",
     "eslint": "^9.0.0",
-    "tsx": "^4.23.11",
+    "tsx": "^4.23.12",
     "typescript": "^6.0.0",
-    "typescript-eslint": "^8.66.0"
+    "typescript-eslint": "^8.67.0"
   }
 }
