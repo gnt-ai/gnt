@@ -20,6 +20,7 @@ allowBuilds:
   esbuild: true
   prisma: true
   sharp: true
+  tree-sitter: false
   unrs-resolver: true
   utf-8-validate: true
 minimumReleaseAgeExclude:
