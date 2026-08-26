@@ -47,6 +47,7 @@ in your gnt organization.
 
 ```bash
 pnpm --filter @gnt-ai/examples example:langchain
+pnpm --filter @gnt-ai/examples example:llamaindex
 pnpm --filter @gnt-ai/examples example:vercel-ai-sdk
 pnpm --filter @gnt-ai/examples example:openai-agents
 pnpm --filter @gnt-ai/examples example:pydantic-ai
