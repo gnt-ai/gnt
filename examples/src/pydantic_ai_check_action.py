@@ -8,6 +8,7 @@ import os
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import Annotated, Any, Literal, Protocol
+from urllib.parse import urlsplit
 
 from pydantic import BaseModel, Field
 from pydantic_ai import Agent, RunContext
@@ -193,11 +194,20 @@ def _required_environment(name: str) -> str:
     return value
 
 
+def _secure_mcp_url(value: str) -> str:
+    """Require an absolute HTTPS endpoint before a bearer key can be attached."""
+    parsed = urlsplit(value)
+    if parsed.scheme.lower() != "https" or not parsed.hostname:
+        raise ValueError("GNT_MCP_URL must be an absolute HTTPS URL")
+    return value
+
+
 async def main() -> None:
     """Run the guarded refund example against the configured gnt MCP server."""
     gnt_key = _required_environment("GNT_MCP_KEY")
+    gnt_url = _secure_mcp_url(os.getenv("GNT_MCP_URL", DEFAULT_GNT_MCP_URL))
     toolset = MCPToolset(
-        os.getenv("GNT_MCP_URL", DEFAULT_GNT_MCP_URL),
+        gnt_url,
         headers={"Authorization": f"Bearer {gnt_key}"},
         tool_error_behavior="error",
     )

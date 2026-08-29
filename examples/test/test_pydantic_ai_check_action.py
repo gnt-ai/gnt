@@ -4,6 +4,7 @@ import asyncio
 from dataclasses import dataclass, field
 from typing import Literal
 
+import pytest
 from pydantic_ai.models.test import TestModel
 
 from src.pydantic_ai_check_action import (
@@ -12,6 +13,7 @@ from src.pydantic_ai_check_action import (
     GntMcpChecker,
     GuardedActionResult,
     RefundDependencies,
+    _secure_mcp_url,
     build_refund_agent,
     execute_refund_order,
 )
@@ -25,6 +27,19 @@ def _verdict(value: Literal["allowed", "blocked", "needs_human"]) -> CheckAction
         cited_rules=[CitedRule(id="refund-policy", title="Refund policy")],
         rules_retrieved=1,
     )
+
+
+def test_mcp_url_rejects_cleartext_transport():
+    """Reject HTTP before the bearer authorization header can be constructed."""
+    with pytest.raises(ValueError, match="absolute HTTPS URL"):
+        _secure_mcp_url("http://localhost:8000/mcp/")
+
+
+def test_mcp_url_accepts_absolute_https_endpoint():
+    """Preserve a valid HTTPS endpoint for the Pydantic AI MCP client."""
+    endpoint = "https://api.gntai.dev/mcp/"
+
+    assert _secure_mcp_url(endpoint) == endpoint
 
 
 @dataclass
