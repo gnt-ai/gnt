@@ -37,8 +37,8 @@ points OpenCode at the final MCP endpoint instead of relying on redirect handlin
 prevents OpenCode from starting its automatic OAuth flow for this API-key-authenticated server.
 
 Create a key with `gnt keys create`, or use an existing key that you stored securely. `gnt keys
-list` shows IDs and status only; it cannot recover the secret. If the value is lost, create a new
-key or run `gnt keys rotate <id>`. Make the key available to the process that starts OpenCode:
+list` shows key metadata and status, but it cannot recover the secret. If the value is lost, create
+a new key or run `gnt keys rotate <id>`. Make the key available to the process that starts OpenCode:
 
 ```bash
 export GNT_MCP_KEY="gnt_live_..."
@@ -100,9 +100,9 @@ Restart OpenCode, then list the configured MCP servers:
 opencode mcp list
 ```
 
-Confirm that `gnt-brain` is connected. If it is not, run `opencode mcp debug gnt-brain`, check that
-OpenCode inherited `GNT_MCP_KEY`, and confirm that the URL ends in `/mcp/`. Do not include the
-Authorization header in a bug report.
+Confirm that `gnt-brain` is connected. If it is not, first check that OpenCode inherited
+`GNT_MCP_KEY` and that the URL ends in `/mcp/`. For OAuth-oriented connection diagnostics, run
+`opencode mcp debug gnt-brain`. Do not include the Authorization header in a bug report.
 
 Then run two behavior checks against non-production test rules:
 
