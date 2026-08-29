@@ -32,6 +32,14 @@ export OPENAI_API_KEY=sk-proj_your_key_here
 export OPENAI_MODEL=gpt-4.1-mini
 ```
 
+The Pydantic AI example uses the same OpenAI key by default and manages its Python dependencies
+with `uv`. `PYDANTIC_AI_MODEL` can select another Pydantic AI model identifier.
+
+```bash
+uv sync --project examples
+export PYDANTIC_AI_MODEL=openai:gpt-4.1-mini
+```
+
 ## Run an example
 
 Each script uses refund order `#8021` for `$750`. Its actual verdict depends on the approved rules
@@ -41,6 +49,7 @@ in your gnt organization.
 pnpm --filter @gnt-ai/examples example:langchain
 pnpm --filter @gnt-ai/examples example:vercel-ai-sdk
 pnpm --filter @gnt-ai/examples example:openai-agents
+pnpm --filter @gnt-ai/examples example:pydantic-ai
 ```
 
 The Anthropic loop also needs an Anthropic key. It lets Claude choose `refund_order`, calls gnt
@@ -67,4 +76,6 @@ The shared verdict guard has no network dependency, so all three safety paths ar
 pnpm --filter @gnt-ai/examples lint
 pnpm --filter @gnt-ai/examples typecheck
 pnpm --filter @gnt-ai/examples test
+pnpm --filter @gnt-ai/examples lint:pydantic-ai
+pnpm --filter @gnt-ai/examples test:pydantic-ai
 ```

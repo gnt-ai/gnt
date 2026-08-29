@@ -1,0 +1,26 @@
+[project]
+name = "gnt-pydantic-ai-example"
+version = "0.1.0"
+description = "Pydantic AI example for guarded gnt actions"
+requires-python = ">=3.11"
+dependencies = [
+  "pydantic-ai-slim[mcp,openai]>=2.36.0,<3",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.4,<10",
+  "ruff>=0.13,<1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["test"]
+python_files = ["test_*.py"]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]

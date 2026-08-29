@@ -7,11 +7,14 @@
     "build": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "lint": "eslint src test",
+    "lint:pydantic-ai": "uv run ruff check src/pydantic_ai_check_action.py test/test_pydantic_ai_check_action.py",
     "test": "tsx --test test/**/*.test.ts",
+    "test:pydantic-ai": "uv run pytest -q",
     "example:langchain": "tsx src/langchain-check-action.ts",
     "example:vercel-ai-sdk": "tsx src/vercel-ai-sdk-check-action.ts",
     "example:anthropic": "tsx src/anthropic-tool-use-check-action.ts",
-    "example:openai-agents": "tsx src/openai-agents-sdk-check-action.ts"
+    "example:openai-agents": "tsx src/openai-agents-sdk-check-action.ts",
+    "example:pydantic-ai": "uv run python src/pydantic_ai_check_action.py"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",
