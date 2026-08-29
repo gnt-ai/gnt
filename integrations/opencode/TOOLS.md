@@ -10,11 +10,16 @@ gnt-brain exposes `check_action`, `search_rules`, `get_rule`, `list_skill_packs`
 ## Before taking an action
 
 Before sending a message, moving money, deleting data, or taking another action that is hard to
-undo, call `check_action` with a plain-English description of the exact action.
+undo, build one canonical snapshot containing every input that can change the side effect. Include
+the operation, resource identifiers, destination, content or payload, options, permissions, and
+any other relevant field in a deterministic order. Send that complete snapshot in the
+`check_action` description; free-form context is not a substitute for an omitted field.
 
-This instruction does not enforce the decision by itself. The client or executor that performs
-the side effect must require an `allowed` verdict for the same recipient, amount, target, and
-scope. Run a new check if any of those details change.
+This instruction does not enforce the decision by itself. The client or executor must retain the
+checked snapshot with the verdict, recreate the snapshot from the actual operation immediately
+before execution, and require both an `allowed` verdict and an exact match. Run `check_action`
+again whenever any side-effect-relevant field changes; never reuse approval for a different
+snapshot.
 
 - If the verdict is `allowed`, proceed with the action.
 - If the verdict is `blocked`, stop. Explain why and cite the returned rule.
