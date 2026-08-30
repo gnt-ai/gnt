@@ -11,9 +11,9 @@ For the shared endpoint and key background, see gnt's
 
 Gemini CLI reads global settings from `~/.gemini/settings.json` and project settings from
 `.gemini/settings.json`. The configuration below follows Gemini CLI's official
-[MCP server documentation](https://github.com/google-gemini/gemini-cli/blob/main/docs/tools/mcp-server.md)
-and [settings reference](https://github.com/google-gemini/gemini-cli/blob/main/docs/reference/configuration.md)
-(checked 2026-08-30).
+[MCP server documentation](https://github.com/google-gemini/gemini-cli/blob/v0.57.0/docs/tools/mcp-server.md)
+and [settings reference](https://github.com/google-gemini/gemini-cli/blob/v0.57.0/docs/reference/configuration.md)
+(verified against Gemini CLI v0.57.0 on 2026-08-30).
 
 Add `gnt-brain` to the existing top-level `mcpServers` object:
 
@@ -43,37 +43,43 @@ Keep the trailing slash in the MCP URL. `httpUrl` selects Streamable HTTP, while
 limits discovery to gnt-brain's five documented tools. Keep `trust` set to `false`: connecting a
 server must not silently bypass Gemini CLI's tool confirmation layer.
 
-Gemini CLI expands environment references in string settings before connecting, including values
-inside `headers`. Create a key with `gnt keys create`, or use an existing key from `gnt keys list`,
-then expose it to the process that starts Gemini CLI:
+Gemini CLI expands environment references in string settings before it applies MCP transport
+environment sanitization, including values inside `headers`. Create a key with `gnt keys create`,
+or use an existing key from `gnt keys list`, then pass it only to the Gemini CLI process. Prefer a
+credential manager; when entering the key interactively in Bash or Zsh, use a non-echoed prompt so
+the value is not stored in shell history:
 
 ```bash
-export GNT_MCP_KEY="gnt_live_..."
-gemini
+printf 'GNT MCP key: '
+IFS= read -rs gnt_mcp_key
+printf '\n'
+GNT_MCP_KEY="$gnt_mcp_key" gemini
+unset gnt_mcp_key
 ```
 
-PowerShell:
+PowerShell can likewise prompt without placing the value in command history and remove the
+temporary environment variable when Gemini CLI exits:
 
 ```powershell
-$env:GNT_MCP_KEY = "gnt_live_..."
-gemini
-```
-
-Command Prompt (`cmd.exe`):
-
-```bat
-set "GNT_MCP_KEY=gnt_live_..."
-gemini
+$secureKey = Read-Host "GNT MCP key" -AsSecureString
+$keyPointer = [Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureKey)
+try {
+  $env:GNT_MCP_KEY = [Runtime.InteropServices.Marshal]::PtrToStringBSTR($keyPointer)
+  gemini
+} finally {
+  Remove-Item Env:GNT_MCP_KEY -ErrorAction SilentlyContinue
+  [Runtime.InteropServices.Marshal]::ZeroFreeBSTR($keyPointer)
+}
 ```
 
 Do not replace the environment reference with the real key, and do not commit the key or paste it
-into an issue, log, screenshot, or support message. If Gemini CLI resolves the reference to an
-empty string, restart it from a shell that has `GNT_MCP_KEY` set.
+into a shell command, issue, log, screenshot, or support message. If Gemini CLI resolves the
+reference to an empty string, restart it with the key supplied to that process as shown above.
 
 ## Load the action policy
 
 Gemini CLI loads project instructions from `GEMINI.md`. Its official
-[context-file documentation](https://github.com/google-gemini/gemini-cli/blob/main/docs/cli/gemini-md.md)
+[context-file documentation](https://github.com/google-gemini/gemini-cli/blob/v0.57.0/docs/cli/gemini-md.md)
 supports importing another Markdown file with `@file.md`. Add this line to the project's existing
 `GEMINI.md`, using a path that is correct from that file:
 
