@@ -11,6 +11,7 @@
     "test": "tsx --test test/**/*.test.ts",
     "test:pydantic-ai": "uv run pytest -q",
     "example:langchain": "tsx src/langchain-check-action.ts",
+    "example:llamaindex": "tsx src/llamaindex-check-action.ts",
     "example:vercel-ai-sdk": "tsx src/vercel-ai-sdk-check-action.ts",
     "example:anthropic": "tsx src/anthropic-tool-use-check-action.ts",
     "example:openai-agents": "tsx src/openai-agents-sdk-check-action.ts",
@@ -22,6 +23,7 @@
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@openai/agents": "^0.17.0",
     "ai": "^7.0.58",
+    "@llamaindex/core": "^0.6.22",
     "zod": "^4.4.0"
   },
   "devDependencies": {

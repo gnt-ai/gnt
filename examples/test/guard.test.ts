@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { RunContext } from "@openai/agents";
 
+import { createRefundOrderTool as createLlamaIndexRefundOrderTool } from "../src/llamaindex-check-action.js";
 import { createRefundOrderTool } from "../src/openai-agents-sdk-check-action.js";
 import { parseRefundInput, runGuardedAction } from "../src/guard.js";
 import type { CheckActionResult } from "../src/gnt-mcp.js";
@@ -14,6 +15,11 @@ function verdict(verdictValue: CheckActionResult["verdict"]): CheckActionResult 
     cited_rules: [{ id: "refund-policy", title: "Refund policy" }],
     rules_retrieved: 1,
   };
+}
+
+function parseToolResult(value: unknown): unknown {
+  if (typeof value !== "string") throw new TypeError("Expected a JSON string tool result.");
+  return JSON.parse(value);
 }
 
 test("allowed executes the risky action", async () => {
@@ -99,6 +105,39 @@ test("OpenAI Agents refund tool respects a blocked verdict", async () => {
   );
 
   assert.deepEqual(result, {
+    status: "blocked",
+    message: "Action was not executed: Example policy result Cited rule(s): Refund policy.",
+  });
+});
+
+test("LlamaIndex refund tool checks gnt before executing", async () => {
+  const calls: string[] = [];
+  const refundTool = createLlamaIndexRefundOrderTool({
+    async checkAction(input) {
+      calls.push(`${input.description} ${input.context}`);
+      return verdict("allowed");
+    },
+  });
+  const result = await refundTool.call({ orderId: "#8021", amount: 750 });
+
+  assert.deepEqual(calls, [
+    "Refund order #8021 for $750.00. The refund is a simulated side effect in the gnt LlamaIndex example.",
+  ]);
+  assert.deepEqual(parseToolResult(result), {
+    status: "executed",
+    message: "Mock refund executed for order #8021: $750.00.",
+  });
+});
+
+test("LlamaIndex refund tool respects a blocked verdict", async () => {
+  const refundTool = createLlamaIndexRefundOrderTool({
+    async checkAction() {
+      return verdict("blocked");
+    },
+  });
+  const result = await refundTool.call({ orderId: "#8021", amount: 750 });
+
+  assert.deepEqual(parseToolResult(result), {
     status: "blocked",
     message: "Action was not executed: Example policy result Cited rule(s): Refund policy.",
   });
