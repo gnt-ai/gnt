@@ -29,4 +29,18 @@ https://billing.stripe.com/p/session/...
 Couldn't open a browser automatically — open the URL above manually.
 ```
 
+For scripts and other non-interactive workflows, pass `--json` to print the
+destination type and session URL without opening a browser:
+
+```bash
+gnt billing --json
+```
+
+```json
+{
+  "type": "checkout",
+  "url": "https://checkout.stripe.com/c/pay/..."
+}
+```
+
 `gnt billing` requires a key stored by `gnt login`. A failure while checking the billing status or creating the session prints an error and exits; it does not fall back to guessing which destination to open.
