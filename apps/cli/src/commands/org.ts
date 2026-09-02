@@ -64,7 +64,11 @@ export async function orgRename(name: string): Promise<void> {
 }
 
 export async function orgInvite(email: string, options: { role?: string }): Promise<void> {
-  const role = options.role === "admin" ? "admin" : "member";
+  const role = options.role ?? "member";
+  if (role !== "admin" && role !== "member") {
+    console.error(fail(`Unknown role "${role}". Supported roles: member, admin.`));
+    process.exit(1);
+  }
   const res = await orgFetch("/invite", { method: "POST", body: JSON.stringify({ email, role }) });
   if (!res.ok) {
     console.error(fail(await errorMessage(res, `Failed to invite ${email}`)));

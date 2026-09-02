@@ -29,7 +29,7 @@ function fetchWithTimeout(url: string, init: RequestInit): Promise<Response> {
 // substitute for now. There's no dedicated "mark revalidated" endpoint —
 // confirming a rule is still true or refreshing it goes through the
 // existing edit/deprecate flow, same as any other rule change.
-export async function stale(): Promise<void> {
+export async function stale(opts: {json?: boolean} = {}): Promise<void> {
   const key = loadApiKey();
   let res: Response;
   try {
@@ -45,6 +45,11 @@ export async function stale(): Promise<void> {
     process.exit(1);
   }
   const { count, rules }: StaleResponse = await res.json();
+
+  if (opts.json) {
+    console.log(JSON.stringify({count, rules}, null, 2));
+    return;
+  }
 
   if (count === 0) {
     console.log(muted("No rules are due for re-validation."));

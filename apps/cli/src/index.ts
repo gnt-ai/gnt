@@ -213,6 +213,7 @@ program
 program
   .command("billing")
   .description("Subscribe or manage your subscription")
+  .option("--json", "Print machine-readable JSON instead of opening a browser")
   .action(billing);
 
 program
@@ -400,6 +401,7 @@ program
 program
   .command("stale")
   .description("List approved rules due for re-validation")
+  .option("--json", "Print machine-readable JSON instead of the human-readable list")
   .action(stale);
 
 const rules = program.command("rules").description("Work with local rule files");

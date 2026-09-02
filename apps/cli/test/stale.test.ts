@@ -43,6 +43,17 @@ test("prints a plain message when nothing is due", async () => {
   expect(logs.join("\n")).toContain("No rules are due for re-validation.");
 });
 
+test("prints the raw staleness response in JSON mode", async () => {
+  const body = {count: 1, rules: [{rule_id: "rule-1", title: "Refund window"}]};
+  globalThis.fetch = mock(() =>
+    Promise.resolve(new Response(JSON.stringify(body), { status: 200 })),
+  ) as unknown as typeof fetch;
+
+  await stale({json: true});
+
+  expect(JSON.parse(logs.join("\n"))).toEqual(body);
+});
+
 test("calls GET /v1/rules/staleness/due with the bearer token", async () => {
   const fetchMock = mock(() =>
     Promise.resolve(new Response(JSON.stringify({ count: 0, rules: [] }), { status: 200 })),
