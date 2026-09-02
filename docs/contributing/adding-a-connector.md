@@ -197,8 +197,9 @@ server gnt operates).
 
 ## What "connected" means system-wide
 
-`apps/api/src/gnt/routers/platform_admin.py` builds the internal dashboard's per-org connector
-summary by checking each `*Connection` model directly:
+The hosted product's internal dashboard builds a per-org connector summary by checking each
+`*Connection` model directly. That dashboard router is not part of this open-source repository;
+the API source here does not contain `apps/api/src/gnt/routers/platform_admin.py`.
 
 ```python
 connectors = {
@@ -211,9 +212,11 @@ connectors = {
 }
 ```
 
-A new connector's model needs a matching entry here (or platform-admin just won't show it) — this
-is the one place that enumerates every connector by name; there's no registry it reads from
-automatically the way the CLI's `mcp-framework/registry.ts` works for walkers.
+A new connector's model needs a matching entry in the hosted dashboard (or platform-admin will not
+show it). That hosted code is maintained separately; open-source connector PRs do not need to
+modify it. The dashboard is the one place that enumerates every connector by name; there's no
+registry it reads from automatically the way the CLI's `mcp-framework/registry.ts` works for
+walkers.
 
 ## Checklist for a new connector PR
 
@@ -247,8 +250,8 @@ automatically the way the CLI's `mcp-framework/registry.ts` works for walkers.
       *before* the extraction LLM call, never after. Dedup/processed-item table so a nightly sync
       doesn't re-extract unchanged content forever. `check_llm_quota` checked before every
       extraction call.
-- [ ] Platform-admin's `connectors` dict in `routers/platform_admin.py` updated for the new
-      connection model.
+- [ ] If you maintain the hosted dashboard, its platform-admin `connectors` dict is updated for
+      the new connection model; this is outside the scope of this open-source repository.
 - [ ] `apps/docs/pages/docs/sources.mdx` updated with a `<details>` block for the new connector,
       matching the existing entries' shape: how it connects, what it reads, and what it explicitly
       never reads — the same privacy boundary the declared `reads` enforce in code.

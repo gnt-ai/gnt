@@ -139,6 +139,20 @@ test("orgInvite defaults to member and passes through an admin role", async () =
   expect(sentBody).toEqual({ email: "c@d.com", role: "member" });
 });
 
+test("orgInvite rejects unsupported roles before making a request", async () => {
+  let requests = 0;
+  globalThis.fetch = mock(() => {
+    requests += 1;
+    return Promise.resolve(new Response("", { status: 200 }));
+  }) as unknown as typeof fetch;
+
+  const { exitCode, errors } = await expectExit(() => orgInvite("a@b.com", { role: "owner" }));
+
+  expect(exitCode).toBe(1);
+  expect(requests).toBe(0);
+  expect(errors.join("\n")).toContain('Unknown role "owner"');
+});
+
 test("orgRemove posts the target email", async () => {
   let sentBody: unknown;
   globalThis.fetch = mock((url: string, init?: RequestInit) => {

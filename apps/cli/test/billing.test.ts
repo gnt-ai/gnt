@@ -25,6 +25,7 @@ let originalLog: typeof console.log;
 beforeEach(() => {
   originalFetch = globalThis.fetch;
   saveApiKey("gnt_live_test_key", "key-id");
+  openMock.mockClear();
   logs = [];
   originalLog = console.log;
   console.log = (...args: unknown[]) => {
@@ -99,6 +100,28 @@ test("goes through the portal once a subscription exists", async () => {
   const calls = fetchMock.mock.calls as [string, RequestInit][];
   expect(calls[1][0]).toContain("/v1/billing/portal");
   expect(logs.join("\n")).toContain("https://billing.stripe.com/portal");
+});
+
+test("prints JSON without opening a browser when requested", async () => {
+  const fetchMock = mock((url: string) => {
+    if (url.includes("/v1/billing/status")) {
+      return Promise.resolve(
+        new Response(JSON.stringify({ subscription_status: null }), { status: 200 }),
+      );
+    }
+    return Promise.resolve(
+      new Response(JSON.stringify({ url: "https://checkout.stripe.com/session" }), { status: 200 }),
+    );
+  });
+  globalThis.fetch = fetchMock as unknown as typeof fetch;
+
+  await billing({ json: true });
+
+  expect(JSON.parse(logs.join(""))).toEqual({
+    type: "checkout",
+    url: "https://checkout.stripe.com/session",
+  });
+  expect(openMock).not.toHaveBeenCalled();
 });
 
 test("exits with a failure message on a non-ok status response", async () => {
