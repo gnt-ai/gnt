@@ -1,6 +1,6 @@
 import { pathToFileURL } from "node:url";
 
-import { tool } from "llamaindex";
+import { tool } from "@llamaindex/core/tools";
 import { z } from "zod";
 
 import { connectGntMcp } from "./gnt-mcp.js";
