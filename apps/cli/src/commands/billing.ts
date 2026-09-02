@@ -3,7 +3,7 @@ import { API_URL } from "../config.js";
 import { loadApiKey } from "../credentials.js";
 import { dim, fail, text } from "../theme.js";
 
-export async function billing(): Promise<void> {
+export async function billing(opts: { json?: boolean } = {}): Promise<void> {
   const key = loadApiKey();
 
   let statusRes: Response;
@@ -42,6 +42,11 @@ export async function billing(): Promise<void> {
     process.exit(1);
   }
   const { url } = await res.json();
+
+  if (opts.json) {
+    console.log(JSON.stringify({ type: endpoint, url }, null, 2));
+    return;
+  }
 
   console.log(dim(url));
   try {

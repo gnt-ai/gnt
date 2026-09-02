@@ -10,6 +10,14 @@ description: Find approved rules that are due for human re-validation.
 gnt stale
 ```
 
+Use `--json` when a script needs the raw response instead of the human-readable report:
+
+```bash
+gnt stale --json
+```
+
+The JSON output has the shape `{ "count": number, "rules": [...] }`.
+
 ## What staleness means
 
 A rule becomes due for re-validation when at least 42 days have passed since its last validation, or since its approval if it has never been re-validated. A nightly job calculates its age and an estimated freshness score using exponential decay.
