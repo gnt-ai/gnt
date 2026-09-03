@@ -1,0 +1,23 @@
+repos:
+  - repo: local
+    hooks:
+      - id: eslint-cli
+        name: eslint (CLI)
+        entry: pnpm --filter @gnt-ai/cli lint
+        language: system
+        files: ^apps/cli/.*\.(c|m)?[jt]sx?$
+        types: [file]
+        pass_filenames: false
+      - id: eslint-store
+        name: eslint (store)
+        entry: bash -c 'cd apps/store && bun run lint'
+        language: system
+        files: ^apps/store/.*\.(c|m)?[jt]sx?$
+        types: [file]
+        pass_filenames: false
+      - id: ruff
+        name: ruff (API)
+        entry: uv run --project apps/api ruff check
+        language: system
+        files: ^apps/api/.*\.py$
+        types: [python]

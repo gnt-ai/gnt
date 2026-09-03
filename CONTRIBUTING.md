@@ -116,6 +116,17 @@ CI enforces this on every PR (and on pushes to `main`): the `dco` job in
 any non-merge commit in the range is missing an author-matching `Signed-off-by` trailer. Fix a
 tip commit with `git commit --amend -s`, or older commits with `git rebase --signoff <base>`.
 
+## Run local checks before committing
+
+Install the repository hooks once after installing [pre-commit](https://pre-commit.com/):
+
+```bash
+pre-commit install
+```
+
+The hooks run the relevant CLI, store, or API linter for files in your commit. You can also run
+them manually with `pre-commit run --all-files`.
+
 ## Opening a PR
 
 Use the PR template. If you're adding a new connector, see the "connector request" issue
