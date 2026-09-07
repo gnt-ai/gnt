@@ -17,19 +17,19 @@
     "example:pydantic-ai": "uv run python src/pydantic_ai_check_action.py"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.116.0",
-    "@langchain/core": "^1.1.0",
+    "@anthropic-ai/sdk": "^0.123.0",
+    "@langchain/core": "^1.2.9",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@openai/agents": "^0.17.0",
-    "ai": "^7.0.58",
-    "zod": "^4.4.0"
+    "ai": "^7.0.92",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.0.0",
-    "@types/node": "^26.2.0",
+    "@types/node": "^26.4.1",
     "eslint": "^9.0.0",
-    "tsx": "^4.23.11",
+    "tsx": "^4.23.13",
     "typescript": "^6.0.0",
-    "typescript-eslint": "^8.66.0"
+    "typescript-eslint": "^8.69.0"
   }
 }
