@@ -59,14 +59,10 @@ jobs:
       # apps/store is deliberately excluded from it (Bun-native, own
       # lockfile — see that file's comment) and audited separately below.
       - run: pnpm install --frozen-lockfile
-      # GHSA-qwww-vcr4-c8h2 (react-router, high) is baselined in this
-      # workspace's own auditConfig.ignoreGhsas (pnpm-workspace.yaml, see
-      # that entry's own comment for the full reasoning) -- pinned inside
-      # apps/docs' zudoku dependency, no fixed version exists to bump to,
-      # and no real attack surface on a static build with no server
-      # runtime. Plain `pnpm audit` here picks that config up automatically
-      # (no --ignore flag needed at the call site), same as it would for
-      # anyone running this locally.
+      # GHSA-hp3w-g68c-fv3c (sprintf-js) is baselined in this workspace's
+      # own auditConfig.ignoreGhsas (pnpm-workspace.yaml, see that entry's
+      # comment) -- no fixed version has been published. Plain `pnpm audit`
+      # picks that config up automatically, same as it would locally.
       - run: pnpm audit
 
       - uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0

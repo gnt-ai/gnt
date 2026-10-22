@@ -19,7 +19,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.116.0",
     "@langchain/core": "^1.1.0",
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "@openai/agents": "^0.17.0",
     "ai": "^7.0.58",
     "zod": "^4.4.0"
