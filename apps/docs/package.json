@@ -10,7 +10,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "mermaid": "^11.16.1",
+    "mermaid": "^12.2.0",
     "react": ">=19.3.1",
     "react-dom": ">=19.3.1",
     "zudoku": "0.93.0"
