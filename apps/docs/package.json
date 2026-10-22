@@ -7,7 +7,7 @@
     "dev": "zudoku dev",
     "build": "zudoku build",
     "preview": "zudoku preview",
-    "lint": "eslint"
+    "lint": "eslint ."
   },
   "dependencies": {
     "mermaid": "^11.16.1",
@@ -20,8 +20,8 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "typescript": "^6",
-    "eslint": "^8",
-    "@typescript-eslint/eslint-plugin": "^8",
-    "@typescript-eslint/parser": "^8"
+    "eslint": "^10",
+    "@eslint/js": "^9",
+    "typescript-eslint": "^8"
   }
 }
