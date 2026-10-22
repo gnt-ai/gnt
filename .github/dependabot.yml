@@ -21,6 +21,13 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # compromise drives the CLI privacy gate's entity detection. 14.19
+      # drops its recall below the recorded baseline (amounts 0.80 -> 0.67,
+      # test/privacy-gate/eval-gate.test.ts), so it stays pinned at ~14.16
+      # until a bump passes that eval.
+      - dependency-name: "compromise"
+        update-types: ["version-update:semver-minor"]
 
   # apps/store is bun-native (its own bun.lock, excluded from the pnpm
   # workspace) -- Dependabot has no "bun" ecosystem, so an "npm" entry here
