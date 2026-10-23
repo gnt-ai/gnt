@@ -96,6 +96,8 @@ breadcrumbs, event or user data, tags, counts, or issue comments. Sentry's own M
 expose issue comments through a plain read-only tool call today, so this connector simply doesn't
 read them rather than reach for a workaround.
 
+Notion's adapter reads page content as markdown, plus the comments on those pages, through three read-only tools (`API-post-search`, `API-retrieve-page-markdown`, `API-retrieve-a-comment`). It never writes, deletes, or moves anything: the Notion MCP server's own write tools are never even registered, and the structured reads declare exactly which fields they touch, so nothing beyond those fields is ever read through them; `API-retrieve-page-markdown` is a prose read with no fields list.
+
 <details>
 <summary>**Figma comments**</summary>
 
