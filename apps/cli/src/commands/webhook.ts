@@ -72,3 +72,20 @@ export async function revokeWebhookToken(id: string): Promise<void> {
   }
   console.log(ok(`Revoked ${id}`));
 }
+
+export async function rotateWebhookToken(id: string): Promise<void> {
+  const key = loadApiKey();
+  const res = await authedFetch(key, `/v1/settings/webhook-tokens/${id}/rotate`, { method: "POST" });
+  if (!res.ok) {
+    console.error(fail(`Failed to rotate webhook token (${res.status}).`));
+    process.exit(1);
+  }
+  const data = await res.json();
+  console.log(`${muted("Ingest URL:")} ${bold(data.ingest_url)}`);
+  console.log(
+    dim(
+      `This is shown once. Copy it now. ${id} is now revoked; paste this new URL into ` +
+        "your tool's outbound webhook settings instead, as the URL it POSTs to.",
+    ),
+  );
+}

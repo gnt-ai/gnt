@@ -386,3 +386,87 @@ async def test_rotate_mcp_key_shares_create_mcp_keys_rate_limit_budget(
 
         over_limit = await client.post(f"/v1/settings/mcp-keys/{current_id}/rotate")
         assert over_limit.status_code == 429
+
+# -- rotate: webhook tokens ---------------------------------------------------
+
+async def _insert_webhook_token(
+    db_session,
+    org_id: str,
+    *,
+    name: str | None = None,
+) -> tuple[str, uuid.UUID]:
+    """Inserts a real webhook_tokens row directly, bypassing the minting
+    endpoint -- same helper shape as _insert_key's, for the table behind
+    POST /v1/settings/webhook-tokens."""
+    from gnt.auth.webhook_token import generate_webhook_token
+    from gnt.db.models import WebhookToken
+
+    await ensure_org(db_session, org_id)
+    plaintext, token_hash = generate_webhook_token()
+    token = WebhookToken(
+        org_id=org_id,
+        token_hash=token_hash,
+        name=name,
+    )
+    db_session.add(token)
+    await db_session.commit()
+    return plaintext, token.id
+
+async def test_rotate_webhook_token_mints_a_new_token_and_revokes_the_old_one(
+    test_app_factory, db_session, settings_routers
+):
+    from gnt.db.models import WebhookToken
+
+    org_id, session = _unique_admin_session(test_app_factory, settings_routers)
+    old_plaintext, old_id = await _insert_webhook_token(
+        db_session, org_id, name="zapier"
+    )
+
+    async with session as client:
+        r = await client.post(f"/v1/settings/webhook-tokens/{old_id}/rotate")
+        assert r.status_code == 201
+        body = r.json()
+
+    assert body["token"] != old_plaintext
+    assert body["id"] != str(old_id)
+    # The name carries over from the token being rotated -- rotation
+    # replaces the secret, not the label the user gave it.
+    assert body["name"] == "zapier"
+    assert body["ingest_url"].endswith(f"/v1/webhooks/ingest/{body['token']}")
+
+    old_row = await db_session.get(WebhookToken, old_id)
+    new_row = await db_session.get(WebhookToken, uuid.UUID(body["id"]))
+    assert old_row is not None
+    assert new_row is not None
+    assert old_row.revoked_at is not None
+    assert new_row.revoked_at is None
+
+async def test_rotate_webhook_token_refuses_another_orgs_token(
+    test_app_factory, db_session, settings_routers
+):
+    from gnt.db.models import WebhookToken
+
+    victim_org = _unique_org_id()
+    _, attacker_session = _unique_admin_session(test_app_factory, settings_routers)
+    _, token_id = await _insert_webhook_token(db_session, victim_org, name="zapier")
+
+    async with attacker_session as client:
+        r = await client.post(f"/v1/settings/webhook-tokens/{token_id}/rotate")
+
+    assert r.status_code == 404
+    row = await db_session.get(WebhookToken, token_id)
+    assert row is not None
+    assert row.revoked_at is None
+
+async def test_rotate_an_already_revoked_webhook_token_is_a_400_not_a_silent_mint(
+    test_app_factory, db_session, settings_routers
+):
+    org_id, session = _unique_admin_session(test_app_factory, settings_routers)
+    _, token_id = await _insert_webhook_token(db_session, org_id, name="zapier")
+
+    async with session as client:
+        revoke = await client.post(f"/v1/settings/webhook-tokens/{token_id}/revoke")
+        assert revoke.status_code == 200
+        rotate = await client.post(f"/v1/settings/webhook-tokens/{token_id}/rotate")
+
+    assert rotate.status_code == 400

@@ -196,3 +196,29 @@ test("prints an error and exits when the API response is not ok", async () => {
   expect(errorOutput()).toContain("Failed to create webhook token (500).");
   expect(exitCalls).toEqual([1]);
 });
+
+const { rotateWebhookToken } = await import("../src/commands/webhook.js");
+
+test("rotates the requested webhook token and prints the new ingest URL", async () => {
+  const ingestUrl = "https://api.gntai.dev/v1/ingest/rotated-token";
+  mockFetch({ ingest_url: ingestUrl });
+
+  await rotateWebhookToken("old-token-id");
+
+  expect(fetchCalls).toHaveLength(1);
+  expect(new URL(fetchCalls[0].input).pathname).toBe(
+    "/v1/settings/webhook-tokens/old-token-id/rotate",
+  );
+  expect(fetchCalls[0].init?.method).toBe("POST");
+  expect(output()).toContain(ingestUrl);
+  expect(output()).toContain("old-token-id is now revoked");
+});
+
+test("prints an error and exits when rotating a webhook token fails", async () => {
+  mockFetch({}, 500);
+
+  await expect(rotateWebhookToken("old-token-id")).rejects.toThrow("test process exit");
+
+  expect(errorOutput()).toContain("Failed to rotate webhook token (500).");
+  expect(exitCalls).toEqual([1]);
+});

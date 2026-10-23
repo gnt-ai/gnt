@@ -427,6 +427,8 @@ keys
   .description("Replace an MCP key with a new one and revoke the old one")
   .action(rotateKey);
 
+import { rotateWebhookToken } from "./commands/webhook.js";
+
 const webhook = program
   .command("webhook")
   .description("Manage webhook tokens for ingesting decision-prose from any tool that can send an HTTP POST");
@@ -436,6 +438,10 @@ webhook
   .description("Create a new webhook ingest URL")
   .action(createWebhookToken);
 webhook.command("revoke <id>").description("Revoke a webhook token").action(revokeWebhookToken);
+webhook
+  .command("rotate <id>")
+  .description("Replace a webhook token with a new one and revoke the old one")
+  .action(rotateWebhookToken);
 
 const org = program.command("org").description("Manage your organization");
 org

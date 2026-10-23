@@ -364,3 +364,34 @@ async def revoke_webhook_token(
     token.revoked_at = datetime.now(timezone.utc)
     await session.commit()
     return _serialize_webhook_token(token)
+
+
+@router.post("/settings/webhook-tokens/{token_id}/rotate", status_code=201)
+async def rotate_webhook_token(
+    token_id: uuid.UUID,
+    org: OrgContext = Depends(require_admin),
+    session: AsyncSession = Depends(get_session),
+):
+    """The webhook-token twin of rotate_mcp_key above — the backend of
+    `gnt webhook rotate`, mirroring `gnt keys rotate`: atomically mint a
+    replacement token and revoke the old one in a single commit, so
+    there is no window where both or neither ingest URL works.
+    require_admin, same as create/revoke above — rotation mints a
+    credential, so it gets the same gate as minting one from scratch.
+    The replacement carries the old token's name, and its ingest URL is
+    shown exactly once, same as create_webhook_token — only token_hash
+    is ever persisted.
+    """
+    old_token = await session.get(WebhookToken, token_id)
+    if old_token is None or old_token.org_id != org.org_id:
+        raise HTTPException(status_code=404, detail="not found")
+    if old_token.revoked_at is not None:
+        raise HTTPException(status_code=400, detail="token is already revoked")
+    plaintext, token_hash = generate_webhook_token()
+    new_token = WebhookToken(org_id=org.org_id, token_hash=token_hash, name=old_token.name)
+    session.add(new_token)
+    await session.flush()
+    old_token.revoked_at = datetime.now(timezone.utc)
+    await session.commit()
+    ingest_url = f"{get_settings().api_origin}/v1/webhooks/ingest/{plaintext}"
+    return {"token": plaintext, "ingest_url": ingest_url, **_serialize_webhook_token(new_token)}
