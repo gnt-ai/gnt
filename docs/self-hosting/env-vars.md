@@ -16,8 +16,7 @@ truth the way a hand-typed one would. `apps/store`'s is hand-enumerated
 (it's a plain TypeScript `process.env.X` read, not a pydantic model) but
 audited against the actual reads in `apps/store/src/http/server.ts`,
 `apps/store/src/native/embed.ts`, and `apps/store/src/native/rerank.ts` —
-not against `.env.example`, which is missing at least one real var (see the
-note under that table).
+not against `.env.example`.
 
 A field marked "Required: yes" with no default makes `Settings()` raise at
 import time if it's unset — the api container won't start, full stop, not a
