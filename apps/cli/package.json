@@ -41,7 +41,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.135.0",
-    "@modelcontextprotocol/sdk": "^1.32.1",
+    "@modelcontextprotocol/sdk": "^1.32.2",
     "chalk": "^5.6.2",
     "commander": "^15.0.0",
     "compromise": "~14.16.0",
