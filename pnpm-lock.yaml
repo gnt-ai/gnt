@@ -5191,10 +5191,10 @@ snapshots:
 
   '@devframes/json-render@0.8.2(@devframes/hub@0.8.2(devframe@0.8.2(@modelcontextprotocol/client@2.3.1)(srvx@0.12.5)))(devframe@0.8.2(@modelcontextprotocol/client@2.3.1)(srvx@0.12.5))':
     dependencies:
-      '@json-render/core': 0.19.0(zod@4.4.3)
+      '@json-render/core': 0.19.0(zod@4.6.7)
       devframe: 0.8.2(@modelcontextprotocol/client@2.3.1)(srvx@0.12.5)
       nostics: 1.2.0
-      zod: 4.4.3
+      zod: 4.6.7
     optionalDependencies:
       '@devframes/hub': 0.8.2(devframe@0.8.2(@modelcontextprotocol/client@2.3.1)(srvx@0.12.5))
     optional: true
@@ -5499,9 +5499,9 @@ snapshots:
       '@jridgewell/resolve-uri': 3.1.2
       '@jridgewell/sourcemap-codec': 1.5.5
 
-  '@json-render/core@0.19.0(zod@4.4.3)':
+  '@json-render/core@0.19.0(zod@4.6.7)':
     dependencies:
-      zod: 4.4.3
+      zod: 4.6.7
     optional: true
 
   '@langchain/core@1.2.20(@opentelemetry/api@1.9.0)(openai@7.5.0(ws@8.21.3)(zod@4.6.7))(ws@8.21.3)':
@@ -5597,14 +5597,14 @@ snapshots:
       cross-spawn: 7.0.6
       eventsource: 3.0.7
       eventsource-parser: 3.1.1
-      jose: 6.2.7
+      jose: 6.2.12
       pkce-challenge: 5.0.1
-      zod: 4.4.3
+      zod: 4.6.7
     optional: true
 
   '@modelcontextprotocol/core@2.3.1':
     dependencies:
-      zod: 4.4.3
+      zod: 4.6.7
     optional: true
 
   '@modelcontextprotocol/sdk@1.32.1(@cfworker/json-schema@4.1.1)(zod@4.6.7)':
