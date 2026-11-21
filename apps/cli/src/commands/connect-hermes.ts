@@ -137,7 +137,7 @@ export async function connectHermes(): Promise<void> {
   printExportHint(mintedKey);
   console.log(
     dim(
-      "Install the gnt skill too (see the Hermes docs tab at gntai.dev/docs) so Hermes actually calls check_action before acting, not just has it available.",
+      "Install the gnt skill too (see apps/docs/pages/docs/hermes-agent.mdx in github.com/gnt-ai/gnt) so Hermes actually calls check_action before acting, not just has it available.",
     ),
   );
 }

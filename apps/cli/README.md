@@ -29,9 +29,10 @@ you work in.
 
 ## Configuration
 
-Points at the hosted gnt.ai deployment by default. Override for local development:
+gnt is self-hosted. The CLI talks to a local stack at `http://localhost:8000` (API) and
+`http://localhost:3000` (web) by default. Point it at another deployment with:
 
 ```
-GNT_API_URL=http://localhost:8000
-GNT_WEB_URL=http://localhost:3000
+GNT_API_URL=https://gnt.example.com
+GNT_WEB_URL=https://app.gnt.example.com
 ```

@@ -1,11 +1,8 @@
-// These are what every real, npm-installed user's CLI actually talks to by
-// default -- there's no server-side config to fall back on, so getting
-// this wrong means gnt login (and everything else) silently points at
-// localhost for anyone who isn't us running a local dev stack. GNT_API_URL/
-// GNT_WEB_URL override for local development.
-//
-export const API_URL = process.env.GNT_API_URL ?? "https://api.gntai.dev";
-export const WEB_URL = process.env.GNT_WEB_URL ?? "https://gntai.dev";
+// gnt is self-hosted; there's no managed deployment to fall back on. By
+// default the CLI talks to a local stack on apps/api's own API_ORIGIN/
+// WEB_ORIGIN defaults. GNT_API_URL/GNT_WEB_URL point it anywhere else.
+export const API_URL = process.env.GNT_API_URL ?? "http://localhost:8000";
+export const WEB_URL = process.env.GNT_WEB_URL ?? "http://localhost:3000";
 
 // The one published, customer-facing MCP endpoint — everything that prints
 // this URL builds it from here instead of concatenating "/mcp" by hand.
