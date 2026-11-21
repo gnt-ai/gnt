@@ -3,7 +3,7 @@
   "version": "0.6.0",
   "description": "gnt.ai from your terminal: connect apps, propose rules, query your brain.",
   "license": "SEE LICENSE IN LICENSE",
-  "homepage": "https://gntai.dev",
+  "homepage": "https://github.com/gnt-ai/gnt",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gnt-ai/gnt.git",
