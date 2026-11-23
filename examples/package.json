@@ -18,7 +18,7 @@
     "example:pydantic-ai": "uv run python src/pydantic_ai_check_action.py"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.135.0",
+    "@anthropic-ai/sdk": "^1.12.0",
     "@langchain/core": "^1.4.1",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@openai/agents": "^0.22.0",
